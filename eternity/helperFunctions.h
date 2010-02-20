@@ -21,9 +21,17 @@
 
 #include "ConsoleColors.h"
 
-#define LOG_ERROR   1
-#define LOG_WARNING 2
-#define LOG_INFO    3
+#define LOG_ERROR   ( 1 << 0 )
+#define LOG_WARNING ( 1 << 1 )
+#define LOG_INFO    ( 1 << 2 )
+
+// Variables that make it so we can
+// only output ERROR and WARNING messages
+// to the file, but output ALL types of
+// ERROR, WARNING, INFO messages to the console.
+extern int logOutputsForConsole ;  // like a "variable prototype..."
+extern int logOutputsForFile ;
+extern int logOutputsForDebugStream ;
 
 void logStartup() ;
 

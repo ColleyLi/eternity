@@ -1,16 +1,21 @@
 #include "helperFunctions.h"
 
 FILE *logFile ;
-bool logToConsole = true ;
-bool logToFile = true ;
+
+int logOutputsForConsole ;  // like a "variable declaration..."
+int logOutputsForFile ;
+int logOutputsForDebugStream ;
 
 // Functions that do error checking
 // Just print info about errors that
 // just happened.
-
 void logStartup()
 {
   logFile = fopen( "lastRunLog.txt", "w" ) ;
+
+  logOutputsForConsole = LOG_ERROR | LOG_WARNING | LOG_INFO ;
+  logOutputsForFile = LOG_ERROR | LOG_WARNING | LOG_INFO ;
+  logOutputsForDebugStream = LOG_ERROR | LOG_WARNING ;
 }
 
 tm* CurrentTime()
@@ -59,17 +64,23 @@ void log( int logLevel, char *fmt, va_list args )
   static char buf[ 768 ] ;
   sprintf( buf, "[ %s ][ %s ]:  %s\n", errLevel, timeBuf, msgBuffer ) ;
 
-  printf( buf ) ;
-  fprintf( logFile, buf ) ;
+  // If the error's log level qualifies it to be output to the console based on current console flags..
+  if( logOutputsForConsole & logLevel )
+    printf( buf ) ;
+  if( logOutputsForFile & logLevel )
+    fprintf( logFile, buf ) ;
   
+
+
   // Also put it in the Visual Studio debug window
   // this also appears in DEBUGVIEW by Mark Russinovich, which you can get
   // from http://technet.microsoft.com/en-us/sysinternals/bb896647.aspx
-
-  // Add program name in front as well
-  sprintf( buf, "[ eternity ][ %s ][ %s ]:  %s\n", errLevel, timeBuf, msgBuffer ) ;
-  OutputDebugStringA( buf ) ;
-
+  if( logOutputsForDebugStream & logLevel )
+  {
+    // Add program name in front as well
+    sprintf( buf, "[ eternity ][ %s ][ %s ]:  %s\n", errLevel, timeBuf, msgBuffer ) ;
+    OutputDebugStringA( buf ) ;
+  }
 }
 
 void error( char *fmt, ... )

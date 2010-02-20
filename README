@@ -1,4 +1,7 @@
 + Feb 19 / 2010
   First commit
   Work to be done is in main.cpp
-  * Test change 1
+
++ Feb 19 / 2010
+  Added GDI+ rendering to textures with preservation of alpha channel
+  This means you can now load .gif through GDI+ (but not through D3DX)

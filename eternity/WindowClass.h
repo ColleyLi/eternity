@@ -76,11 +76,13 @@ private:
   // Windows
   HINSTANCE hInstance ;
   HWND hwnd ;
-  char *gameName ;
-
-  bool paused ;  // game paused or unpaused.
   
+
+  // Game
+  char *gameName ;
+  bool paused ;  // game paused or unpaused.
   Timer timer ;  // frame limiter
+
 
   // FMOD sound objects
   map<int, FMOD_SOUND*> sounds ; 
@@ -135,7 +137,7 @@ private:
   void d3dShutdown() ;
   bool d3dSupportsNonPowerOf2Textures() ;
 
-
+public:
   Graphics* createPrimitiveSurface() ;
 
   

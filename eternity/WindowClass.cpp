@@ -793,6 +793,105 @@ bool Window::d3dSupportsNonPowerOf2Textures()
   return conditionallySupportsNonPow2Tex ;
 }
 
+Graphics* Window::createPrimitiveSurface()
+{
+  // Create a surface and return the Graphics* object
+
+  // FOR NOW ITS A TEST SURFACE AND
+  // WE'll JUST MAKE IT TEXTURE 1000
+
+  int width = 128 ;
+  int height = 128 ;
+
+  // create a texture
+  IDirect3DTexture9 *tex ;
+  DX_CHECK(
+    D3DXCreateTexture( gpu, width, height,
+    1, 0, D3DFMT_X8R8G8B8,
+    D3DPOOL_MANAGED, &tex ), "Create texture" ) ;
+  
+  // Get its surface
+  IDirect3DSurface9 *surface ;
+  DX_CHECK( tex->GetSurfaceLevel( 0, &surface ), "Get surface" ) ;
+
+  HDC texDC ;
+  DX_CHECK( surface->GetDC( &texDC ), "Get dc of texture" ) ;
+
+  
+  Pen bluePen( Color( 100, 0, 0, 255 ) ) ;
+  SolidBrush blueBrush( Color( 200, 0, 0, 255 ) ) ;
+  SolidBrush redBrush( Color( 128, 255, 0, 0 ) ) ;
+
+  Graphics* g = new Graphics( texDC ) ;
+  g->FillRectangle( &redBrush, 0, 0, 4, 4 ) ;
+  
+
+
+// test gif
+  Image i( TEXT( "sprites/Astos.gif" ) ) ;
+  g->DrawImage( &i, 0,0, 64, 64 ) ;
+
+
+  surface->ReleaseDC( texDC ) ;
+
+  
+
+
+
+
+
+
+
+  // K now i'm going to hack a copy
+  // of the texture because it doesn't let you use
+  // A8R8G8B8 when you use a DC.  For some silly reason.
+  // Hopefully the X8 will preserve the alpha values
+  D3DLOCKED_RECT lockedRectTex, lockedRectCpyA8 ;
+
+
+
+
+  // copy texture with A8
+  IDirect3DTexture9 *cpyA8 ;
+
+  DX_CHECK( D3DXCreateTexture(
+    gpu, width, height,
+    1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED,
+    &cpyA8 ), "Create texture from file in memory" ) ;
+  
+
+
+  int dataLen = width*height*sizeof(int) ; // a8r8g8b8!
+
+  // lock both
+  DX_CHECK( tex->LockRect( 0, &lockedRectTex, NULL, 0 ), "Lock rect tex" ) ;
+  DX_CHECK( cpyA8->LockRect( 0, &lockedRectCpyA8, NULL, 0 ), "Lock rect cpyA8" ) ;
+
+  /*
+  // YES the alpha channel data IS preserved in X8
+  for( int i = 0 ; i < width; i++ )
+  {
+    for( int j = 0 ; j < height ; j++ )
+    {
+      printf( "%8x ", ((int*)lockedRect.pBits)[ i + width*j ] ) ;
+    }
+    puts("");
+  }
+  */
+  memcpy( lockedRectCpyA8.pBits, lockedRectTex.pBits, dataLen ) ;
+
+  DX_CHECK( cpyA8->UnlockRect( 0 ), "Unlock rect cpyA8" ) ;
+  DX_CHECK( tex->UnlockRect( 0 ), "Unlock rect tex" ) ;
+
+  Sprite *sprite= new Sprite( width, height, cpyA8 ) ;
+  sprites.insert( make_pair( 1000, sprite ) ) ;
+  
+  
+  return NULL ;
+
+}
+
+
 void Window::step()
 {
   // check the d3ddevice, in case its been lost

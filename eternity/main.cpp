@@ -25,6 +25,23 @@
 //            FMOD
 
 
+// Restructure inheritance:
+// GameWindow : Direct3DWindow : BasicWindow
+// Need an object for a SpriteManager (spriteMan)
+//   (he records drawSprite calls)..
+//    its functions are callable through GameWindow though
+//    (gameWindow.drawSprite(x,y,z))
+
+// For drawText, it should accept a va_list..
+// and it should have state parameters.
+
+// Perhaps using state parameters for all drawing ins't
+// such a bad idea after all
+
+// window->setPos( x, y ) ;
+// window->drawSprite( 1 ) ; // uses its default width/height
+
+// Need an object for 
 
 // A change
 //!!SPRITE COMMAND
@@ -77,8 +94,13 @@ void Init()
   //window->playSound( HumanMusic ) ;
   //window->playSound( TreeWhat ) ;
 
+  window->createPrimitiveSurface() ;
+
+  
   window->loadSprite( 1, "sprites/mario.png" ) ;
   window->loadSprite( 2, "sprites/16counter.png", 0, 32, 32, 16 ) ;
+
+  /*
   window->loadSprite( 3, "sprites/Astos.png" ) ;
   window->loadSprite( 4, "sprites/Eye.png" ) ;
   window->loadSprite( 5, "sprites/Garland.png" ) ;
@@ -88,7 +110,7 @@ void Init()
   window->loadSprite( 9, "sprites/Phantom.png" ) ;
   window->loadSprite( 10, "sprites/Pirate.png" ) ;
   window->loadSprite( 11, "sprites/Tiamat.png" ) ;
-  
+  */
 
 
 }
@@ -158,7 +180,7 @@ void Draw()
 
   
 
-  window->drawMouseCursor( 1 ) ; // draw the mouse cursor with this sprite.
+  window->drawMouseCursor( 1000 ) ; // draw the mouse cursor with this sprite.
   
   char buf[ 100 ];
   int numSprites = gameObjects.size();
@@ -409,11 +431,17 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   // Setup a console
   consoleCreate() ;
   consoleWhite() ;
-  consoleMove( 0, 630 ) ;
+  consoleMove( 0, 500 ) ;
   consoleRowsAndCols( 10, 120 ) ;
 
   // Start up the log
   logStartup() ;
+
+  // Start up GDI+, which we use to draw
+  // For GDI+, used only for shape render
+  GdiplusStartupInput gdiplusStartupInput;
+  ULONG_PTR gdiplusToken;
+  GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
   // Setup the window
   window = new Window( hInstance, TEXT( "Window title" ),
@@ -456,6 +484,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
 
   info( "Game over!" ) ;
   logShutdown() ;
+
+  GdiplusShutdown(gdiplusToken);
 
   //system( "pause" ) ; // uncomment to make it pause before exit
   return 0 ;

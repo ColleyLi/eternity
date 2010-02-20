@@ -40,6 +40,27 @@ private:
   // If you have hundreds of sprites, this could add up
 
 public:
+  //!!DELETE ME.  
+  // provide a ctor that accepts an HDC
+  Sprite( int w, int h, IDirect3DTexture9 *tex )
+  {
+    spriteWidth = w ;
+    spriteHeight = h ;
+
+    //!! haxx
+    imageInfo.Width = w ;
+    imageInfo.Height = h ;
+    
+    spritesheet = tex ;
+
+    n = 0 ; 
+    numFrames = 1 ;
+
+    internalClock = 0 ;
+    secondsPerFrame = 1 ;
+    
+    info( "Artifically created sprite w=%d h=%d", w, h ) ;
+  }
 
   // This function assumes we're loading a
   // spritesheet for an animated sprite.
