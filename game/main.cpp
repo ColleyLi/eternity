@@ -217,7 +217,7 @@ void Draw()
   sprintf( buf, "%d sprites", numSprites ) ;
   
   //window->drawSprite( 24, 2, 2, 4, 4 ) ;
-  window->drawBox( D3DCOLOR_ARGB( 100, 255, 255, 0 ), 100, 100, 200, 200 ) ;
+  //window->drawBox( D3DCOLOR_ARGB( 100, 255, 255, 0 ), 100, 100, 200, 200 ) ; // next commit
   window->drawString( buf, 20, 20, 80, 40, Color::Yellow, DT_CENTER | DT_VCENTER | DT_NOCLIP ) ;
   
 

@@ -14,4 +14,3 @@
 
 + Feb 20 / 2010 v0.0.2-lib
   Separated out code into a .lib file (for the engine core) and a "game" project, which uses the engine.
-  Did some work on drawBox(), this actually has the BAD VERSION of the drawBox() code (unnecessary use of a cached map here..), going to use modulating color instead on white tex.
