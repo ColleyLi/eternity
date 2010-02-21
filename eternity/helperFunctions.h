@@ -84,6 +84,11 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
                            int fundamentalFrequency1, int fundamentalFrequency2,
                            short amplitude1, short amplitude2 ) ;
 
+void printRawKeyboard( RAWINPUT * raw ) ;
+void printRawMouse( RAWINPUT * raw ) ;
+
+void setRectangle( DWORD* arrayPtr, RECT section, int w, int h, DWORD *value ) ;
+
 void printWindowsLastError( char *msg ) ;
 
 bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed.

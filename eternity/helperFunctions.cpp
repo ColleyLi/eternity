@@ -242,6 +242,64 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
   }
 }
 
+void printRawKeyboard( RAWINPUT * raw )
+{
+  printf("Kbd: "
+        "VK=%04x key=%c "
+        "MakeCode=%04x (key dp) "
+        "Flags:%04x "
+        "%s "
+        "Reserved:%04x "
+        "ExtraInformation:%08x "
+        "msg=%04x "
+        "WM_KEYDOWN=%d "
+        "WM_KEYUP=%d\n", 
+        raw->data.keyboard.VKey, raw->data.keyboard.VKey,
+
+        raw->data.keyboard.MakeCode,  // key depression
+        raw->data.keyboard.Flags,     // down or up
+        raw->data.keyboard.Flags ? "up" : "down",
+        raw->data.keyboard.Reserved,
+        raw->data.keyboard.ExtraInformation,
+        raw->data.keyboard.Message,
+        raw->data.keyboard.Message == WM_KEYDOWN,
+        raw->data.keyboard.Message == WM_KEYUP
+      ) ;
+}
+
+void printRawMouse( RAWINPUT * raw )
+{
+  printf("Mouse: "
+    "usFlags=%04x "
+    "ulButtons=%04x "
+    "usButtonFlags=%04x "
+    "usButtonData=%d "
+    "ulRawButtons=%d "
+    "lLastX=%d "
+    "lLastY=%d \n",
+    raw->data.mouse.usFlags, 
+    raw->data.mouse.ulButtons, 
+    raw->data.mouse.usButtonFlags, 
+    raw->data.mouse.usButtonData, 
+    raw->data.mouse.ulRawButtons, 
+    raw->data.mouse.lLastX, 
+    raw->data.mouse.lLastY
+  );
+}
+
+
+// TEmplates would solve this problem.
+void setRectangle( DWORD* arrayPtr, RECT section, int w, int h, DWORD *value )
+{
+  for( int col = section.left ; col < section.right ; col++ )
+  {
+    for( int row = section.top ; row < section.bottom ; row++ )
+    {
+      int idx = col + w*row ;
+      arrayPtr[ idx ] = *value ;
+    }
+  }
+}
 
 void printWindowsLastError( char *msg )
 {

@@ -204,23 +204,21 @@ void Draw()
   {
     window->drawSprite(
       gameObjects[i].spriteIndex,
-      gameObjects[i].x, gameObjects[i].y,
-      32, 32 ) ;
+      gameObjects[i].x, gameObjects[i].y ) ;
   }
-
   
 
-  window->drawMouseCursor( 2 ) ; // draw the mouse cursor with this sprite.
-  
+
+  // Print # sprites.
   char buf[ 100 ];
   int numSprites = gameObjects.size();
   sprintf( buf, "%d sprites", numSprites ) ;
-  
-  //window->drawSprite( 24, 2, 2, 4, 4 ) ;
-  //window->drawBox( D3DCOLOR_ARGB( 100, 255, 255, 0 ), 100, 100, 200, 200 ) ; // next commit
-  window->drawString( buf, 20, 20, 80, 40, Color::Yellow, DT_CENTER | DT_VCENTER | DT_NOCLIP ) ;
-  
+  window->drawBox( D3DCOLOR_ARGB( 235, 255, 0, 0 ), 10, 10, 100, 30 ) ;
+  window->drawString( buf, Color::Yellow, 20, 6, 80, 40, DT_CENTER | DT_VCENTER | DT_NOCLIP ) ;
 
+
+
+  // Print response message
   if( numSprites == 0 )
   {
     // Draw this center screen
@@ -241,14 +239,11 @@ void Draw()
 
   }
 
+  window->drawMouseCursor( 1 ) ; // draw the mouse cursor with this sprite.
 
-  //window->drawSprite( 23, window->getWidth()/2, window->getHeight()/2, D3DCOLOR_ARGB( 128, 255, 255, 255 ) ) ;
-  
-  
   window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
 
-  
 }
 
 ///////////////////////////////////////////
@@ -332,7 +327,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam 
         // We don't take keyboard input here.
         // We take it by using GetKeyboardState() function
         // in the window->step() function.
-        //printRawKeyboardInfo( raw ) ;
+        //printRawKeyboard( raw ) ; // just so you can see
 
         switch( raw->data.keyboard.VKey )
         {
@@ -343,7 +338,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam 
       }
       else if (raw->header.dwType == RIM_TYPEMOUSE)
       {
-        //printRawMouseInfo( raw ) ;
+        //printRawMouse( raw ) ;  // just so you can see
         
         if( raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN )
         {

@@ -15,6 +15,7 @@ private:
   IDirect3DTexture9 *spritesheet ;
   D3DXIMAGE_INFO imageInfo ;
 
+  char *originalFilename ;
   int spriteWidth ;
   int spriteHeight ;
 
@@ -47,9 +48,13 @@ public:
     spriteWidth = w ;
     spriteHeight = h ;
 
-    //!! haxx
+    // haxx.  ImageInfo doesn't make sense
+    // for a generated texture, (which is generally
+    // what this function is for) but we'll leave it
+    // this way.
     imageInfo.Width = w ;
     imageInfo.Height = h ;
+    imageInfo.MipLevels = 1 ;
     
     spritesheet = tex ;
 
@@ -59,6 +64,7 @@ public:
     internalClock = 0 ;
     secondsPerFrame = 1 ;
     
+    originalFilename = "Generated texture (no file)" ;
     info( "Artifically created sprite w=%d h=%d", w, h ) ;
   }
 
@@ -95,6 +101,8 @@ public:
     float timeBetweenFrames = 0.51f
   )
   {
+    originalFilename = filename ;
+
     // initialize internal clock and animation parameters
     n = 0 ;
     internalClock = 0 ;
@@ -310,8 +318,8 @@ private:
       0, // Usage:  you could make the tex a render target with D3DUSAGE_RENDERTARGET but we don't want to
       D3DFMT_UNKNOWN,  // take the format from the file.
       D3DPOOL_MANAGED, // So we don't have to re-load textures if the device is lost
-      D3DX_DEFAULT,    // filter image
-      D3DX_DEFAULT,    // filter mip
+      D3DX_FILTER_NONE,    // filter image  !! CHANGES THE SIZE OF THE IMAGE!
+      D3DX_FILTER_NONE,    // filter mip    !! CHANGES THE SIZE OF THE IMAGE!
       
       backgroundColor, // The background color we should
       // consider transparent.  This gets replaced by
@@ -346,8 +354,8 @@ private:
       0, // Usage:  you could make the tex a render target with D3DUSAGE_RENDERTARGET but we don't want to
       D3DFMT_UNKNOWN,  // take the format from the file.
       D3DPOOL_MANAGED, // So we don't have to re-load textures if the device is lost
-      D3DX_DEFAULT,    // filter image
-      D3DX_DEFAULT,    // filter mip
+      D3DX_FILTER_NONE,    // filter image !! CHANGES THE SIZE OF THE IMAGE!
+      D3DX_FILTER_NONE,    // filter mip   !! CHANGES THE SIZE OF THE IMAGE!
       
       backgroundColor, // The background color we should
       // consider transparent.  This gets replaced by
@@ -408,7 +416,7 @@ public:  //!! MAKE THIS PRIVATE so user must use getCurrentRectangle()
     // across the sheet?
     int numAcross = getSheetWidth()  / spriteWidth ;
     int numDown   = getSheetHeight() / spriteHeight ;
-
+    
     // Get the row and column this frameIndex
     // falls in the sheet
     int row = frameIndex / numAcross ;
@@ -487,7 +495,6 @@ public:  //!! MAKE THIS PRIVATE so user must use getCurrentRectangle()
         rect.left, rect.top, rect.right, rect.bottom,
         getSheetWidth(), getSheetHeight() ) ;
     }
-        
 
     return rect ;
   }
@@ -549,6 +556,10 @@ public:
     return desiredHeight / getSpriteHeight() ;
   }
 
+  const char* getOriginalFilename()
+  {
+    return originalFilename ;
+  }
 } ;
 
 

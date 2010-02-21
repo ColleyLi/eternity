@@ -69,7 +69,8 @@ Window::Window( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int wind
   {
     bail( "D3D failed to initialize. Check your set up params in initD3D() function, check your width and height are valid" ) ;
   }
-  defaultSprite = new Sprite( gpu, NULL ) ; // Initialize the default sprite
+  initDefaultSprite() ;
+  initWhitePixel() ;
 
   info( "Starting up rawinput devices..." ) ;
   startupRawInput();
@@ -440,10 +441,15 @@ void Window::drawSprite( int id, float x, float y, D3DCOLOR modulatingColor )
 
 void Window::drawSprite( int id, float x, float y, float width, float height )
 {
-  drawSprite( id, x, y, width, height, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, float width, float height, D3DCOLOR modulatingColor )
+{
+  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+}
+
+void Window::drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor )
 {
   Sprite *sprite = defaultSprite ;
   SpriteMapIter spriteEntry = sprites.find( id ) ;
@@ -452,26 +458,47 @@ void Window::drawSprite( int id, float x, float y, float width, float height, D3
     sprite = spriteEntry->second ;
   else
     warning( "Sprite %d not loaded, using default sprite instead", id ) ;
-    
-  D3DXVECTOR2 center( x - sprite->getCenterX(), y - sprite->getCenterY() ) ;
-  D3DXVECTOR2 scale( sprite->getScaleXFor( width ), sprite->getScaleYFor( height ) ) ;
+  
+  //!!! BUGS for -1 scale.  this won't work.
+  // no sentinel value.  use separate function
+  // for scaling a sprite
+  if( width == SPRITE_READ_FROM_FILE )
+    width = sprite->getSpriteWidth() ;
+  if( height == SPRITE_READ_FROM_FILE )
+    height = sprite->getSpriteHeight() ;
 
-  D3DXVECTOR3 vec3Center( x, y, 0 ) ;
-  D3DXVECTOR3 vec3Pos( x, y, 0 ) ;
+  float spriteWidth = sprite->getSpriteWidth() ;
+  float spriteHeight = sprite->getSpriteHeight() ;
+
+  float scaleX = width / spriteWidth ;
+  float scaleY = height / spriteHeight ;
+
+  //D3DXVECTOR2 vec2Scale( sprite->getScaleXFor( width ), sprite->getScaleYFor( height ) ) ;
+  D3DXVECTOR2 vec2Scale( scaleX, scaleY ) ;
+  D3DXVECTOR2 vec2Trans( x, y ) ;
+
+  //printf( "Scale %f %f\n", vec2Scale.x, vec2Scale.y ) ;
+  
+  D3DXVECTOR3 vec3Center( sprite->getCenterX(), sprite->getCenterY(), 0 ) ;
+  //D3DXVECTOR3 vec3Pos( x, y, 0 ) ; ; // do not use this.
 
   D3DXMATRIX matrix ;
-  D3DXMatrixAffineTransformation2D( &matrix, 1.0f, &center, 0.0f, &center ) ;
+  //D3DXMatrixIdentity( &matrix ) ;
+  D3DXMatrixTransformation2D( &matrix, NULL, 0, &vec2Scale, NULL, angle, &vec2Trans ) ;
 
   id3dxSpriteRenderer->Begin( D3DXSPRITE_ALPHABLEND ) ;
   id3dxSpriteRenderer->SetTransform( &matrix ) ;
 
   RECT rect = sprite->getRect() ;
+  //!! Hack.  Problems wiht some sprites rarely,
+  // they come out to be.. LARGER than they should
+  // when loaded.  So using the RECT doesn't work.
   id3dxSpriteRenderer->Draw(
     
     sprite->getTexture(),
     &rect,
-    &vec3Center,   // The center of the sprite.  (0,0) is the upper left hand corner.
-    &vec3Pos,      // the position of the sprite
+    &vec3Center,   // The center of the sprite.  (0,0) is the upper left hand corner. OF THE SPRITE.
+    NULL,      // the position of the sprite, (assuming you haven't translated it using a matrix already, which we DID do here!)
     modulatingColor
   
   ) ;
@@ -823,13 +850,91 @@ void Window::playSound( int id )
   FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &fmodChannel ) ;
 }
 
-void Window::drawString( char *str, float x, float y, float width, float height, D3DCOLOR color, DWORD formatOptions )
+void Window::drawBox( D3DCOLOR color, RECT &r )
+{
+  drawBox( color, r.left, r.top, r.right - r.left, r.bottom - r.top ) ;
+}
+
+void Window::drawBox( D3DCOLOR color, int xLeft, int yTop, int width, int height )
+{
+  D3DXVECTOR2 vec2Pos( xLeft, yTop ) ;
+  D3DXVECTOR2 vec2Scale( width, height ) ;
+  
+  D3DXMATRIX tMatrix ;
+  
+  D3DXMatrixTransformation2D(
+    &tMatrix,
+    NULL,  // leave it in the top left corner
+    0.0f,  // wacky warp behavior -- don't use
+    &vec2Scale, // how much to stretch the pixelPatch
+    NULL,  // rotate from top left corner..
+    0,     // rotation angle is always 0:  you shouldn't be rotating this.  you should
+           // be rotating the sprite AFTER its been produced and you're using it to draw.
+    &vec2Pos   // translation:  relative to top left corner
+  ) ;
+  
+  DX_CHECK( id3dxSpriteRenderer->Begin( D3DXSPRITE_ALPHABLEND ), "Begin draw box, sprite" ) ;
+  DX_CHECK( id3dxSpriteRenderer->SetTransform( &tMatrix ), "Set matrix" ) ;
+  DX_CHECK( id3dxSpriteRenderer->Draw( whitePixel->getTexture(), NULL, NULL, NULL, color ), "Draw box" ) ;
+  DX_CHECK( id3dxSpriteRenderer->End(), "End draw box, sprite" ) ;
+}
+
+void Window::drawBoxCentered( D3DCOLOR color, int xCenter, int yCenter, int width, int height )
+{
+  D3DXVECTOR2 vec2Pos( xCenter - width/2, yCenter - height/2 ) ;
+  D3DXVECTOR2 vec2Scale( width, height ) ;
+
+  D3DXMATRIX tMatrix ;
+  
+  D3DXMatrixTransformation2D(
+    &tMatrix,
+    NULL,  // leave it in the top left corner
+    0.0f,  // wacky warp behavior -- don't use
+    &vec2Scale, // how much to stretch the pixelPatch
+    NULL,  // rotate from top left corner..
+    0,     // rotation angle is always 0:  you shouldn't be rotating this.  you should
+           // be rotating the sprite AFTER its been produced and you're using it to draw.
+    &vec2Pos   // translation:  relative to top left corner
+  ) ;
+  
+  DX_CHECK( id3dxSpriteRenderer->Begin( D3DXSPRITE_ALPHABLEND ), "Begin draw box, sprite" ) ;
+  DX_CHECK( id3dxSpriteRenderer->SetTransform( &tMatrix ), "Set matrix" ) ;
+  DX_CHECK( id3dxSpriteRenderer->Draw( whitePixel->getTexture(), NULL, NULL, NULL, color ), "Draw box centered" ) ;
+  DX_CHECK( id3dxSpriteRenderer->End(), "End draw box, sprite" ) ;
+}
+
+void Window::getBoxDimensions( char *str, RECT &r )
+{
+  SetRect( &r, 0, 0, 1, 1 ) ;
+  int height = id3dxDefaultFont->DrawTextA(
+    id3dxSpriteRenderer, str, -1,
+    &r,
+    DT_CALCRECT /* | dtOptions */, 0 ) ;
+}
+
+void Window::drawString( char *str, D3DCOLOR color, float x, float y, float width, float height )
+{
+  drawString( str, color, x, y, width, height, DT_CENTER | DT_VCENTER ) ;
+}
+
+void Window::drawString( char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions )
 {
   RECT rect ;
   SetRect( &rect, x, y, x + width, y + height ) ;
 
   id3dxDefaultFont->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
 }
+
+void Window::drawString( char *str, D3DCOLOR color, RECT &r )
+{
+  id3dxDefaultFont->DrawTextA( NULL, str, -1, &r, DT_CENTER | DT_VCENTER, color ) ;
+}
+
+void Window::drawString( char *str, D3DCOLOR color, RECT &r, DWORD formatOptions )
+{
+  id3dxDefaultFont->DrawTextA( NULL, str, -1, &r, formatOptions, color ) ;
+}
+
 
 int Window::getWidth()
 {
@@ -1013,6 +1118,56 @@ bool Window::d3dSupportsNonPowerOf2Textures()
   return conditionallySupportsNonPow2Tex ;
 }
 
+
+
+
+void Window::initDefaultSprite()
+{
+  IDirect3DTexture9 *tex ;
+  int w = 16, h = 16 ;
+  DX_CHECK( D3DXCreateTexture( gpu, w, h, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex ), "Create default sprite" ) ;
+
+  D3DLOCKED_RECT lockedRect ;
+
+  DX_CHECK( tex->LockRect( 0, &lockedRect, NULL, 0 ), "Lock default sprite" ) ;
+  DWORD *ptr = reinterpret_cast<DWORD*>(lockedRect.pBits) ;
+  RECT topLeft = { 0, 0, w/2, h/2 } ; // ltrb
+  RECT topRight = { w/2, 0, w, h/2 } ;
+  RECT bottomLeft = { 0, h/2, w/2, h } ;
+  RECT bottomRight = { w/2, h/2, w, h } ;
+
+  D3DCOLOR red = D3DCOLOR_ARGB( 200, 255, 0, 0 ) ;
+  D3DCOLOR green = D3DCOLOR_ARGB( 200, 0, 255, 0 ) ;
+  D3DCOLOR blue = D3DCOLOR_ARGB( 200, 0, 0, 255 ) ;
+  D3DCOLOR yellow = D3DCOLOR_ARGB( 200, 255, 255, 0 ) ;
+  setRectangle( ptr, topLeft, w, h, &blue ) ;
+  setRectangle( ptr, topRight, w, h, &yellow ) ;
+  setRectangle( ptr, bottomLeft, w, h, &green ) ;
+  setRectangle( ptr, bottomRight, w, h, &red ) ;
+  
+  DX_CHECK( tex->UnlockRect( 0 ), "Unlock default sprite" ) ;
+
+  defaultSprite = new Sprite( w, h, tex ) ;
+  //addSprite( 0, whitePixel ) ; // no need to save a ref in the sprites map.
+
+}
+
+void Window::initWhitePixel()
+{
+  IDirect3DTexture9 *tex ;
+  DX_CHECK( D3DXCreateTexture( gpu, 1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex ), "Create 1x1 pixel patch" ) ;
+
+  D3DLOCKED_RECT lockedRect ;
+
+  DX_CHECK( tex->LockRect( 0, &lockedRect, NULL, 0 ), "Lock 1x1 pixel patch" ) ;
+  ((__int32*)lockedRect.pBits)[0] = D3DCOLOR_ARGB( 255,255,255,255 ) ;
+  DX_CHECK( tex->UnlockRect( 0 ), "Unlock 1x1 pixel patch" ) ;
+
+  whitePixel = new Sprite( 1, 1, tex ) ;
+  //addSprite( 0, whitePixel ) ; // no need to save a ref in the sprites map.
+
+}
+
 // You need this wrapper function to hide 'gpu'
 GDIPlusTexture* Window::createGDISurface( int width, int height )
 {
@@ -1084,11 +1239,15 @@ float Window::getTimeElapsedSinceLastFrame()
 
 void Window::drawMouseCursor(int id)
 {
-  drawSprite( id, mouseX, mouseY, 10, 10 ) ;
+  drawSprite( id, mouseX, mouseY ) ;
 
   char buf[ 300 ] ;
   sprintf( buf, "mouse\n(%d, %d)", mouseX, mouseY ) ;
-  drawString( buf, mouseX, mouseY, 80, 135, Color::Blue, DT_LEFT | DT_TOP ) ;
+
+  RECT r ;
+  getBoxDimensions( buf, r ) ;
+  drawBox( D3DCOLOR_ARGB( 32, 255, 255, 255 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top ) ;
+  drawString( buf, D3DCOLOR_ARGB( 255, 0, 0, 255 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
 }
 
 // Show fps
@@ -1097,7 +1256,20 @@ void Window::drawFrameCounter()
   static char buf[ 60 ];
   sprintf( buf, "FPS:  %.1f", timer.frames_per_second ) ;
 
-  drawString( buf, getWidth() - 100, 20, 80, 100, Color::Blue, DT_TOP | DT_RIGHT ) ;
+  /*
+  // There's no point in computing this.  its a jittery box.
+  RECT r ;
+  getBoxDimensions( buf, r ) ;
+  
+  r.left = getWidth() - r.right - 10  ;
+  r.right = getWidth() - 10 ;
+  r.top += 10 ;
+  r.bottom += 10 ;
+  */
+  
+  int left = getWidth() - 10 - 100 ;
+  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 10, 100, 30 ) ;
+  drawString( buf, Color::White, left, 10, 100, 30 ) ;
 }
 
 

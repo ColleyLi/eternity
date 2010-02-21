@@ -107,7 +107,9 @@ private:
   // last frame or not.
 
   SpriteMap sprites ;
-  Sprite *defaultSprite ; // a failsafe default sprite
+  Sprite *defaultSprite ; 
+  Sprite *whitePixel ;    // used for drawing solid colored boxes.
+  // a failsafe default sprite
   // who doesn't get loaded from a file, rather its
   // a hard-coded sprite in the code here that gets
   // generated at runtime.
@@ -137,6 +139,8 @@ private:
   void d3dDeviceCheck() ;
   void d3dShutdown() ;
   bool d3dSupportsNonPowerOf2Textures() ;
+  void initDefaultSprite() ;
+  void initWhitePixel() ;
 
 public:
   // Creates a surface you can draw to
@@ -155,7 +159,17 @@ public:
   
   void drawMouseCursor( int id ) ;
   void drawFrameCounter() ;
-  void drawString( char *str, float x, float y, float width, float height, D3DCOLOR color, DWORD formatOptions ) ;
+  
+  void drawBox( D3DCOLOR color, int x, int y, int width, int height ) ;
+  void drawBox( D3DCOLOR color, RECT &r ) ;
+  void drawBoxCentered( D3DCOLOR color, int xCenter, int yCenter, int width, int height ) ;
+  void getBoxDimensions( char *str, RECT &r ) ;
+
+  void drawString( char *str, D3DCOLOR color, RECT &r ) ;
+  void drawString( char *str, D3DCOLOR color, RECT &r, DWORD formatOptions ) ;
+
+  void drawString( char *str, D3DCOLOR color, float x, float y, float width, float height ) ;
+  void drawString( char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions ) ;
 
   // Draws a sprite centered @ (x,y)
   void drawSprite( int id, float x, float y ) ;
@@ -170,6 +184,8 @@ public:
 
   // draws a sprite centered @ (x,y) of width and height specified, using modulating color
   void drawSprite( int id, float x, float y, float width, float height, D3DCOLOR modulatingColor ) ;
+
+  void drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor ) ;
 
   
 

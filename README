@@ -14,3 +14,10 @@
 
 + Feb 20 / 2010 v0.0.2-lib
   Separated out code into a .lib file (for the engine core) and a "game" project, which uses the engine.
+  
++ Feb 20 / 2010 v0.0.2-lib
+  Window::drawBox().  Initially was bad version of the drawBox() (unnecessary use of a cached map), but that actually got lost due to misuse of git reset function.. shall remain unnamed.  Going to use modulating color instead on white tex, that's this version anyway.
+  * Sprite scaling fixed to allow rotation.
+  USE:  vec2Scale, rotation, vec2Trans, vec3Center
+  DO NOT USE:  vec2ScalingCenter, scalingRotation, vecRotCenter, vec3Pos
+  
