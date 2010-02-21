@@ -8,3 +8,6 @@
 
 + Feb 20 / 2010 v0.0.1-boxedText
   This is a developmental branch where I'm trying to get boxedText to work.  Basically it should render to texture some text and lay a box behind it.  A bit like a dialog box.  See main.cpp for details.  Considering using a rendering toolkit like Qt, but that may be very heavy.  Another option was IWebBrowser2, instantiate an IE basically and use it to render text.  Probably not the best choice.
+
++ Feb 20 / 2010 v0.0.1-boxedText-merge
+  BoxedText now working, rendered in DirectX.  GDI+ boxed text was stripped out (GDIPlusTexture::boxedText()) because of difference in kerning in d3d vs GDI+, even for the same font with the same parameters -- the computed size was still different.

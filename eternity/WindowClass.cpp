@@ -247,9 +247,9 @@ bool Window::initD3D()
 
 
   
-  D3DXCreateFont( gpu, 18, 0, FW_BOLD, 0,
+  D3DXCreateFontA( gpu, 18, 0, FW_BOLD, 1,
     FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY,
-    DEFAULT_PITCH | FF_DONTCARE, TEXT("Arial"), &id3dxFontArial12 ) ;
+    DEFAULT_PITCH | FF_DONTCARE, "Arial", &id3dxDefaultFont ) ;
 
   D3DXCreateSprite( gpu, &id3dxSpriteRenderer ) ;
 
@@ -260,7 +260,190 @@ bool Window::initD3D()
   return true ;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Generates you a texture with colored
+// text on a clear background
+void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor )
+{
+  RECT rect = { 0 } ;
+  boxedTextSprite( spriteId, str, textColor, 0, rect, id3dxDefaultFont ) ;
+}
+
+void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor )
+{
+  RECT rect = { 0 } ;
+  boxedTextSprite( spriteId, str, textColor, backgroundColor, rect, id3dxDefaultFont ) ;
+}
+
+void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, int padding )
+{
+  RECT rect = { padding, padding, padding, padding } ;
+  boxedTextSprite( spriteId, str, textColor, backgroundColor, rect, id3dxDefaultFont ) ;
+}
+
+void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding )
+{
+  boxedTextSprite( spriteId, str, textColor, backgroundColor, padding, id3dxDefaultFont ) ;
+}
+
+void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, char *fontName, float size, int boldness, bool italics )
+{
+  ID3DXFont *id3dxFont ;
+  D3DXCreateFontA( gpu, size, 0, boldness, 1, italics,
+    DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY,
+    DEFAULT_PITCH | FF_DONTCARE, fontName, &id3dxFont ) ;
+
+  boxedTextSprite( spriteId, str, textColor, backgroundColor, padding, id3dxFont ) ;
+  
+  SAFE_RELEASE( id3dxFont ) ;
+}
+
+//private:
+void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, ID3DXFont *font ) 
+{
+  #pragma region compute the limiting rect
+  RECT computedRect = { 0, 0, 1, 1 } ;
+  
+  int height = font->DrawTextA(
+    id3dxSpriteRenderer, str, -1,
+    &computedRect,
+    DT_CALCRECT /* | dtOptions */, 0 ) ;
+
+  info( "computed rect %d %d %d %d, height %d",
+    computedRect.left, computedRect.top,
+    computedRect.bottom, computedRect.right, height ) ;
+
+  //computedRect.bottom += height ;
+
+  RECT boxRect = computedRect ;
+
+  boxRect.right += padding.left + padding.right ;
+  boxRect.bottom += padding.top + padding.bottom ;
+
+  RECT textRect = boxRect ;
+  textRect.left += padding.left ;
+  textRect.right -= padding.right ;
+  textRect.top += padding.top ;
+  textRect.bottom -= padding.bottom ;
+  #pragma endregion
+
+  // Create the render target surface to be the right
+  // size for the text that is going to be drawn.
+  #pragma region create the render target and pixel patch
+  HRESULT hr ;
+  IDirect3DTexture9 *renderTargetTexture ;
+  int w = boxRect.right - boxRect.left ;
+  int h = boxRect.bottom - boxRect.top ;
+  
+  hr = D3DXCreateTexture( gpu, w, h, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &renderTargetTexture ) ;
+  DX_CHECK( hr, "Create render target texture" ) ;
+
+  IDirect3DTexture9 *pixelPatch4x4 ;
+  
+  hr = D3DXCreateTexture( gpu, 4, 4, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &pixelPatch4x4 ) ;
+  DX_CHECK( hr, "Create 4x4 pixel patch" ) ;
+  #pragma endregion
+
+  // Lock the pixelpatch's rect and write the color data.
+  #pragma region lock the rect
+  D3DLOCKED_RECT lockedRect ;
+  DX_CHECK( pixelPatch4x4->LockRect( 0, &lockedRect, NULL, 0 ), "Lock 4x4 pixel patch rect" ) ;
+  __int32 *pData = reinterpret_cast<__int32*>( lockedRect.pBits ) ;  // 32 bit ints
+  for( int i = 0 ; i < 4*4 ; i++ )
+    pData[ i ] = backgroundColor ;
+  DX_CHECK( pixelPatch4x4->UnlockRect( 0 ), "Unlock 4x4 pixel patch" ) ;
+  #pragma endregion
+
+  // Now draw out a rectangle sprite
+  // using that pixel patch, stretching it
+  #pragma region set up render target
+  IDirect3DSurface9 *rtSurface, *screenSurface ;
+  DX_CHECK( renderTargetTexture->GetSurfaceLevel( 0, &rtSurface ), "Get surface for render target" ) ;
+  
+  // Get the old surface target
+  DX_CHECK( gpu->GetRenderTarget( 0, &screenSurface ), "Get old render target" ) ;
+  DX_CHECK( gpu->SetRenderTarget( 0, rtSurface ), "Set new render target" ) ;
+  #pragma endregion
+
+  // Draw out the box shape and the text to that box.
+  if( !DX_CHECK( gpu->BeginScene(), "Begin scene on RT" ) )
+  {
+    error( "Are you trying to call boxedTextSprite() in the Draw() function!!  "
+      "You should call it in the Init() function, generate the sprite, and save off "
+      "the id." ) ;
+    return ;
+  }
+  id3dxSpriteRenderer->Begin( D3DXSPRITE_ALPHABLEND ) ;
+  
+  // Because its a 4x4 pixel patch.
+  D3DXVECTOR2 vec2Scale( w/4.0f, h/4.0f ) ;
+  
+  D3DXMATRIX tMatrix ;
+  
+  D3DXMatrixTransformation2D(
+    &tMatrix,
+    NULL,  // leave it in the top left corner
+    0.0f,  // wacky warp behavior -- don't use
+    &vec2Scale, // how much to stretch the pixelPatch
+    NULL,  // rotate from top left corner..
+    0,     // rotation angle is always 0:  you shouldn't be rotating this.  you should
+           // be rotating the sprite AFTER its been produced and you're using it to draw.
+    NULL   // translation:  start in top left corner
+  ) ;
+  
+  id3dxSpriteRenderer->SetTransform( &tMatrix ) ;
+  id3dxSpriteRenderer->Draw( pixelPatch4x4, NULL, NULL, NULL, D3DCOLOR_ARGB(255,255,255,255) ) ;
+
+  D3DXMatrixIdentity( &tMatrix ) ;
+  id3dxSpriteRenderer->SetTransform( &tMatrix ) ;
+  font->DrawTextA( id3dxSpriteRenderer, str, -1, &textRect, DT_CENTER | DT_VCENTER, textColor ) ;
+  
+  id3dxSpriteRenderer->End() ;
+  DX_CHECK( gpu->EndScene(), "End scene on RT" ) ;
+
+  DX_CHECK( gpu->SetRenderTarget( 0, screenSurface ), "Set render target back to screen surface" ) ;
+  
+
+
+  // register the sprite
+  Sprite *sprite = new Sprite( w, h, renderTargetTexture ) ;
+  addSprite( spriteId, sprite ) ;
+
+  info( "Successfully created your boxed text sprite, id=%d", spriteId ) ;
+
+  // Destroy that 4x4 pixel patch
+  SAFE_RELEASE( pixelPatch4x4 ) ;
+}
+
+void Window::drawSprite( int id, float x, float y )
+{
+  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+}
+
+void Window::drawSprite( int id, float x, float y, D3DCOLOR modulatingColor )
+{
+  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, modulatingColor ) ;
+}
+
 void Window::drawSprite( int id, float x, float y, float width, float height )
+{
+  drawSprite( id, x, y, width, height, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+}
+
+void Window::drawSprite( int id, float x, float y, float width, float height, D3DCOLOR modulatingColor )
 {
   Sprite *sprite = defaultSprite ;
   SpriteMapIter spriteEntry = sprites.find( id ) ;
@@ -287,13 +470,30 @@ void Window::drawSprite( int id, float x, float y, float width, float height )
     
     sprite->getTexture(),
     &rect,
-    &vec3Center,
-    &vec3Pos,
-    D3DCOLOR_ARGB( 255, 255, 255, 255 )
+    &vec3Center,   // The center of the sprite.  (0,0) is the upper left hand corner.
+    &vec3Pos,      // the position of the sprite
+    modulatingColor
   
   ) ;
   id3dxSpriteRenderer->End();
 
+}
+
+
+//!! this really needs to be in a spriteManager so we can adequately
+// protect the sprites map from collision
+void Window::addSprite( int id, Sprite *sprite )
+{
+  SpriteMapIter existingSpritePtr = sprites.find( id ) ;
+  if( existingSpritePtr != sprites.end() )
+  {
+    // the sprite with that id existed.  erase it
+    warning( "Sprite with id=%d already existed.  Destroying it..", id ) ;
+    delete existingSpritePtr->second ;
+  }
+
+  // now add it
+  sprites.insert( make_pair( id, sprite ) ) ;
 }
 
 // id is how you will refer to this sprite after its been loaded
@@ -305,18 +505,7 @@ void Window::loadSprite( int id, char *filename,
 {
   Sprite *sprite = new Sprite( gpu, filename, backgroundColor,
     singleSpriteWidth, singleSpriteHeight, numFrames, timeBetweenFrames ) ;
-  
-
-  SpriteMapIter existingSpritePtr = sprites.find( id ) ;
-  if( existingSpritePtr != sprites.end() )
-  {
-    // the sprite with that id existed.  erase it
-    warning( "Sprite with id=%d already existed.  Destroying it..", id ) ;
-    delete existingSpritePtr->second ;
-  }
-
-  // now add it
-  sprites.insert( make_pair( id, sprite ) ) ;
+  addSprite( id, sprite ) ;
 }
 
 int Window::randomSpriteId()
@@ -639,7 +828,7 @@ void Window::drawString( char *str, float x, float y, float width, float height,
   RECT rect ;
   SetRect( &rect, x, y, x + width, y + height ) ;
 
-  id3dxFontArial12->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
+  id3dxDefaultFont->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
 }
 
 int Window::getWidth()
@@ -718,7 +907,7 @@ void Window::d3dLoseDevice()
   isDeviceLost = true ;
 
   // call the onLostDevice function of every id3dx object
-  DX_CHECK( id3dxFontArial12->OnLostDevice(), "font onlostdevice" ) ;
+  DX_CHECK( id3dxDefaultFont->OnLostDevice(), "font onlostdevice" ) ;
   DX_CHECK( id3dxSpriteRenderer->OnLostDevice(), "sprite renderer onlostdevice" ) ;
 }
 
@@ -741,7 +930,7 @@ bool Window::d3dResetDevice( D3DPRESENT_PARAMETERS & pps )
   // we should reset all the id3dx objects
   if( !isDeviceLost )
   {
-    DX_CHECK( id3dxFontArial12->OnResetDevice(), "font onlostdevice" ) ;
+    DX_CHECK( id3dxDefaultFont->OnResetDevice(), "font onlostdevice" ) ;
     DX_CHECK( id3dxSpriteRenderer->OnResetDevice(), "sprite renderer onlostdevice" ) ;
 
     info( "GPU reset complete" ) ;
@@ -811,7 +1000,7 @@ void Window::d3dDeviceCheck()
 void Window::d3dShutdown()
 {
   SAFE_RELEASE( id3dxSpriteRenderer ) ;
-  SAFE_RELEASE( id3dxFontArial12 ) ;
+  SAFE_RELEASE( id3dxDefaultFont ) ;
   SAFE_RELEASE( gpu ) ;
   SAFE_RELEASE( d3d ) ;
 }
@@ -836,7 +1025,7 @@ void Window::addSpriteFromGDIPlusTexture( int id, GDIPlusTexture* tex )
   Sprite *sprite = new Sprite(
     tex->getWidth(), tex->getHeight(), tex->getTexture() ) ;
 
-  sprites.insert( make_pair( id, sprite ) ) ;
+  addSprite( id, sprite ) ;
 }
 
 void Window::step()

@@ -98,7 +98,7 @@ private:
   IDirect3D9 *d3d ;
   IDirect3DDevice9 *gpu ;
   ID3DXSprite *id3dxSpriteRenderer ;
-  ID3DXFont *id3dxFontArial12 ;
+  ID3DXFont *id3dxDefaultFont ;
   // </Direct3D objects>
 
   D3DPRESENT_PARAMETERS d3dpps ;
@@ -156,9 +156,47 @@ public:
   void drawMouseCursor( int id ) ;
   void drawFrameCounter() ;
   void drawString( char *str, float x, float y, float width, float height, D3DCOLOR color, DWORD formatOptions ) ;
-  void drawSprite( int id, float x, float y, float width = SPRITE_READ_FROM_FILE, float height = SPRITE_READ_FROM_FILE ) ;
+
+  // Draws a sprite centered @ (x,y)
+  void drawSprite( int id, float x, float y ) ;
+
+  // draws a sprite centered @ (x,y) modulated by color specified
+  // You can use this fucntion to make your sprite appear "ghostly"
+  // (by using a translucent whitish color like ARGB(128,255,255,255))
+  void drawSprite( int id, float x, float y, D3DCOLOR modulatingColor ) ;
+
+  // draws a sprite centered @ (x,y) of width and height specified
+  void drawSprite( int id, float x, float y, float width, float height ) ;
+
+  // draws a sprite centered @ (x,y) of width and height specified, using modulating color
+  void drawSprite( int id, float x, float y, float width, float height, D3DCOLOR modulatingColor ) ;
 
   
+
+  /* Creates boxed text as a sprite
+  Uses the default font (Arial 18) to draw the text
+  in the textColor you specify */
+  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor ) ;
+
+  /* Puts text against a square
+  fitted background. */
+  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor ) ;
+
+  /* The "padding" parameter is how much space to pad out around the sides. */
+  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, int padding ) ;
+
+  /* the RECT for padding specifies left, top, right, bottom padding. */
+  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding ) ;
+  
+  /* Boxed text has fontName, size, and boldness you specify.
+  Boldness:  Should a number between 0 and 1000.  400 is considered "normal", while 700 is considered "bold". */
+  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, char *fontName, float size, int boldness, bool italics ) ;
+
+private:
+  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, ID3DXFont *font ) ;
+
+public:
+  void addSprite( int id, Sprite *sprite ) ;
 
   void loadSprite( int id, char *filename,
     D3DCOLOR backgroundColor = D3DCOLOR_ARGB( 0,0,0,0 ),
@@ -166,6 +204,8 @@ public:
     int singleSpriteHeight = SPRITE_READ_FROM_FILE,
     int numFrames = SPRITE_READ_FROM_FILE,
     float timeBetweenFrames = 0.5f ) ;
+
+
 
   // Gets you a random sprite id from the map.
   // Useful for testing, not much else

@@ -88,87 +88,8 @@ int GDIPlusTexture::getHeight()
   return height ;
 }
 
-void GDIPlusTexture::boxedText( TCHAR* text, Font *font, RECT padding, Color textColor, Color bkgColor, StringAlignment alignment )
-{
-
-  SolidBrush bkgBrush( bkgColor ) ;
-  SolidBrush textBrush( textColor ) ;
-
-  StringFormat sf ;
-  sf.SetAlignment( alignment ) ;
-
-  if( font->GetUnit() != UnitPixel )
-  {
-    warning( "GDIPlusTexture::boxedText:  "
-      "font's units weren't in pixels.  "
-      "Changing it to pixels for you.." ) ;
-  }
-
-  // MUST BE IN PIXELS else sizing doesn't work
-  LOGFONTA logFont ;
-  font->GetLogFontA( g, &logFont ) ;
-  
-  // We're going to have to re-create a font
-  // that has same properties only in pixels units
-  // We'll do this everytime anyway, no harm done
-  // if person used correct units.
-  FontFamily fontFamily( TEXT("Arial" ) ) ;
-  font->GetFamily( &fontFamily ) ;
-
-  Font *newFont = new Font( &fontFamily,
-    font->GetSize(), font->GetStyle(),
-    UnitPixel ) ;
-
-  font = newFont ;
-   
-  // retrieve the limiting rect by computing size
-  // only ID3DXFont:: knows how to DT_CALCRECT though.
-
-  // create an identical d3dfont to compute the rectangle
-  ID3DXFont *d3dFont ;
-  DX_CHECK( D3DXCreateFontA( gpu, 12.0f, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-    OUT_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-    "Arial", &d3dFont ), "Create d3d font" ) ;
-
-  RECT d3dComputedRect = {0, 0, 1, 1} ;
-  int height = d3dFont->DrawTextW(
-    NULL, text, -1,
-    &d3dComputedRect,
-    DT_CALCRECT, 0 ) ;
-
-  info( "computed rect %d %d %d %d, height %d",
-    d3dComputedRect.left, d3dComputedRect.top,
-    d3dComputedRect.bottom, d3dComputedRect.right, height ) ;
 
 
-  RectF limitingRect(
-    d3dComputedRect.left,
-    d3dComputedRect.top,
-    d3dComputedRect.right - d3dComputedRect.left,
-    (d3dComputedRect.bottom - d3dComputedRect.top) + height ) ;
-
-  RectF fillRectBounds(
-    limitingRect.X,
-    limitingRect.Y,
-    limitingRect.Width + padding.left + padding.right,
-    limitingRect.Height + padding.top + padding.bottom ) ;
-  g->FillRectangle( &bkgBrush, fillRectBounds ) ;
-
-  RectF stringRectBounds(
-    limitingRect.X,
-    limitingRect.Y + padding.top,
-    limitingRect.Width + padding.left + padding.right,
-    limitingRect.Height + padding.top
-  ) ;
-  
-  g->DrawString( text, -1, font, stringRectBounds, &sf, &textBrush ) ;
- 
-  
-
-  SAFE_RELEASE( d3dFont ) ;
-  delete newFont ;
-  
-}
 
 void GDIPlusTexture::boxedText( TCHAR* text, Font *font, RECT padding, Color textColor, Color bkgColor, RectF limitingRect, StringAlignment alignment ) 
 {

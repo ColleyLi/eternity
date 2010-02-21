@@ -42,13 +42,8 @@ public:
   int getWidth() ;
   int getHeight() ;
 
-  // Simply draws text with a box around it,
-  // computed to be the right size
-  void boxedText( TCHAR* text, Font *font, RECT padding, Color textColor, Color bkgColor, StringAlignment alignment ) ;
-
   // Uses the rect you specify to draw the text
-  // and the background box.  text may get cut off
-  // using this method
+  // and the background box.  Text may get cut off
   void boxedText( TCHAR* text, Font *font, RECT padding, Color textColor, Color bkgColor, RectF limitingRect, StringAlignment alignment ) ;
 
   // Supports BMP, GIF, JPEG, PNG, TIFF, and EMF

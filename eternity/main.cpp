@@ -106,6 +106,7 @@ void Init()
   window->loadSprite( 1, "sprites/mario.png" ) ;
   window->loadSprite( 2, "sprites/16counter.png", 0, 32, 32, 16 ) ;
 
+  /*
   window->loadSprite( 3, "sprites/Astos.png" ) ;
   window->loadSprite( 4, "sprites/Eye.png" ) ;
   window->loadSprite( 5, "sprites/Garland.png" ) ;
@@ -115,49 +116,54 @@ void Init()
   window->loadSprite( 9, "sprites/Phantom.png" ) ;
   window->loadSprite( 10, "sprites/Pirate.png" ) ;
   window->loadSprite( 11, "sprites/Tiamat.png" ) ;
+  */
 
+  window->boxedTextSprite( 
+    3, "Yo! 4",
+    D3DCOLOR_ARGB( 255, 255, 0, 0 ),
+    D3DCOLOR_ARGB( 40, 0, 120, 0 ),
+    4 ) ;
+
+  window->boxedTextSprite( 
+    4, "Yo! 15",
+    D3DCOLOR_ARGB( 255, 255, 0, 0 ),
+    D3DCOLOR_ARGB( 200, 129, 47, 0 ),
+    15 ) ;
+
+  window->boxedTextSprite( 
+    5, "Yo! 20",
+    D3DCOLOR_ARGB( 255, 255, 0, 0 ),
+    D3DCOLOR_ARGB( 122, 255, 255, 255 ),
+    20 ) ;
 
   // Still like g?
-  GDIPlusTexture *tex = window->createGDISurface( 128, 128 ) ;
+  GDIPlusTexture *gdiTex = window->createGDISurface( 128, 128 ) ;
 
   SolidBrush blueBrush( Color( 200, 0, 0, 255 ) ) ;
 
-  tex->g->FillEllipse( &blueBrush, 0, 0, 40, 40 ) ;
-  tex->g->FillEllipse( &blueBrush, 20, 20, 40, 40 ) ;
+  gdiTex->g->FillEllipse( &blueBrush, 0, 0, 40, 40 ) ;
+  gdiTex->g->FillEllipse( &blueBrush, 20, 20, 40, 40 ) ;
 
-  window->addSpriteFromGDIPlusTexture( 21, tex ) ;
+  window->addSpriteFromGDIPlusTexture( 21, gdiTex ) ;
   
-  delete tex ;
+  delete gdiTex ;
 
 
 
-  SolidBrush redBrush( Color( 254, 255, 0,0 ) ) ;
-  PointF origin( 0, 0 ) ;
-  Font font( TEXT("Arial"), 24.0f, FontStyleBold ) ;
-
-  tex = window->createGDISurface( 400, 40 ) ;
-  /*
-  tex->g->DrawString(
-    TEXT( "Is that the best you can do???  CTRL!! Go on!" ),
-    -1, &font, origin, &redBrush ) ;
-    */
-  RECT r ;
-  SetRect( &r, 90, 8, 90, 8 ) ;
-  tex->boxedText(
-    TEXT("Is that the best you can do???  CTRL!! Go on!"),
-    &font,
-    r,
-    Color( 254, 255, 0, 0 ),
-    Color( 200, 0, 0, 255 ),
-    StringAlignmentCenter
-  ) ;
-  window->addSpriteFromGDIPlusTexture( 22, tex ) ;
-
-  delete tex ;
 
 
+  // !! fix this
   GDIPlusTexture::D3DXCreateTextureFromFileViaGDIPlus( NULL, NULL ) ;
 
+  
+  RECT padding = { 35,12,35,132 } ;
+  window->boxedTextSprite( 
+    22, "Is that the best you can do???  CTRL!! Go on!",
+    D3DCOLOR_ARGB( 235, 255, 0, 0 ),
+    D3DCOLOR_ARGB( 235, 255, 255, 0 ),
+    padding ) ;
+
+  
 }
 
 
@@ -247,23 +253,21 @@ void Draw()
   else if( !window->isSlow() )
   {
     // Draw this center screen
-    /*
-    window->drawString( "Is that the best you can do???  CTRL!! Go on!",
-      0, 0, window->getWidth(), window->getHeight(),
-      Color::Blue,
-      DT_CENTER | DT_VCENTER ) ;
-    */
     window->drawSprite( 22, window->getWidth()/2, window->getHeight()/2 ) ;
   }
   else
   {
     // Draw this center screen
-    window->drawString( "OK now i'm struggling.\n"
+    window->drawString(
+      "OK now i'm struggling.\n"
       "Please take some away with SHIFT",
       0, 0, window->getWidth(), window->getHeight(),
       Color::Yellow,
       DT_CENTER | DT_VCENTER ) ;
   }
+
+
+  //window->drawSprite( 23, window->getWidth()/2, window->getHeight()/2, D3DCOLOR_ARGB( 128, 255, 255, 255 ) ) ;
   
   
   window->drawFrameCounter(); // erase this if you don't like
@@ -483,7 +487,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   // Setup a console
   consoleCreate() ;
   consoleWhite() ;
-  consoleMove( 0, 500 ) ;
+  consoleMove( 32, 500 ) ;
   consoleRowsAndCols( 10, 120 ) ;
 
   // Start up the log
@@ -497,7 +501,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
 
   // Setup the window
   window = new Window( hInstance, TEXT( "Window title" ),
-     0, 32, // x pos, y pos
+     32, 32, // x pos, y pos
      640, 480 // width, height
   ) ;
 
