@@ -52,6 +52,15 @@
 //  - primitives
 //  - link in .gif loading through GDI+
 
+//!! render a 4x4 pixel patch of a color using LockRect()
+// then blit that sprite out, stretching it using scale,
+// or you could even use a 1x1 pixel patch.  the antialiasing
+// settings might help make good antialais effects.
+// it should be easy to write a simple primitive blitter then,
+// if all that's missing from d3d is Ellipse and bezier splines.
+// opengl supports quadrics through the glu functions,
+// does direct3d?
+
 //!! improve the framerate by batching properly
 
 #include "GameObject.h"
@@ -94,13 +103,9 @@ void Init()
   //window->playSound( HumanMusic ) ;
   //window->playSound( TreeWhat ) ;
 
-  window->createPrimitiveSurface() ;
-
-  
   window->loadSprite( 1, "sprites/mario.png" ) ;
   window->loadSprite( 2, "sprites/16counter.png", 0, 32, 32, 16 ) ;
 
-  /*
   window->loadSprite( 3, "sprites/Astos.png" ) ;
   window->loadSprite( 4, "sprites/Eye.png" ) ;
   window->loadSprite( 5, "sprites/Garland.png" ) ;
@@ -110,8 +115,48 @@ void Init()
   window->loadSprite( 9, "sprites/Phantom.png" ) ;
   window->loadSprite( 10, "sprites/Pirate.png" ) ;
   window->loadSprite( 11, "sprites/Tiamat.png" ) ;
-  */
 
+
+  // Still like g?
+  GDIPlusTexture *tex = window->createGDISurface( 128, 128 ) ;
+
+  SolidBrush blueBrush( Color( 200, 0, 0, 255 ) ) ;
+
+  tex->g->FillEllipse( &blueBrush, 0, 0, 40, 40 ) ;
+  tex->g->FillEllipse( &blueBrush, 20, 20, 40, 40 ) ;
+
+  window->addSpriteFromGDIPlusTexture( 21, tex ) ;
+  
+  delete tex ;
+
+
+
+  SolidBrush redBrush( Color( 254, 255, 0,0 ) ) ;
+  PointF origin( 0, 0 ) ;
+  Font font( TEXT("Arial"), 24.0f, FontStyleBold ) ;
+
+  tex = window->createGDISurface( 400, 40 ) ;
+  /*
+  tex->g->DrawString(
+    TEXT( "Is that the best you can do???  CTRL!! Go on!" ),
+    -1, &font, origin, &redBrush ) ;
+    */
+  RECT r ;
+  SetRect( &r, 90, 8, 90, 8 ) ;
+  tex->boxedText(
+    TEXT("Is that the best you can do???  CTRL!! Go on!"),
+    &font,
+    r,
+    Color( 254, 255, 0, 0 ),
+    Color( 200, 0, 0, 255 ),
+    StringAlignmentCenter
+  ) ;
+  window->addSpriteFromGDIPlusTexture( 22, tex ) ;
+
+  delete tex ;
+
+
+  GDIPlusTexture::D3DXCreateTextureFromFileViaGDIPlus( NULL, NULL ) ;
 
 }
 
@@ -122,7 +167,11 @@ void Update()
 {
   // update the game, happens 60 times a second
   
-  
+  if( window->justPressed( VK_F5 ) )
+  {
+    // Open up the log file in baretail
+    system( "START baretail.exe lastRunLog.txt" ) ;
+  }
   if( window->justPressed( VK_SPACE ) )
   {
     warning( "JUMP!" ) ;
@@ -143,7 +192,7 @@ void Update()
     go.vy = randFloat() ;
     go.ax = randFloat( 10, 20 ) ;
     go.ay = randFloat( -10, 10 ) ;
-    go.spriteIndex = window->randomSpriteId() ;
+    go.spriteIndex = window->randomSpriteId( 21 ) ;
 
     gameObjects.push_back( go ) ;
   }
@@ -180,7 +229,7 @@ void Draw()
 
   
 
-  window->drawMouseCursor( 1000 ) ; // draw the mouse cursor with this sprite.
+  window->drawMouseCursor( 2 ) ; // draw the mouse cursor with this sprite.
   
   char buf[ 100 ];
   int numSprites = gameObjects.size();
@@ -198,10 +247,13 @@ void Draw()
   else if( !window->isSlow() )
   {
     // Draw this center screen
+    /*
     window->drawString( "Is that the best you can do???  CTRL!! Go on!",
       0, 0, window->getWidth(), window->getHeight(),
       Color::Blue,
       DT_CENTER | DT_VCENTER ) ;
+    */
+    window->drawSprite( 22, window->getWidth()/2, window->getHeight()/2 ) ;
   }
   else
   {

@@ -25,6 +25,7 @@
 #include <fmod.h>      // not working?  Did you install fmod!
 #include <fmod_errors.h>
 
+#include "GDIPlusTexture.h"
 #include "Timer.h"
 #include "helperFunctions.h"
 #include "D3DVertex.h"
@@ -138,8 +139,10 @@ private:
   bool d3dSupportsNonPowerOf2Textures() ;
 
 public:
-  Graphics* createPrimitiveSurface() ;
-
+  // Creates a surface you can draw to
+  // using GDI+
+  GDIPlusTexture* createGDISurface( int width, int height ) ;
+  void addSpriteFromGDIPlusTexture( int id, GDIPlusTexture* tex ) ;
   
 public:
   bool beginDrawing() ; // Call once per frame before drawing.
@@ -155,6 +158,8 @@ public:
   void drawString( char *str, float x, float y, float width, float height, D3DCOLOR color, DWORD formatOptions ) ;
   void drawSprite( int id, float x, float y, float width = SPRITE_READ_FROM_FILE, float height = SPRITE_READ_FROM_FILE ) ;
 
+  
+
   void loadSprite( int id, char *filename,
     D3DCOLOR backgroundColor = D3DCOLOR_ARGB( 0,0,0,0 ),
     int singleSpriteWidth = SPRITE_READ_FROM_FILE,
@@ -165,6 +170,7 @@ public:
   // Gets you a random sprite id from the map.
   // Useful for testing, not much else
   int randomSpriteId() ;
+  int randomSpriteId( int below ) ;
 
   void drawAxes() ;
 

@@ -16,6 +16,8 @@ void logStartup()
   logOutputsForConsole = LOG_ERROR | LOG_WARNING | LOG_INFO ;
   logOutputsForFile = LOG_ERROR | LOG_WARNING | LOG_INFO ;
   logOutputsForDebugStream = LOG_ERROR | LOG_WARNING ;
+
+  info( "Startup" ) ;
 }
 
 tm* CurrentTime()

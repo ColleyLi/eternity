@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GDIPlusTexture.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\helperFunctions.cpp"
 				>
 			</File>
@@ -210,11 +214,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GDIPlusTexture.h"
+				>
+			</File>
+			<File
 				RelativePath=".\helperFunctions.h"
 				>
 			</File>
 			<File
 				RelativePath=".\Sprite.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Text.h"
 				>
 			</File>
 			<File
