@@ -5,3 +5,6 @@
 + Feb 19 / 2010
   Added GDI+ rendering to textures with preservation of alpha channel
   This means you can now load .gif through GDI+ (but not through D3DX)
+
++ Feb 20 / 2010 v0.0.1-boxedText
+  This is a developmental branch where I'm trying to get boxedText to work.  Basically it should render to texture some text and lay a box behind it.  A bit like a dialog box.  See main.cpp for details.  Considering using a rendering toolkit like Qt, but that may be very heavy.  Another option was IWebBrowser2, instantiate an IE basically and use it to render text.  Probably not the best choice.
