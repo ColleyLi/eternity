@@ -11,3 +11,7 @@
 
 + Feb 20 / 2010 v0.0.1-boxedText-merge
   BoxedText now working, rendered in DirectX.  GDI+ boxed text was stripped out (GDIPlusTexture::boxedText()) because of difference in kerning in d3d vs GDI+, even for the same font with the same parameters -- the computed size was still different.
+
++ Feb 20 / 2010 v0.0.2-lib
+  Separated out code into a .lib file (for the engine core) and a "game" project, which uses the engine.
+  Did some work on drawBox(), this actually has the BAD VERSION of the drawBox() code (unnecessary use of a cached map here..), going to use modulating color instead on white tex.
