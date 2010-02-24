@@ -12,7 +12,7 @@ GDIPlusTexture::GDIPlusTexture( IDirect3DDevice9 *gpu, int width, int height, bo
   hr = D3DXCreateTexture( gpu,
     width, height,
     1, 0,
-    D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &tex ) ;
+    D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &tex ) ; // must be X8, since "alpha not clearly defined.."
   DX_CHECK( hr, "Create texture for GDI+ usage" ) ;
   
   // Get its surface
@@ -120,13 +120,34 @@ GDIPlusTexture::~GDIPlusTexture()
 }
 
 
-IDirect3DTexture9*
-GDIPlusTexture::D3DXCreateTextureFromFileViaGDIPlus(
-  IDirect3DDevice9 *gpu, TCHAR *filename
+GDIPlusTexture*
+GDIPlusTexture::CreateFromFile(
+  IDirect3DDevice9 *gpu, char *filename
 )
 {
-  puts( "OK" ) ;
+  // Load the image
+  Image *image ;
+#ifdef _UNICODE
+  WCHAR *wFilename = getUnicode( filename ) ;
 
-  return NULL ;
+  image = new Image( wFilename ) ;
+  if( image->GetLastStatus() != Status::Ok )
+  {
+    warning( "%s failed to load through GDI+", filename ) ;
+  }
+
+  delete[] wFilename  ;
+#else
+  image = new Image( filename ) ;
+#endif
+
+  // Create a surface the right size
+  GDIPlusTexture *gdiPlusTex = new GDIPlusTexture( gpu, image->GetWidth(), image->GetHeight(), false ) ;
+
+  // Draw the sprite into it
+  gdiPlusTex->g->DrawImage( image, 0, 0 ) ;
+
+  // now, just retrieve the IDirect3DTexture9 from it
+  return gdiPlusTex ;
 }
 

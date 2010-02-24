@@ -138,7 +138,7 @@ bool Window::initD3D()
   d3dpps.Windowed = true ;
   //d3dpps.BackBufferWidth =  ;  // these have already been set
   //d3dpps.BackBufferHeight =  ; // in Window() ctor
-  d3dpps.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE ; // FRAMERATE::UNBOUNDED  You need to
+  //d3dpps.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE ; // FRAMERATE::UNBOUNDED  You need to
   // uncomment this line to make the GPU flip over really really fast
 
   HRESULT hr = d3d->CreateDevice(
@@ -486,13 +486,13 @@ void Window::drawSprite( int id, float x, float y, float width, float height, fl
   //D3DXMatrixIdentity( &matrix ) ;
   D3DXMatrixTransformation2D( &matrix, NULL, 0, &vec2Scale, NULL, angle, &vec2Trans ) ;
 
+  //!! performance.  All this starting and stopping
+  // the sprite rendered is going to hurt performance.
+  // Really should batch these.
   id3dxSpriteRenderer->Begin( D3DXSPRITE_ALPHABLEND ) ;
   id3dxSpriteRenderer->SetTransform( &matrix ) ;
 
   RECT rect = sprite->getRect() ;
-  //!! Hack.  Problems wiht some sprites rarely,
-  // they come out to be.. LARGER than they should
-  // when loaded.  So using the RECT doesn't work.
   id3dxSpriteRenderer->Draw(
     
     sprite->getTexture(),
@@ -555,7 +555,7 @@ int Window::randomSpriteId( int below )
   int numSprites = sprites.size() ;
   if( numSprites < below )
   {
-    warning( "There aren't %d sprites", below ) ;
+    //warning( "There aren't %d sprites", below ) ;
     below = numSprites ; // better chance of
     // getting # below if use this lower range..
   }
@@ -1207,18 +1207,20 @@ void Window::step()
   }
 
   
-  //timer.lock( 60 ) ; // // ^^Leave as last line: YES, RECOMMENDED.  Use this line to LOCK FRAMERATE
+  timer.lock( 60 ) ; // // ^^Leave as last line: YES, RECOMMENDED.  Use this line to LOCK FRAMERATE
   // at 60 fps max.  This will "waste" any idle time at the end of
   // processing a frame.
   
-  timer.update();  // NOT RECOMMENDED.  Use this line to SIMPLY UPDATE
+  //timer.update();  // NOT RECOMMENDED.  Use this line to SIMPLY UPDATE
   // the frame counter WITHOUT frame limiting.
   
   // This mode lets the game run AS FAST AS IT POSSIBLY CAN
   // on this machine, and you might see frame rates of
   // 300fps or so.  This means your game will vary in
   // speed though depending on how much "stuff" is on
-  // the screen.  NOT RECOMMENDED.
+  // the screen.  NOT RECOMMENDED becuase your game will
+  // run at varying speeds on different machines.  also
+  // you will see tearing, which doesn't look very good.
   
   // NOTE:  YOU MUST ALSO FIND AND UNCOMMENT THE LINE
   // that says FRAMERATE::UNBOUNDED
@@ -1246,8 +1248,8 @@ void Window::drawMouseCursor(int id)
 
   RECT r ;
   getBoxDimensions( buf, r ) ;
-  drawBox( D3DCOLOR_ARGB( 32, 255, 255, 255 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top ) ;
-  drawString( buf, D3DCOLOR_ARGB( 255, 0, 0, 255 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
+  drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top ) ;
+  drawString( buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
 }
 
 // Show fps

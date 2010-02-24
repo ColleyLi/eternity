@@ -84,6 +84,10 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
                            int fundamentalFrequency1, int fundamentalFrequency2,
                            short amplitude1, short amplitude2 ) ;
 
+// Gets you a unicode copy of the string you pass it.
+// YOU ARE RESPONSIBLE FOR CALLING delete[] on the string returned!
+wchar_t* getUnicode( char* ascii ) ;
+
 void printRawKeyboard( RAWINPUT * raw ) ;
 void printRawMouse( RAWINPUT * raw ) ;
 

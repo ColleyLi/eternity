@@ -51,8 +51,8 @@ public:
   // So you can use this to load
   // .gif, .tiff, and .emf files while
   // the D3DX function cannot load them.
-  static IDirect3DTexture9* D3DXCreateTextureFromFileViaGDIPlus(
-    IDirect3DDevice9 *gpu, TCHAR *filename
+  static GDIPlusTexture* CreateFromFile(
+    IDirect3DDevice9 *gpu, char *filename
   ) ;
 
   ~GDIPlusTexture() ;

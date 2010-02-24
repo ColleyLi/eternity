@@ -242,6 +242,17 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
   }
 }
 
+wchar_t* getUnicode( char* ascii )
+{
+  int len = strlen( ascii ) ;
+  WCHAR * wstr = new WCHAR[ len+1 ] ;
+
+  MultiByteToWideChar( CP_ACP, 0, ascii, len, wstr, len ) ;
+  wstr[ len ] = 0 ; // add null terminator
+
+  return wstr ;
+}
+
 void printRawKeyboard( RAWINPUT * raw )
 {
   printf("Kbd: "

@@ -98,10 +98,14 @@ public:
     // are based on singleSpriteWidth
     // and singleSpriteHeight,
     // but it will assume every cell is used
-    float timeBetweenFrames = 0.51f
+    float timeBetweenFrames = 0.5f
   )
   {
     originalFilename = filename ;
+    if( !filename )
+    {
+      bail( "NULL filename received in sprite load" ) ;
+    }
 
     // initialize internal clock and animation parameters
     n = 0 ;
@@ -140,87 +144,11 @@ public:
 
 
 
-
     HRESULT hr ;
 
-    // If the filename was NULL, its a signal to generate
-    // the default texture
-    if( !filename )
-    {
-      hr = D3DXCreateTexture( gpu, 16, 16, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &spritesheet ) ;
-      DX_CHECK( hr, "create texture from scratch" ) ;
-
-      // Query the info out
-      D3DSURFACE_DESC desc ;
-      spritesheet->GetLevelDesc( 0, &desc ) ;
-      imageInfo.Height = desc.Height ;
-      imageInfo.Width = desc.Width ;
-      
-      imageInfo.Depth = 32 ;
-      imageInfo.Format = desc.Format ;
-      imageInfo.MipLevels = spritesheet->GetLevelCount() ;
-      
-
-
-      D3DLOCKED_RECT lockedRect ;
-      if( DX_CHECK( spritesheet->LockRect( 0, &lockedRect, NULL, 0 ), "Lock rect, texture gen" ) )
-      {
-        this->numFrames = 4 ;
-        this->secondsPerFrame = 0.5f ;
-        this->n = 0 ;
-        this->internalClock = 0 ;
-        this->spriteHeight = 8 ;
-        this->spriteWidth = 8 ;
-        
-        unsigned int *data = new unsigned int[ 16*16 ] ;
-        int squareNo = 0 ;
-
-        // Cover the first 8x8 square in white
-        for( int i = squareNo*8*8 ; i < (squareNo+1)*8*8 ; i++ )
-          data[ i ] = D3DCOLOR_ARGB( 255, 255, 255, 255 ) ;
-        squareNo++ ;
-
-        // Cover the next 8x8 square in blue
-        for( int i = squareNo*8*8 ; i < (squareNo+1)*8*8 ; i++ )
-          data[ i ] = D3DCOLOR_ARGB( 255, 0, 0, 255 ) ;
-        squareNo++ ;
-
-        // Cover the next 8x8 square in white
-        for( int i = squareNo*8*8 ; i < (squareNo+1)*8*8 ; i++ )
-          data[ i ] = D3DCOLOR_ARGB( 255, 0, 0, 255 ) ;
-        squareNo++ ;
-
-        // Cover the next 8x8 square in black
-        for( int i = squareNo*8*8 ; i < (squareNo+1)*8*8 ; i++ )
-          data[ i ] = D3DCOLOR_ARGB( 255, 0, 0, 0 ) ;
-
-        lockedRect.pBits = data ;
-
-        DX_CHECK( spritesheet->UnlockRect( 0 ), "Unlock rect, texture gen" ) ;
-
-        free( data ) ;
-
-        info( "Texture generated successfully" ) ;
-      }
-      else
-      {
-        error( "'Default' texture generation failed" ) ;
-      }
-      
-
-      // skip the rest of the function
-      return ;
-    }
-    
-    
-    
     // Here, we're loading from a file like normal
     hr = loadTexturePow2( gpu, filename, backgroundColor ) ;
 
-    /////!!!!!!!!!!!!!!!!
-
-    //!!! TO AVOID THE PROBLEM USE D3DXGetImageInfoFromFileA()!!!!!
-    
     if( DX_CHECK( hr, "Texture load" ) )
     {
       // If these are still SPRITE_READ_FROM_FILE,
@@ -278,18 +206,37 @@ public:
     }
     else
     {
-      error( "Your texture %s has FAILED TO LOAD, does the file exist?  "
-        "Supported file formats: .bmp, .dds, .dib, .hdr, .jpg, .pfm, .png, .ppm, and .tga. "
-        "Notice .GIF IS NOT SUPPORTED. "
-        "Don't blame me, blame Microsoft. "
-        "Loading placeholder texture instead, for now.", filename ) ;
+      warning( "Texture %s didn't load using D3DX function, trying GDI+ function..", originalFilename ) ;
 
-      // !! load it through GDI+
-      // GIF2PNG (http://gnuwin32.sourceforge.net/packages/pngutils.htm)
-      // for easy batch conversion of .gif to .png, even extracts
-      // frames of an animated gif
-  
-      bail( "A texture failed to load" ) ;
+      GDIPlusTexture * gdiPlusTex = GDIPlusTexture::CreateFromFile( gpu, filename ) ;
+      
+      // haxx
+      spriteWidth = imageInfo.Width = gdiPlusTex->getWidth() ;
+      spriteHeight = imageInfo.Height = gdiPlusTex->getHeight() ;
+
+      
+
+      numFrames = 1 ;
+      secondsPerFrame = SPRITE_INFINITY_LONG ; // no animation
+
+      spritesheet = gdiPlusTex->getTexture() ;
+
+      delete gdiPlusTex ;
+
+      if( !spritesheet )
+      {
+        // Not extracting frames of an animated gif here,
+        // but GIF2PNG (http://gnuwin32.sourceforge.net/packages/pngutils.htm)
+        // for easy batch conversion of .gif to .png, even extracts
+        // frames of an animated gif
+        error( "Your texture %s has FAILED TO LOAD, does the file exist?  "
+          "Supported file formats, d3d: .bmp, .dds, .dib, .hdr, .jpg, .pfm, .png, .ppm, and .tga. "
+          "Supported file formats, gdi+: BMP, GIF, JPEG, PNG, TIFF, and EMF. "
+          "Don't blame me, blame Microsoft. "
+          "Loading placeholder texture instead, for now.", filename ) ;
+
+        bail( "A texture failed to load" ) ;
+      }
     }
   }
 

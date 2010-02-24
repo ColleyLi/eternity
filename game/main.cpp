@@ -1,58 +1,49 @@
 #include "../eternity/eternity.h"
+/*
 
+      ___         ___           ___           ___           ___                     ___         ___     
+     /\  \       /\  \         /\  \         /\  \         /\__\          ___      /\  \       |\__\    
+    /::\  \      \:\  \       /::\  \       /::\  \       /::|  |        /\  \     \:\  \      |:|  |   
+   /:/\:\  \      \:\  \     /:/\:\  \     /:/\:\  \     /:|:|  |        \:\  \     \:\  \     |:|  |   
+  /::\~\:\  \     /::\  \   /::\~\:\  \   /::\~\:\  \   /:/|:|  |__      /::\__\    /::\  \    |:|__|__ 
+ /:/\:\ \:\__\   /:/\:\__\ /:/\:\ \:\__\ /:/\:\ \:\__\ /:/ |:| /\__\  __/:/\/__/   /:/\:\__\   /::::\__\
+ \:\~\:\ \/__/  /:/  \/__/ \:\~\:\ \/__/ \/_|::\/:/  / \/__|:|/:/  / /\/:/  /     /:/  \/__/  /:/~~/~   
+  \:\ \:\__\   /:/  /       \:\ \:\__\      |:|::/  /      |:/:/  /  \::/__/     /:/  /      /:/  /     
+   \:\ \/__/   \/__/         \:\ \/__/      |:|\/__/       |::/  /    \:\__\     \/__/       \/__/      
+    \:\__\                    \:\__\        |:|  |         /:/  /      \/__/    
+     \/__/                     \/__/         \|__|         \/__/                                           
+
+
+*/
+//
+// ascii text by http://www.network-science.de/ascii
+//
 // REQUIRES:  DIRECTX
 //            FMOD
 
-#pragma region comments
-// Restructure inheritance:
-// GameWindow : Direct3DWindow : BasicWindow
-// Need an object for a SpriteManager (spriteMan)
-//   (he records drawSprite calls)..
-//    its functions are callable through GameWindow though
-//    (gameWindow.drawSprite(x,y,z))
-
-// For drawText, it should accept a va_list..
-// and it should have state parameters.
-
-// Perhaps using state parameters for all drawing ins't
-// such a bad idea after all
-
-// window->setPos( x, y ) ;
-// window->drawSprite( 1 ) ; // uses its default width/height
-
-// Need an object for 
-
-// A change
-//!!SPRITE COMMAND
-// SEARCH FOR ALL !!
-
-//!! TODO:
-//!! add gdi+ render to texture support
-//  - primitives
-//  - link in .gif loading through GDI+
-
-//!! render a 4x4 pixel patch of a color using LockRect()
-// then blit that sprite out, stretching it using scale,
-// or you could even use a 1x1 pixel patch.  the antialiasing
-// settings might help make good antialais effects.
-// it should be easy to write a simple primitive blitter then,
-// if all that's missing from d3d is Ellipse and bezier splines.
-// opengl supports quadrics through the glu functions,
-// does direct3d?
-
-#pragma endregion
-
-//!! improve the framerate by batching properly
 #include "GameObject.h"
-vector<GameObject> gameObjects ;
+vector<GameObject> gameObjects ; // a vector of game objects
 
+Window *window ;  // the main window object
 
-
-Window *window ;
-
-#define VIRTUAL_SECOND 0.016666666667f
-
-int playerXPos, playerYPos ;
+enum Sprites
+{
+  Mario = 1,
+  SixteenCounter,
+  Astos,
+  Eye,
+  Garland,
+  Kary,
+  Kraken,
+  Lich,
+  Phantom,
+  Pirate,
+  Chaos,
+  BoxedTextTest,
+  GDIPlusTextureTest,
+  MessagePressCtrlTaunt,
+  MessageStruggling
+} ;
 
 enum Sounds
 {
@@ -76,100 +67,61 @@ void Init()
   window->playSound( HumanMusic ) ;
   window->playSound( TreeWhat ) ;
 
-  window->loadSprite( 1, "sprites/mario.png" ) ;
-  window->loadSprite( 2, "sprites/16counter.png", 0, 32, 32, 16 ) ;
+  // sprite loading
+  window->loadSprite( Mario, "sprites/mario.png" ) ;
+  window->loadSprite( SixteenCounter, "sprites/16counter.png", 0, 32, 32, 16 ) ;
+  window->loadSprite( Astos, "sprites/Astos.png" ) ;
+  window->loadSprite( Eye, "sprites/Eye.png" ) ;
+  window->loadSprite( Garland, "sprites/Garland.png" ) ;
+  window->loadSprite( Kary, "sprites/Kary.png" ) ;
+  window->loadSprite( Kraken, "sprites/Kraken.png" ) ;
+  window->loadSprite( Lich, "sprites/Lich.png" ) ;
+  window->loadSprite( Phantom, "sprites/Phantom.png" ) ;
+  window->loadSprite( Pirate, "sprites/Pirate.png" ) ;
+  window->loadSprite( Chaos, "sprites/Chaos.gif" ) ;
 
-  window->loadSprite( 3, "sprites/Astos.png" ) ;
-  window->loadSprite( 4, "sprites/Eye.png" ) ;
-  window->loadSprite( 5, "sprites/Garland.png" ) ;
-  window->loadSprite( 6, "sprites/Kary.png" ) ;
-  window->loadSprite( 7, "sprites/Kraken.png" ) ;
-  window->loadSprite( 8, "sprites/Lich.png" ) ;
-  window->loadSprite( 9, "sprites/Phantom.png" ) ;
-  window->loadSprite( 10, "sprites/Pirate.png" ) ;
-  window->loadSprite( 11, "sprites/Tiamat.png" ) ;
-
- 
-  window->boxedTextSprite( 
-    13, "Yo! 15",
-    D3DCOLOR_ARGB( 255, 255, 0, 0 ),
-    D3DCOLOR_ARGB( 200, 129, 47, 0 ),
-    15 ) ;
-
-  window->boxedTextSprite( 
-    14, "Yo! 20",
-    D3DCOLOR_ARGB( 255, 255, 0, 0 ),
-    D3DCOLOR_ARGB( 122, 255, 255, 255 ),
-    20 ) ;
-
-  // Still like g?
-  GDIPlusTexture *gdiTex = window->createGDISurface( 128, 128 ) ;
-
-  SolidBrush blueBrush( Color( 200, 0, 0, 255 ) ) ;
-
-  gdiTex->g->FillEllipse( &blueBrush, 0, 0, 40, 40 ) ;
-  gdiTex->g->FillEllipse( &blueBrush, 20, 20, 40, 40 ) ;
-
-  window->addSpriteFromGDIPlusTexture( 21, gdiTex ) ;
+  // Create boxed text as a sprite.  If you do this
+  // to your text before hand, it may run faster than if you
+  // simply running drawBox() and drawString() every call.
+  window->boxedTextSprite( BoxedTextTest,
+    "Some boxed text",
+    D3DCOLOR_ARGB( 255, 255, 0, 0 ), // fg color
+    D3DCOLOR_ARGB( 200, 129, 47, 0 ),// bg color
+    15  // "padding" around the edges of the text,
+    // try increasing / reducing this value to see
+    // the way it looks
+  ) ;
   
-  delete gdiTex ;
+  // You can have different padding on all the edges as well.
+  RECT padding = { 35,12,35,12 } ; // left, top, bottom, left.
+  padding.right = 12 ; // can also assign this way.
 
-  
-
-
-  // !! fix this
-  GDIPlusTexture::D3DXCreateTextureFromFileViaGDIPlus( NULL, NULL ) ;
-
-  
-  RECT padding = { 35,12,35,12 } ;
-  window->boxedTextSprite( 
-    22, "Is that the best you can do???  CTRL!! Go on!",
+  // Create a sprite with this text in it..
+  // referenced by the MessagePressCtrlTaunt,
+  // enum'd value (which is really just an int)
+  window->boxedTextSprite( MessagePressCtrlTaunt,
+    "Is that the best you can do???  CTRL!! Go on!",
     D3DCOLOR_ARGB( 235, 255, 0, 0 ),
     D3DCOLOR_ARGB( 235, 255, 255, 0 ),
     padding ) ;
 
+  // Final message, shown when frame rate
+  // starts to drop.
   window->boxedTextSprite( 
-    23, "OK now i'm struggling.\n"
+    MessageStruggling, "OK now i'm struggling.\n"
         "Please take some away with SHIFT",
     D3DCOLOR_ARGB( 255, 255, 255, 0 ),
     D3DCOLOR_ARGB( 235, 0, 0, 128 ),
     padding ) ;
 
-  window->boxedTextSprite( 
-    24, "0000 sprites",
-    D3DCOLOR_ARGB( 0, 0, 0, 0 ), // invisible text
-    D3DCOLOR_ARGB( 235, 128, 0, 0 ), // block fitted to fit 4 digits + " sprites" though
-    padding ) ;
-
-
-
-  
 }
-
-
-
 
 void Update()
 {
   // update the game, happens 60 times a second
-  
-  if( window->justPressed( VK_F5 ) )
-  {
-    // Open up the log file in baretail
-    system( "START baretail.exe lastRunLog.txt" ) ;
-  }
-  if( window->justPressed( VK_SPACE ) )
-  {
-    warning( "JUMP!" ) ;
-
-    for( int i = 0 ; i < gameObjects.size(); i++ )
-    {
-      gameObjects[i].spriteIndex ++ ;
-    }
-  }
   if( window->isPressed( VK_CONTROL ) )
   {
-    info( "adding a new guy!" ) ;
+    //info( "adding a new guy!" ) ;
 
     GameObject go ;
     go.x = rand() % window->getWidth() ;
@@ -178,7 +130,7 @@ void Update()
     go.vy = randFloat() ;
     go.ax = randFloat( 10, 20 ) ;
     go.ay = randFloat( -10, 10 ) ;
-    go.spriteIndex = window->randomSpriteId( 21 ) ;
+    go.spriteIndex = window->randomSpriteId( 10 ) ;
 
     gameObjects.push_back( go ) ;
   }
@@ -188,9 +140,11 @@ void Update()
     if( !gameObjects.empty() )
       gameObjects.pop_back() ;
   }
-  
-
-  
+  if( window->justPressed( VK_F5 ) )
+  {
+    // F5 opens up the log file in baretail
+    system( "START baretail.exe lastRunLog.txt" ) ;
+  }
   
   window->step() ; // ^^ update fmod engine, grab updated keystates, etc.  LEAVE AS LAST LINE.
 }
@@ -206,40 +160,36 @@ void Draw()
       gameObjects[i].spriteIndex,
       gameObjects[i].x, gameObjects[i].y ) ;
   }
-  
-
 
   // Print # sprites.
-  char buf[ 100 ];
+  char buf[ 100 ];  //!!
   int numSprites = gameObjects.size();
   sprintf( buf, "%d sprites", numSprites ) ;
   window->drawBox( D3DCOLOR_ARGB( 235, 255, 0, 0 ), 10, 10, 100, 30 ) ;
   window->drawString( buf, Color::Yellow, 20, 6, 80, 40, DT_CENTER | DT_VCENTER | DT_NOCLIP ) ;
 
 
-
   // Print response message
   if( numSprites == 0 )
   {
-    // Draw this center screen
     window->drawString( "Hold CTRL down!  Go on!",
-      0, 0, window->getWidth(), window->getHeight(),
-      Color::Blue,
-      DT_CENTER | DT_VCENTER ) ;
+      D3DCOLOR_ARGB( 255, 255, 255, 255 ) ,
+      0, 0, window->getWidth(), window->getHeight() ) ;   // Draw this center screen
+    // (using a box that starts in top left corner,
+    // goes down to bottom right corner)
   }
   else if( !window->isSlow() )
   {
     // Draw this center screen
-    window->drawSprite( 22, window->getWidth()/2, window->getHeight()/2 ) ;
+    window->drawSprite( Sprites::MessagePressCtrlTaunt, window->getWidth()/2, window->getHeight()/2 ) ;
   }
   else
   {
     // Draw this center screen
-    window->drawSprite( 23, window->getWidth()/2, window->getHeight()/2 ) ;
-
+    window->drawSprite( Sprites::MessageStruggling, window->getWidth()/2, window->getHeight()/2 ) ;
   }
 
-  window->drawMouseCursor( 1 ) ; // draw the mouse cursor with this sprite.
+  window->drawMouseCursor( Sprites::Chaos ) ; // draw the mouse cursor with this sprite.
 
   window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
@@ -420,13 +370,14 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   consoleMove( 32, 500 ) ;
   consoleRowsAndCols( 10, 120 ) ;
 
-  // Start up the log
-  logOutputsForConsole = LOG_ERROR | LOG_WARNING ;  // See ERROR and WARNING messages at Console. Suppress 'info()' messages.
-  logOutputsForFile = LOG_ERROR | LOG_WARNING | LOG_INFO ; // See all types of messages in file
-  logOutputsForDebugStream = LOG_ERROR | LOG_WARNING | LOG_INFO ; // See all kinds of ERROR and WARNING and INFO at debugstream
-
+  // Start up the log.
   logStartup() ;
   
+  // Put these after log start up, b/c start up inits them with some init values
+  logOutputsForConsole = LOG_ERROR | LOG_WARNING | LOG_INFO ;  // See ERROR and WARNING messages at Console.
+  logOutputsForFile = LOG_ERROR | LOG_WARNING | LOG_INFO ; // See all types of messages in file
+  logOutputsForDebugStream = LOG_ERROR | LOG_WARNING ; // See all ERROR and WARNING messages at debugstream. Suppress 'info()' messages.
+
 
   // Start up GDI+, which we use to draw
   // For GDI+, used only for shape render

@@ -7,17 +7,63 @@
   This means you can now load .gif through GDI+ (but not through D3DX)
 
 + Feb 20 / 2010 v0.0.1-boxedText
-  This is a developmental branch where I'm trying to get boxedText to work.  Basically it should render to texture some text and lay a box behind it.  A bit like a dialog box.  See main.cpp for details.  Considering using a rendering toolkit like Qt, but that may be very heavy.  Another option was IWebBrowser2, instantiate an IE basically and use it to render text.  Probably not the best choice.
+  This is a developmental branch where I'm trying to get boxedText to work.
+  Basically it should render to texture some text and lay a box behind it.
+  A bit like a dialog box.  See main.cpp for details.  Considering using
+  a rendering toolkit like Qt, but that may be very heavy.  Another option
+  was IWebBrowser2, instantiate an IE basically and use it to render text.
+  Probably not the best choice.
 
 + Feb 20 / 2010 v0.0.1-boxedText-merge
-  BoxedText now working, rendered in DirectX.  GDI+ boxed text was stripped out (GDIPlusTexture::boxedText()) because of difference in kerning in d3d vs GDI+, even for the same font with the same parameters -- the computed size was still different.
+  BoxedText now working, rendered in DirectX.  GDI+ boxed text was
+  stripped out (GDIPlusTexture::boxedText()) because of difference
+  in kerning in d3d vs GDI+, even for the same font with the same
+  parameters -- the computed size was still different.
 
-+ Feb 20 / 2010 v0.0.2-lib
-  Separated out code into a .lib file (for the engine core) and a "game" project, which uses the engine.
++ Feb 21 / 2010 v0.0.2-lib
+  Separated out code into a .lib file (for the engine core) and a
+  "game" project, which uses the engine.
   
-+ Feb 20 / 2010 v0.0.2-lib
-  Window::drawBox().  Initially was bad version of the drawBox() (unnecessary use of a cached map), but that actually got lost due to misuse of git reset function.. shall remain unnamed.  Going to use modulating color instead on white tex, that's this version anyway.
++ Feb 21 / 2010 v0.0.2-lib
+  Window::drawBox().  Initially was bad version of the drawBox()
+  (unnecessary use of a cached map), but that actually got lost
+  due to misuse of git reset function.. shall remain unnamed.
+  Going to use modulating color instead on white tex, that's
+  this version anyway.
+  
   * Sprite scaling fixed to allow rotation.
-  USE:  vec2Scale, rotation, vec2Trans, vec3Center
-  DO NOT USE:  vec2ScalingCenter, scalingRotation, vecRotCenter, vec3Pos
+    USE:  vec2Scale, rotation, vec2Trans, vec3Center
+    DO NOT USE:  vec2ScalingCenter, scalingRotation, vecRotCenter, vec3Pos
+
++ Feb 21 / 2010 v0.0.3-uoit-gdw
+  A branch of the code to publish for week 6 of gdw.
+  Basically it should contain only the MOST BASIC,
+  STRIPPED DOWN FUNCTIONS that maximize __ABILITY__ TO DO THINGS,
+  NOT NECESSARILY FLEXIBILITY.
+  - I will also break some of the overload groups of functions
+    into functions that aren't overloads of each other..
+
++ Feb 23 / 2010 v0.0.3-uoit-gdw
+  Pre-release alpha.  Here are notes from main.cpp
+  that haven't been completed yet.
   
+  Restructure inheritance:
+  GameWindow : Direct3DWindow : BasicWindow
+  Need an object for a SpriteManager (spriteMan)
+    (he records drawSprite calls)..
+    its functions are callable through GameWindow though
+    (gameWindow.drawSprite(x,y,z))
+
+  For drawText, it should accept a va_list..
+  and it should have state parameters.
+  
+  Perhaps using state parameters for all drawing ins't
+  such a bad idea after all
+
+  window->setPos( x, y ) ;
+  window->drawSprite( 1 ) ; // uses its default width/height
+
+  opengl supports quadrics through the glu functions,
+  does direct3d?
+
+  improve the framerate by batching properly
