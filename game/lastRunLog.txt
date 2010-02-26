@@ -1,44 +1,44 @@
-[ info ][ 20:45:10 ]:  Startup
-[ info ][ 20:45:10 ]:  perf counter resolution=2935166 ticks/second
-[ info ][ 20:45:10 ]:  Program start @ time=11382744376
-[ info ][ 20:45:10 ]:  Welcome back!
-[ info ][ 20:45:10 ]:  Starting up Direct3D...
-[ info ][ 20:45:10 ]:  Direct3D9 device created successfully
-[ info ][ 20:45:10 ]:  Direct3D9 GPU device creation successful
-[ info ][ 20:45:10 ]:  Artifically created sprite w=16 h=16
-[ info ][ 20:45:10 ]:  Artifically created sprite w=1 h=1
-[ info ][ 20:45:10 ]:  Starting up rawinput devices...
-[ info ][ 20:45:10 ]:  Turning off the mouse cursor...
-[ info ][ 20:45:10 ]:  locked 16000, 0 bytes
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/mario.png' loaded, width=32, height=32, numFrames=1
-[ info ][ 20:45:10 ]:  'sprites/16counter.png' loaded, width=128, height=128, numFrames=16
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Astos.png' loaded, width=66, height=66, numFrames=1
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Eye.png' loaded, width=96, height=96, numFrames=1
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Garland.png' loaded, width=66, height=68, numFrames=1
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Kary.png' loaded, width=118, height=130, numFrames=1
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Kraken.png' loaded, width=124, height=130, numFrames=1
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Lich.png' loaded, width=100, height=130, numFrames=1
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Phantom.png' loaded, width=96, height=96, numFrames=1
-[ info ][ 20:45:10 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
-[ info ][ 20:45:10 ]:  'sprites/Pirate.png' loaded, width=66, height=66, numFrames=1
-[ error ][ 20:45:10 ]:  Texture load. D3DXERR_INVALIDDATA:  Invalid data
-[ warning ][ 20:45:10 ]:  Texture sprites/Chaos.gif didn't load using D3DX function, trying GDI+ function..
-[ info ][ 20:45:10 ]:  computed rect 0 0 18 119, height 18
-[ info ][ 20:45:10 ]:  Artifically created sprite w=149 h=48
-[ info ][ 20:45:10 ]:  Successfully created your boxed text sprite, id=12
-[ info ][ 20:45:10 ]:  computed rect 0 0 18 320, height 18
-[ info ][ 20:45:10 ]:  Artifically created sprite w=367 h=42
-[ info ][ 20:45:10 ]:  Successfully created your boxed text sprite, id=14
-[ info ][ 20:45:10 ]:  computed rect 0 0 36 243, height 36
-[ info ][ 20:45:10 ]:  Artifically created sprite w=290 h=60
-[ info ][ 20:45:10 ]:  Successfully created your boxed text sprite, id=15
-[ info ][ 20:45:18 ]:  Game over!
+[ info ][ 09:03:42 ]:  Startup
+[ info ][ 09:03:42 ]:  perf counter resolution=2935146 ticks/second
+[ info ][ 09:03:42 ]:  Program start @ time=6060761257
+[ info ][ 09:03:42 ]:  Welcome back!
+[ info ][ 09:03:42 ]:  Starting up Direct3D...
+[ info ][ 09:03:42 ]:  Direct3D9 device created successfully
+[ info ][ 09:03:42 ]:  Direct3D9 GPU device creation successful
+[ info ][ 09:03:42 ]:  Artifically created sprite w=16 h=16
+[ info ][ 09:03:42 ]:  Artifically created sprite w=1 h=1
+[ info ][ 09:03:42 ]:  Starting up rawinput devices...
+[ info ][ 09:03:42 ]:  Turning off the mouse cursor...
+[ info ][ 09:03:42 ]:  locked 16000, 0 bytes
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/mario.png' loaded, width=32, height=32, numFrames=1
+[ info ][ 09:03:42 ]:  'sprites/16counter.png' loaded, width=128, height=128, numFrames=16
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Astos.png' loaded, width=66, height=66, numFrames=1
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Eye.png' loaded, width=96, height=96, numFrames=1
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Garland.png' loaded, width=66, height=68, numFrames=1
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Kary.png' loaded, width=118, height=130, numFrames=1
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Kraken.png' loaded, width=124, height=130, numFrames=1
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Lich.png' loaded, width=100, height=130, numFrames=1
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Phantom.png' loaded, width=96, height=96, numFrames=1
+[ info ][ 09:03:42 ]:  Defaulted to 1 frames.  Note I'm not checking for empty frames.
+[ info ][ 09:03:42 ]:  'sprites/Pirate.png' loaded, width=66, height=66, numFrames=1
+[ error ][ 09:03:42 ]:  Texture load. D3DXERR_INVALIDDATA:  Invalid data
+[ warning ][ 09:03:42 ]:  Texture sprites/Chaos.gif didn't load using D3DX function, trying GDI+ function..
+[ info ][ 09:03:42 ]:  computed rect 0 0 18 119, height 18
+[ info ][ 09:03:42 ]:  Artifically created sprite w=149 h=48
+[ info ][ 09:03:42 ]:  Successfully created your boxed text sprite, id=12
+[ info ][ 09:03:42 ]:  computed rect 0 0 18 320, height 18
+[ info ][ 09:03:42 ]:  Artifically created sprite w=367 h=42
+[ info ][ 09:03:42 ]:  Successfully created your boxed text sprite, id=14
+[ info ][ 09:03:42 ]:  computed rect 0 0 36 243, height 36
+[ info ][ 09:03:42 ]:  Artifically created sprite w=290 h=60
+[ info ][ 09:03:42 ]:  Successfully created your boxed text sprite, id=15
+[ info ][ 09:03:45 ]:  Game over!
 -- end

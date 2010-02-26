@@ -69,7 +69,7 @@ void Init()
 
   // sprite loading
   window->loadSprite( Mario, "sprites/mario.png" ) ;
-  window->loadSprite( SixteenCounter, "sprites/16counter.png", 0, 32, 32, 16 ) ;
+  window->loadSprite( SixteenCounter, "sprites/16counter.png", 0, 32, 32, 16, 0.1f ) ;
   window->loadSprite( Astos, "sprites/Astos.png" ) ;
   window->loadSprite( Eye, "sprites/Eye.png" ) ;
   window->loadSprite( Garland, "sprites/Garland.png" ) ;

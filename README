@@ -46,7 +46,8 @@
 + Feb 23 / 2010 v0.0.3-uoit-gdw
   Pre-release alpha.  Here are notes from main.cpp
   that haven't been completed yet.
-  
+
+
   Restructure inheritance:
   GameWindow : Direct3DWindow : BasicWindow
   Need an object for a SpriteManager (spriteMan)
@@ -55,15 +56,17 @@
     (gameWindow.drawSprite(x,y,z))
 
   For drawText, it should accept a va_list..
-  and it should have state parameters.
   
-  Perhaps using state parameters for all drawing ins't
-  such a bad idea after all
+  State parameters?  Perhaps using state parameters
+  for all drawing isn't such a bad idea after all
+    window->setPos( x, y ) ;
+    window->drawSprite( 1 ) ; // uses its default width/height, draws
+    // at last setPos'd position.
+    
+  - OpenGL supports quadrics through the GLU* functions,
+  does Direct3d?
 
-  window->setPos( x, y ) ;
-  window->drawSprite( 1 ) ; // uses its default width/height
+  - Improve the framerate by batching properly
 
-  opengl supports quadrics through the glu functions,
-  does direct3d?
-
-  improve the framerate by batching properly
+  - http://stackoverflow.com/questions/84556/whats-your-favorite-programmer-cartoon#answer-84609 
+  
