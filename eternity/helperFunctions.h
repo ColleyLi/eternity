@@ -54,7 +54,7 @@ void logShutdown() ;
 
 // Print an error message and quit the program.
 // Calls logShutdown() before exiting.
-void bail( char *msg ) ;
+void bail( char *msg, bool openLog=false ) ;
 
 void FMOD_ErrorCheck( FMOD_RESULT result ) ;
 

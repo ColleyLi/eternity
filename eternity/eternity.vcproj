@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\Build"
+			IntermediateDirectory="$(SolutionDir)\Build"
 			ConfigurationType="4"
 			CharacterSet="1"
 			>
@@ -208,6 +208,10 @@
 			</File>
 			<File
 				RelativePath=".\helperFunctions.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Mouse.h"
 				>
 			</File>
 			<File

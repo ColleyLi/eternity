@@ -21,6 +21,10 @@
 // REQUIRES:  DIRECTX
 //            FMOD
 
+
+// VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
+// Your code starts below this line.
+
 #include "GameObject.h"
 vector<GameObject> gameObjects ; // a vector of game objects
 
@@ -57,19 +61,26 @@ enum Sounds
 void Init()
 {
   // Load sounds
+  #pragma region load up sounds
   window->loadSound( HumanMusic, "sounds/Human1.mp3", FMOD_CREATESTREAM ) ;
-
   window->loadSound( TreeWhat, "sounds/What2.wav" ) ;
+
   window->loadSound( ColdArrow1, "sounds/ColdArrow1.wav" ) ;
   window->loadSound( ColdArrow2, "sounds/ColdArrow2.wav" ) ;
   window->loadSound( ColdArrow3, "sounds/ColdArrow3.wav" ) ;
-
-  window->playSound( HumanMusic ) ;
+  
   window->playSound( TreeWhat ) ;
+  //window->playSound( HumanMusic ) ;
+  #pragma endregion
 
   // sprite loading
+  #pragma region load up sprites
   window->loadSprite( Mario, "sprites/mario.png" ) ;
-  window->loadSprite( SixteenCounter, "sprites/16counter.png", 0, 32, 32, 16, 0.1f ) ;
+
+  // Animated sprite
+  window->loadSprite( SixteenCounter, "sprites/16counter.png", 0, 32, 32, 16, 0.5f ) ;
+
+  // other sprites
   window->loadSprite( Astos, "sprites/Astos.png" ) ;
   window->loadSprite( Eye, "sprites/Eye.png" ) ;
   window->loadSprite( Garland, "sprites/Garland.png" ) ;
@@ -79,7 +90,9 @@ void Init()
   window->loadSprite( Phantom, "sprites/Phantom.png" ) ;
   window->loadSprite( Pirate, "sprites/Pirate.png" ) ;
   window->loadSprite( Chaos, "sprites/Chaos.gif" ) ;
+  #pragma endregion
 
+  #pragma region create boxed text sprites
   // Create boxed text as a sprite.  If you do this
   // to your text before hand, it may run faster than if you
   // simply running drawBox() and drawString() every call.
@@ -91,6 +104,7 @@ void Init()
     // try increasing / reducing this value to see
     // the way it looks
   ) ;
+  
   
   // You can have different padding on all the edges as well.
   RECT padding = { 35,12,35,12 } ; // left, top, bottom, left.
@@ -113,40 +127,40 @@ void Init()
     D3DCOLOR_ARGB( 255, 255, 255, 0 ),
     D3DCOLOR_ARGB( 235, 0, 0, 128 ),
     padding ) ;
+  #pragma endregion
 
 }
 
 void Update()
 {
   // update the game, happens 60 times a second
-  if( window->isPressed( VK_CONTROL ) )
-  {
-    //info( "adding a new guy!" ) ;
 
-    GameObject go ;
-    go.x = rand() % window->getWidth() ;
-    go.y = rand() % window->getHeight() ;
-    go.vx = randFloat( 3, 5 ) ;
-    go.vy = randFloat() ;
-    go.ax = randFloat( 10, 20 ) ;
-    go.ay = randFloat( -10, 10 ) ;
-    go.spriteIndex = window->randomSpriteId( 10 ) ;
+  // Key presses
+  if( window->keyJustPressed( VK_ESCAPE ) )
+  {
+    bail( "game ended!" ) ;
+  }
+  if( window->mouseJustPressed( Mouse::Left )  )
+  {
+    info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
 
-    gameObjects.push_back( go ) ;
+    window->playSound( Sounds::ColdArrow2 ) ;
   }
-  if( window->isPressed( VK_SHIFT ) )
+
+  // Mouse presses
+  if( window->mouseJustReleased( Mouse::Right ) ) 
   {
-    // remove one
-    if( !gameObjects.empty() )
-      gameObjects.pop_back() ;
+    info( "RIGHT MOUSE BUTTON was RELEASED!!" ) ;
+    
+    // purposefully test playing invalid sound
+    window->playSound( 502005 ) ;
   }
-  if( window->justPressed( VK_F5 ) )
+
+  if( window->mouseIsPressed( Mouse::Middle ) )
   {
-    // F5 opens up the log file in baretail
-    system( "START baretail.exe lastRunLog.txt" ) ;
+    info( "MIDDLE MOUSE is being HELD DOWN!" ) ;
   }
   
-  window->step() ; // ^^ update fmod engine, grab updated keystates, etc.  LEAVE AS LAST LINE.
 }
 
 
@@ -154,48 +168,40 @@ void Update()
 void Draw()
 {
   // Draw the game, happens 60 times a second
-  for( int i = 0 ; i < gameObjects.size() ; i++ )
+
+  window->drawSprite( Sprites::Eye, 320, 240, 100, 100 ) ;
+
+  if( window->keyIsPressed( VK_SPACE ) )
   {
-    window->drawSprite(
-      gameObjects[i].spriteIndex,
-      gameObjects[i].x, gameObjects[i].y ) ;
+    window->drawString( "Hello!", D3DCOLOR_ARGB( 255, 255, 0, 0 ), 200, 200, 90, 90 ) ;
   }
 
-  // Print # sprites.
-  char buf[ 100 ];  //!!
-  int numSprites = gameObjects.size();
-  sprintf( buf, "%d sprites", numSprites ) ;
-  window->drawBox( D3DCOLOR_ARGB( 235, 255, 0, 0 ), 10, 10, 100, 30 ) ;
-  window->drawString( buf, Color::Yellow, 20, 6, 80, 40, DT_CENTER | DT_VCENTER | DT_NOCLIP ) ;
-
-
-  // Print response message
-  if( numSprites == 0 )
-  {
-    window->drawString( "Hold CTRL down!  Go on!",
-      D3DCOLOR_ARGB( 255, 255, 255, 255 ) ,
-      0, 0, window->getWidth(), window->getHeight() ) ;   // Draw this center screen
-    // (using a box that starts in top left corner,
-    // goes down to bottom right corner)
-  }
-  else if( !window->isSlow() )
-  {
-    // Draw this center screen
-    window->drawSprite( Sprites::MessagePressCtrlTaunt, window->getWidth()/2, window->getHeight()/2 ) ;
-  }
-  else
-  {
-    // Draw this center screen
-    window->drawSprite( Sprites::MessageStruggling, window->getWidth()/2, window->getHeight()/2 ) ;
-  }
-
-  window->drawMouseCursor( Sprites::Chaos ) ; // draw the mouse cursor with this sprite.
+  // draw the mouse cursor with this sprite.
+  window->drawMouseCursor( Mario ) ;
 
   window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
 
 }
 
+
+
+
+
+
+
+
+// ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^
+// Your code above.
+
+
+
+
+
+// VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
+// Engine code below.  You shouldn't need to
+// code down here, EXCEPT for if you need to read
+// WM_CHAR messages.
 ///////////////////////////////////////////
 // WndProc says:  I AM WHERE "MESSAGES" GET "DISPATCHED" TO,
 // WHEN "EVENTS" "HAPPEN" TO YOUR WINDOW.
@@ -214,107 +220,67 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam 
     // "handle" the event where the user just
     // clicked in our window, or the user pressed a key.
   
-  case WM_CREATE :
-    {
-      // This is the tidbit of code that
-      // runs when our window has been created
-    }
-    return 0;
-
-  case WM_LBUTTONDOWN:
-    {
-      info( "Legacy WM_LBUTTONDOWN message" ) ;
-    }
-    return 0 ;
-
-  case WM_RBUTTONDOWN:
-    {
-      info( "Legacy WM_LBUTTONDOWN message" ) ;
-    }
-    return 0;
-
-  case WM_KEYDOWN:
-    {
-      // Generally DON'T 
-      if( wparam == VK_ESCAPE )
-      {
-        info( "Quitting..." ) ;
-        //PostQuitMessage( 0 ) ;
-      }
-    }
-    return 0;
-
+    // A lot of these have been stripped away
+    // vs the GDI+ version of this project..
+    // Here, we only handle a few select
+    // messages...
+    
+    // WM_CHAR:  for 'character' key presses
+    // We use this for the user to type their name or something,
+    // with proper preservation of capslocked letters etc
   case WM_CHAR:
     {
-      info( "You pushed %c, ascii=%d", wparam, wparam ) ;
+      //info( "You pushed %c, ascii=%d", wparam, wparam ) ;
     }
     return 0 ;
 
-    // WM_INPUT messages are for RAW INPUT (faster
-    // than WM_KEYDOWN or WM_MOUSEMOVE messages)
+    // WM_INPUT messages are for FAST keyboard and mouse
+    // These messages are FASTER than WM_KEYDOWN or WM_MOUSEMOVE.
     // Both keyboard AND mouse input events get picked up here
   case WM_INPUT: 
     {
+      #pragma region pick up the raw input
+      // DO NOT CODE HERE!  use the
+      // window->justPressed(), and 
+      // window->mouseJustPressed() functions,
+      // in your Update() function.
       UINT dwSize;
 
-      GetRawInputData( (HRAWINPUT)lparam, RID_INPUT, NULL, &dwSize, sizeof( RAWINPUTHEADER ) ) ;
+      GetRawInputData( (HRAWINPUT)lparam, RID_INPUT,
+                        NULL, &dwSize, sizeof( RAWINPUTHEADER ) ) ;
       LPBYTE lpb = new BYTE[ dwSize ] ;
       if( lpb == NULL )
       {
         return 0;
       }
 
-      if( GetRawInputData((HRAWINPUT)lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize )
+      if( GetRawInputData( (HRAWINPUT)lparam, RID_INPUT,
+          lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize )
       {
         error( "GetRawInputData doesn't return correct size !" ) ;
       }
 
       RAWINPUT *raw = (RAWINPUT*)lpb;
 
-      
+      // Check if it was keyboard or mouse input.
       if (raw->header.dwType == RIM_TYPEKEYBOARD) 
       {
         // We don't take keyboard input here.
         // We take it by using GetKeyboardState() function
         // in the window->step() function.
         //printRawKeyboard( raw ) ; // just so you can see
-
-        switch( raw->data.keyboard.VKey )
-        {
-        case VK_ESCAPE :
-          PostQuitMessage( 0 ) ;
-          return 0 ;
-        }
       }
       else if (raw->header.dwType == RIM_TYPEMOUSE)
       {
         //printRawMouse( raw ) ;  // just so you can see
-        
-        if( raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN )
-        {
-          info( "The left mouse button has been pushed" ) ;
-          
-          // purposefully test playing invalid sounds occassionally
-          window->playSound( 3 + rand() % 5 ) ;
-
-          ///window->setSize( window->getHeight(), window->getWidth(), false ) ;
-        }
-        else if( raw->data.mouse.ulButtons & RI_MOUSE_RIGHT_BUTTON_DOWN )
-        {
-          info( "The right mouse button has been pushed" ) ;
-
-          ///window->setSize( window->getWidth(), window->getHeight(), true ) ;
-        } 
-
-        window->moveMouseX( raw->data.mouse.lLastX ) ;
-        window->moveMouseY( raw->data.mouse.lLastY ) ;
-
+        window->mouseUpdateInput( raw ) ;
       } 
 
-      delete[] lpb; 
-      return 0;
-    } 
+      delete[] lpb ;
+      #pragma endregion
 
+      return 0;
+    }
 
   case WM_ACTIVATE:
     switch( LOWORD(wparam) )
@@ -386,7 +352,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
   // Setup the window
-  window = new Window( hInstance, TEXT( "Window title" ),
+  window = new Window( hInstance, TEXT( "eternity engine base" ),
      32, 32, // x pos, y pos
      640, 480 // width, height
   ) ;
@@ -414,6 +380,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
     {
       // Run our game, one frame
       Update() ;
+      window->step() ; // ^^ update fmod engine, grab updated keystates, etc.
       
       // Draw the game out, all at once
       if( window->beginDrawing() ) // only continue if beginDrawing() succeeds

@@ -115,12 +115,14 @@ void logShutdown()
   fclose( logFile ) ;
 }
 
-void bail( char *msg )
+void bail( char *msg, bool openLog )
 {
   info( "BAIL. %s", msg ) ;
   logShutdown() ; //properly shut down the log
-  system( "START notepad.exe lastRunLog.txt" ) ;
-  system( "pause" ) ;
+
+  if( openLog )
+    system( "START notepad.exe lastRunLog.txt" ) ;
+  
   exit( 1 );
 }
 

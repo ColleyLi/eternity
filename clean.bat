@@ -15,3 +15,4 @@ REM remove the vcproj.details.user files
 erase .\eternity\eternity.vcproj.*.user
 erase .\game\game.vcproj.*.user
 
+rd .\Build /s /q

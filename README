@@ -68,5 +68,6 @@
 
   - Improve the framerate by batching properly
 
-  - http://stackoverflow.com/questions/84556/whats-your-favorite-programmer-cartoon#answer-84609 
++ Mar 5 / 2010 v0.0.4-mouse-improvement
+  - Some improvement to mouse functionality
   

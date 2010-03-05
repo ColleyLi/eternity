@@ -30,6 +30,7 @@
 #include "helperFunctions.h"
 #include "D3DVertex.h"
 #include "Sprite.h"
+#include "Mouse.h"
 
 using namespace Gdiplus ;
 using namespace std ;
@@ -48,15 +49,6 @@ using namespace std ;
 #endif
 
 #pragma endregion
-
-// The game has 3 possible states.
-// At the Menu, Paused, and Running.
-enum GameState
-{
-  Menu,
-  Paused,
-  Running
-} ;
 
 // Map type for FSOUND
 typedef map<int, FMOD_SOUND*> /* as simply */ SoundMap ;
@@ -116,7 +108,8 @@ private:
 
   BYTE keyPreviousStates[ 256 ] ; // holds which keys were down last frame
   BYTE keyCurrentStates[ 256 ] ; // holds which keys are down right now
-  int mouseX, mouseY ;  // x and y position of the mouse in the window.
+
+  Mouse mouse ;
   
 public:
   Window( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
@@ -270,9 +263,9 @@ public:
 private:
   void startupRawInput();
 
+private:
+
 public:
-  void moveMouseX( int diffX ) ;
-  void moveMouseY( int diffY ) ;
   int getMouseX() ;
   int getMouseY() ;
 
@@ -285,15 +278,21 @@ public:
   // If you press and hold a key, for no matter
   // how many seconds you hold it down for,
   // you'll only have JustPressed return true ONCE.
-  bool justPressed( int vkCode ) ;
+  bool keyJustPressed( int vkCode ) ;
 
   // Tells you if a key is BEING HELD DOWN
-  bool isPressed( int vkCode ) ;
+  bool keyIsPressed( int vkCode ) ;
 
   // Returns true if a key was JUST let go of.
   // A complimentary function to justPressed()
-  bool justReleased( int vkCode ) ;
+  bool keyJustReleased( int vkCode ) ;
   
+  // Mouse.
+  void mouseUpdateInput( RAWINPUT *raw ) ;
+  bool mouseJustPressed( Mouse::Button button ) ;
+  bool mouseIsPressed( Mouse::Button button ) ;
+  bool mouseJustReleased( Mouse::Button button ) ;
+
 
   /*
     __ _  __ _ _ __ ___   ___ 

@@ -255,8 +255,8 @@ bool Window::initD3D()
   D3DXCreateSprite( gpu, &id3dxSpriteRenderer ) ;
 
   // start the mouse in the middle of the screen
-  mouseX = getWidth() / 2 ;
-  mouseY = getHeight() / 2 ;
+  mouse.setX( getWidth() / 2 ) ;
+  mouse.setY( getHeight() / 2 ) ;
 
   return true ;
 }
@@ -303,6 +303,7 @@ void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCO
 void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, char *fontName, float size, int boldness, bool italics )
 {
   ID3DXFont *id3dxFont ;
+
   D3DXCreateFontA( gpu, size, 0, boldness, 1, italics,
     DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY,
     DEFAULT_PITCH | FF_DONTCARE, fontName, &id3dxFont ) ;
@@ -997,12 +998,19 @@ bool Window::setSize( int width, int height, bool fullScreen )
   wndSize.top =  0 ;
   wndSize.bottom = height ;
 
+  // tell the mouse about the resize, before you
+  // adjust the rect
+  mouse.setClipZone( wndSize ) ;
+
+
   // We have to AdjustWindowRectEx() so the client area
   // is exactly the right size
   AdjustWindowRectEx( &wndSize, WS_OVERLAPPEDWINDOW, NULL, 0 ) ;
 
   SetWindowPos( hwnd, HWND_TOP, 0, 0, wndSize.right - wndSize.left, wndSize.bottom - wndSize.top, 
     SWP_NOMOVE | SWP_NOZORDER ) ;
+
+
 
   return true ;
 }
@@ -1198,6 +1206,7 @@ void Window::step()
   }
 
   // Copy over "current" states to "previous" states
+  //!! Should MOVE into Keyboard class
   memcpy( keyPreviousStates, keyCurrentStates, 256 ) ;
 
   // Grab all keystates, to know what the user is currently pushing down.
@@ -1205,6 +1214,9 @@ void Window::step()
   {
     printWindowsLastError( "GetKeyboardState()" ) ;
   }
+
+  // step the mouse
+  mouse.step();
 
   
   timer.lock( 60 ) ; // // ^^Leave as last line: YES, RECOMMENDED.  Use this line to LOCK FRAMERATE
@@ -1241,15 +1253,15 @@ float Window::getTimeElapsedSinceLastFrame()
 
 void Window::drawMouseCursor(int id)
 {
-  drawSprite( id, mouseX, mouseY ) ;
+  drawSprite( id, mouse.getX(), mouse.getY() ) ;
 
   char buf[ 300 ] ;
-  sprintf( buf, "mouse\n(%d, %d)", mouseX, mouseY ) ;
+  sprintf( buf, "mouse\n(%d, %d)", mouse.getX(), mouse.getY() ) ;
 
   RECT r ;
   getBoxDimensions( buf, r ) ;
-  drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top ) ;
-  drawString( buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), mouseX, mouseY, r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
+  drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), mouse.getX(), mouse.getY(), r.right-r.left, r.bottom-r.top ) ;
+  drawString( buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), mouse.getX(), mouse.getY(), r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
 }
 
 // Show fps
@@ -1303,38 +1315,18 @@ bool Window::isPaused()
 }
 
 
-void Window::moveMouseX( int diffX )
-{
-  mouseX += diffX ;
-  
-  // x-clamp to screen bounds
-  if( mouseX > getWidth() ) // if its too far right
-    mouseX = getWidth() ;   // slam it to the right edge of the screen
-  else if( mouseX < 0 )     // if its too far left
-    mouseX = 0 ;            // slam it to the left edge of the screen
-}
-void Window::moveMouseY( int diffY )
-{
-  mouseY += diffY ;
-
-  // y clamp
-  if( mouseY > getHeight() )
-    mouseY = getHeight() ;
-  else if( mouseY < 0 )
-    mouseY = 0 ;
-}
 int Window::getMouseX()
 {
-  return mouseX ;
+  return mouse.getX() ;
 }
 int Window::getMouseY()
 {
-  return mouseY ;
+  return mouse.getY() ;
 }
 
 // Returns true if key is DOWN this frame
 // and was UP previous frame.
-bool Window::justPressed( int vkCode )
+bool Window::keyJustPressed( int vkCode )
 {
   return KEY_IS_DOWN( keyCurrentStates, vkCode ) &&  // Down this frame, &&
          KEY_IS_UP( keyPreviousStates, vkCode ) ;     // AND up previous frame
@@ -1352,18 +1344,37 @@ bool Window::justPressed( int vkCode )
 }
 
 // Tells you if a key is BEING HELD DOWN
-bool Window::isPressed( int vkCode )
+bool Window::keyIsPressed( int vkCode )
 {
   return KEY_IS_DOWN( keyCurrentStates, vkCode ) ;
 }
 
 // Returns true if a key was JUST let go of.
 // A complimentary function to justPressed()
-bool Window::justReleased( int vkCode )
+bool Window::keyJustReleased( int vkCode )
 {
   return KEY_IS_DOWN( keyPreviousStates, vkCode ) &&  // Key __WAS__ down AND
          KEY_IS_UP( keyCurrentStates, vkCode ) ;      // KEY IS UP NOW
 }
+
+void Window::mouseUpdateInput( RAWINPUT * raw ) 
+{
+  mouse.updateInput( raw ) ;
+}
+bool Window::mouseJustPressed( Mouse::Button button )
+{
+  return mouse.justPressed( button ) ;
+}
+bool Window::mouseIsPressed( Mouse::Button button )
+{
+  return mouse.isPressed( button ) ;
+}
+bool Window::mouseJustReleased( Mouse::Button button )
+{
+  return mouse.justReleased( button ) ;
+}
+
+
 
 
 /////////////// PRIVATE ///////////////////
