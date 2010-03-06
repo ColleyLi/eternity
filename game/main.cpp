@@ -169,12 +169,27 @@ void Draw()
 {
   // Draw the game, happens 60 times a second
 
-  window->drawSprite( Sprites::Eye, 320, 240, 100, 100 ) ;
-
   if( window->keyIsPressed( VK_SPACE ) )
   {
-    window->drawString( "Hello!", D3DCOLOR_ARGB( 255, 255, 0, 0 ), 200, 200, 90, 90 ) ;
+    // When space is down, draw the eye
+    // "as if he were in pure red light",
+    // and make him say hello
+    window->drawString( "Hello!", Color::Red, 200, 200, 90, 90 ) ;
+    window->drawSprite( Sprites::Eye, 320, 240, Color::Red ) ;
   }
+  else
+  {
+    // When space is NOT down, just draw
+    // the eye "as if he were in pure white light"
+    // (which means to totally use the original colors)
+    //window->drawSprite( Sprites::Eye, 320, 240, Color::White ) ;
+    
+    // The above line is completely equivalent to
+    window->drawSprite( Sprites::Eye, 320, 240 ) ; // just draw in
+    // original colors, without changing the light color
+    // that would be shining on him
+  }
+
 
   // draw the mouse cursor with this sprite.
   window->drawMouseCursor( Mario ) ;

@@ -168,10 +168,10 @@ void addSinewave( short *data, int durationInSamples,
   // if amp is high enough
   if( distortion )
     for( int i = offset ; i < offset + durationInSamples ; i++ )
-      data[ i ] += amplitude*( 1 + sin( 2*PI*frequency*i*NTs ) ) ;
+      data[ i ] += (short)(amplitude*( 1 + sin( 2*PI*frequency*i*NTs ) ) ) ;
   else
     for( int i = offset ; i < offset + durationInSamples ; i++ )
-      data[ i ] += amplitude*( sin( 2*PI*frequency*i*NTs ) ) ;
+      data[ i ] += (short)(amplitude*( sin( 2*PI*frequency*i*NTs ) ) ) ;
 }
 
 void addSquarewave( short *data, int durationInSamples, int offset,
@@ -205,7 +205,7 @@ void addSlidingSinewave( short *data, int durationInSamples,
       double percentageAlong = (double)i/durationInSamples ;
       double freq = lerp( frequency1, frequency2, percentageAlong ) ;
       double amp = lerp( amplitude1, amplitude2, percentageAlong ) ;
-      data[ i ] += amp*( 1 + sin( 2*PI*freq*i*NTs ) ) ;
+      data[ i ] += (short)(amp*( 1 + sin( 2*PI*freq*i*NTs ) ) ) ;
     }
   else
     for( int i = offset ; i < offset + durationInSamples ; i++ )
@@ -213,7 +213,7 @@ void addSlidingSinewave( short *data, int durationInSamples,
       double percentageAlong = (double)i/durationInSamples ;
       double freq = lerp( frequency1, frequency2, percentageAlong ) ;
       double amp = lerp( amplitude1, amplitude2, percentageAlong ) ;
-      data[ i ] += amp*( sin( 2*PI*freq*i*NTs ) ) ;
+      data[ i ] += (short)(amp*( sin( 2*PI*freq*i*NTs ) ) ) ;
     }
 }
 
@@ -240,7 +240,7 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
       +1 :  // if the sin() is bigger than 0, then +1
       -1 ;  // if the sin() is <= 0, then -1
     
-    data[ i ] += up*amp ;
+    data[ i ] += (short)(up*amp) ;
   }
 }
 

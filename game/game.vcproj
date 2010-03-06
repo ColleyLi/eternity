@@ -49,6 +49,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4244, 4482, 4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -62,10 +63,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
+				SuppressStartupBanner="false"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
-				Profile="true"
+				Profile="false"
 			/>
 			<Tool
 				Name="VCALinkTool"

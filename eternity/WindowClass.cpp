@@ -258,6 +258,10 @@ bool Window::initD3D()
   mouse.setX( getWidth() / 2 ) ;
   mouse.setY( getHeight() / 2 ) ;
 
+  // set the clipzone to match initialized window size
+  RECT clipZone = { 0, 0, getWidth(), getHeight() } ;
+  mouse.setClipZone( clipZone ) ;
+
   return true ;
 }
 
@@ -432,12 +436,12 @@ void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCO
 
 void Window::drawSprite( int id, float x, float y )
 {
-  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, D3DCOLOR modulatingColor )
 {
-  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, modulatingColor ) ;
+  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, modulatingColor ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, float width, float height )
@@ -445,9 +449,9 @@ void Window::drawSprite( int id, float x, float y, float width, float height )
   drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
 }
 
-void Window::drawSprite( int id, float x, float y, float width, float height, D3DCOLOR modulatingColor )
+void Window::drawSprite( int id, float x, float y, float width, float height, float angle )
 {
-  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+  drawSprite( id, x, y, width, height, angle, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor )

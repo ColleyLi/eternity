@@ -176,7 +176,7 @@ public:
   void drawSprite( int id, float x, float y, float width, float height ) ;
 
   // draws a sprite centered @ (x,y) of width and height specified, using modulating color
-  void drawSprite( int id, float x, float y, float width, float height, D3DCOLOR modulatingColor ) ;
+  void drawSprite( int id, float x, float y, float width, float height, float angle ) ;
 
   void drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor ) ;
 

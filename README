@@ -67,7 +67,23 @@
   does Direct3d?
 
   - Improve the framerate by batching properly
+  
+  - http://stackoverflow.com/questions/84556/whats-your-favorite-programmer-cartoon#answer-84609 
 
 + Mar 5 / 2010 v0.0.4-mouse-improvement
   - Some improvement to mouse functionality
   
++ Mar 6 / 2010 v0.0.5-bug-fixes
+  - Fixed modulating color bug in drawSprite overloads (it
+    would always use white)
+  - Changed signature of a drawSprite version from
+    void drawSprite( int id, float x, float y, float width, float height, D3DCOLOR modulatingColor ) ;
+  - to
+    void drawSprite( int id, float x, float y, float width, float height, float angle ) ;
+    [credit: Nick Taylor's suggestion]
+  
+  - Fixed cursor clip rectangle, not adjusted, on start with
+    different window size, class Mouse
+    [credit: Nick Taylor's find]
+  
+

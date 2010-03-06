@@ -1,5 +1,5 @@
 REM erase the .ncb
-erase eternity.ncb
+erase eternity*.ncb
 
 REM remove the debug and release folders
 rd .\Debug /s /q
@@ -14,5 +14,6 @@ rd .\game\Release /s /q
 REM remove the vcproj.details.user files
 erase .\eternity\eternity.vcproj.*.user
 erase .\game\game.vcproj.*.user
+erase .\game\lastRunLog.txt
 
 rd .\Build /s /q
