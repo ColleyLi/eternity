@@ -5,6 +5,8 @@
 
 #include "WindowClass.h"
 
+multimap<int, FMOD_CHANNEL*> Window::fmodChannels ; // keep a channel
+
 // A class that "abstracts away" the process
 // of getting a window up on the screen.
 Window::Window( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight )
@@ -868,6 +870,15 @@ void Window::loadSound( int id, char * filename, int options )
   sounds.insert( make_pair( id, newSound ) ) ;
 }
 
+/*
+FMOD_RESULT F_CALLBACK Window::channelEndCallback(
+  FMOD_CHANNEL* channel,
+  FMOD_CHANNEL_CALLBACKTYPE type,
+  void* data1, void* data2 )
+{
+}
+*/
+
 void Window::playSound( int id )
 {
   FMOD_SOUND *sound = defaultSound ;
@@ -884,13 +895,45 @@ void Window::playSound( int id )
   FMOD_ErrorCheck(
     FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel )
   ) ;
+
+  // Register a callback on the channel
+  //FMOD_CHANNEL_CALLBACK( channel, FMOD_CHANNEL_CALLBACKTYPE_END, 0, 0 ) ;
+  FMOD_Channel_SetCallback( channel, channelEndCallback ) ;
   
-  fmodChannels.push_back( channel ) ;
+  fmodChannels.insert( make_pair( id, channel ) ) ;
   
   int numChannelsPlaying ;
   FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
 
   //info( "There are %d channels playing right now", numChannelsPlaying ) ;
+}
+
+void Window::stopSound( int id )
+{
+  // Retrieve all channels playing
+  // this sound id.
+  ChannelMultimapIter channelIter = fmodChannels.begin();
+
+  while( channelIter != fmodChannels.end() )
+  {
+    if( channelIter->first == id )
+    {
+      info( "Stopping %d", id ) ;
+      FMOD_Channel_Stop( channelIter->second ) ;
+
+      ChannelMultimapIter toErase = channelIter ;
+
+      // Move on to next one..
+      ++channelIter ;
+
+      // and remove it from the collection
+      fmodChannels.erase( toErase ) ;
+    }
+    else
+    {
+      ++channelIter ; // increment by one
+    }
+  }
 }
 
 //!! NOTE!!  From FMOD docs:  FMOD_Sound_setLoopCount:
@@ -945,7 +988,7 @@ void Window::loopSound( int id, int loopCount )
     FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel )
   ) ;
 
-  fmodChannels.push_back( channel ) ;
+  fmodChannels.insert( make_pair( id, channel ) ) ;
 
   // Now unset the loop, so that
   // the sound is unaffected
@@ -1299,7 +1342,8 @@ void Window::step()
   // check the d3ddevice, in case its been lost
   d3dDeviceCheck() ;
 
-  FMOD_System_Update( fmodSys ) ; // call this once per "tick"
+
+  FMOD_ErrorCheck( FMOD_System_Update( fmodSys ) ) ; // call this once per "tick"
 
 
   // Advance sprite animations.

@@ -56,7 +56,7 @@ enum Sounds
   ColdArrow1,
   ColdArrow2,
   ColdArrow3,
-  ArthasMusic
+  NerzuhlWillHaveYourHead
 } ;
 
 void Init()
@@ -79,6 +79,8 @@ void Init()
   // or dripping water).
   window->loadSound( ColdArrow2, "sounds/ColdArrow2.wav", FMOD_SOFTWARE ) ; // load the sound we intend to loop
   window->loadSound( ColdArrow3, "sounds/ColdArrow3.wav" ) ;
+
+  window->loadSound( NerzuhlWillHaveYourHead, "sounds/Odpissd3.wav" ) ;
   
   window->playSound( TreeWhat ) ;
   window->playSound( HumanMusic ) ;
@@ -156,18 +158,20 @@ void Update()
 
   if( window->mouseJustPressed( Mouse::Left )  )
   {
-    info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
+    //info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
 
-    window->playSound( Sounds::ColdArrow3 ) ;
+    window->playSound( NerzuhlWillHaveYourHead ) ;
   }
 
   // Mouse presses
   if( window->mouseJustReleased( Mouse::Right ) ) 
   {
-    info( "RIGHT MOUSE BUTTON was RELEASED!!" ) ;
+    //info( "RIGHT MOUSE BUTTON was RELEASED!!" ) ;
     
     // purposefully test playing invalid sound
-    window->playSound( 502005 ) ;
+    //window->playSound( 502005 ) ;
+
+    window->stopSound( Sounds::HumanMusic ) ;
   }
 
   if( window->mouseIsPressed( Mouse::Middle ) )
@@ -189,7 +193,7 @@ void Draw()
     // "as if he were in pure red light",
     // and make him say hello
     window->drawString( "Hello!", Color::Red, 200, 200, 90, 90 ) ;
-    window->drawSprite( Sprites::Eye, 320, 240, Color::Red ) ;
+    window->drawSprite( Sprites::Mario, 320, 240, Color::Red ) ;
   }
   else
   {
@@ -199,7 +203,7 @@ void Draw()
     //window->drawSprite( Sprites::Eye, 320, 240, Color::White ) ;
     
     // The above line is completely equivalent to
-    window->drawSprite( Sprites::Eye, 320, 240 ) ; // just draw in
+    window->drawSprite( Sprites::Mario, 320, 240 ) ; // just draw in
     // original colors, without changing the light color
     // that would be shining on him
   }

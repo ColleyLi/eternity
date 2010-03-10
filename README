@@ -98,18 +98,31 @@
     of that sound, rather that sound starts over.
     That doesn't happen with normal (NON FMOD_CREATESTREAM)
     sounds though.
-    
     */
     
-  - Now:  Adding capability to STOP a sound,
-    but that's done on a CHANNEL.
++ Mar 10 / 2010 v0.0.6-looping-sound
+  - Added guards on loadSound() for
+    file-not-found errors,
+  - Added handler code for sound already loaded id,
+    just replaces previously loaded sound
+    and removes the old sound from map.
     
-    So we maintain ANOTHER map<int, FMOD_CHANNEL*>
-    that retains active channels.  If a sound (BY ID!)
-    is currently playing then we can stop it
-    now.
+  - Added capability to STOP a sound;
+    that's done on a CHANNEL.
     
-    The problem now is we need to expire a channel
+    Maintaining ANOTHER multimap<int, FMOD_CHANNEL*>
+    that retains active channels.  When a sound starts
+    playing, we save off the channel in that map.
+    
+    Using MULTIMAP because its possible
+    that a sound with a given ID
+    can be started playing TWICE.
+    
+    If you want to stop playing a sound by ID,
+    we retrieve ALL occurrences of that sound
+    in the map (BY ID!)
+    
+    We also needed to expire a channel
     (remove it from the map<>) when the playing
     sound stops playing.
     
@@ -119,13 +132,28 @@
     is done playing.  FMOD supplies
     FMOD_CHANNEL_CALLBACK, which is great.
     
-    Committing now, will complete the update.
-    Here I'm choosing the channel manually,
-    hold on.
-
-+ Mar 10 / 2010 v0.0.6-looping-sound
-  - Added guards on loadSound() for
-    file-not-found errors,
-  - Added handler code for sound already loaded id,
-    just replaces previously loaded sound
-    and removes the old sound from map.
+    Because more than one instance of
+    a sound can be playing at a time
+    (but it will be on a different channel)
+    I had to use a linear search in the multimap<int, FMOD_CHANNEL*>
+    to remove the specific FMOD_CHANNEL* that
+    had just finished playing.
+    
+    The only issue with the callback was that
+    the Window::fmodChannels map was actually
+    in accessible in the callback function...
+    on account of FMOD not accepting an
+    object member function as a parameter.
+    
+    So its made as a static function
+    Window::channelEndCallback.
+    
+    The multimap was made static as well.
+    One irritating error is 
+    !! Bug::"map/set iterator not incrementable"
+    
+    Removed the line that causes it, but this
+    should be tracked down some time in the future.
+    
+    
+    
