@@ -262,6 +262,9 @@ bool Window::initD3D()
   RECT clipZone = { 0, 0, getWidth(), getHeight() } ;
   mouse.setClipZone( clipZone ) ;
 
+
+  clearColor = D3DCOLOR_ARGB( 255, 0, 10, 45 ) ;
+
   return true ;
 }
 
@@ -631,7 +634,7 @@ bool Window::beginDrawing()
   }
 
   hr = gpu->Clear( 0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-    D3DCOLOR_ARGB( 255, 0, 10, 45 ), 1.0f, 0 ) ;
+    clearColor, 1.0f, 0 ) ;
   DX_CHECK( hr, "Clear error" ) ;
 
   #pragma region set up the camera
@@ -836,9 +839,32 @@ B   61   123  247   494   988  1976  3951  7902
 void Window::loadSound( int id, char * filename, int options )
 {
   FMOD_SOUND *newSound ;
+  
+  // Load the sound
+  bool success = FMOD_ErrorCheck( FMOD_System_CreateSound( fmodSys, filename, FMOD_HARDWARE | options, 0, &newSound ) ) ;
 
-  FMOD_ErrorCheck( FMOD_System_CreateSound( fmodSys, filename, FMOD_HARDWARE | options, 0, &newSound ) ) ;
+  if( !success )
+  {
+    error( "Could not load %s, check file exists", filename ) ;
+    return ;
+  }
 
+  // File loaded, ok, now
+  // check if a sound by that ID already exists.
+  // If it does, unload and destroy it
+  SoundMapIter soundEntry = sounds.find( id ) ;
+  if( soundEntry != sounds.end() )
+  {
+    warning( "Sound id=%d already existed, destroying and overwriting with %s.", id, filename ) ;
+    FMOD_SOUND *oldSound = NULL ;
+    oldSound = soundEntry->second ;
+    FMOD_Sound_Release( oldSound ) ;
+
+    // remove from the map
+    sounds.erase( soundEntry ) ;
+  }
+
+  // Now save it by its id in the map
   sounds.insert( make_pair( id, newSound ) ) ;
 }
 
@@ -854,14 +880,17 @@ void Window::playSound( int id )
 
   FMOD_CHANNEL* channel ;
 
-  FMOD_ErrorCheck( FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel ) ) ;
-
+  // Play this sound on any available free channel
+  FMOD_ErrorCheck(
+    FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel )
+  ) ;
+  
   fmodChannels.push_back( channel ) ;
   
   int numChannelsPlaying ;
   FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
 
-  info( "There are %d channels playing right now", numChannelsPlaying ) ;
+  //info( "There are %d channels playing right now", numChannelsPlaying ) ;
 }
 
 //!! NOTE!!  From FMOD docs:  FMOD_Sound_setLoopCount:
@@ -894,52 +923,34 @@ void Window::loopSound( int id, int loopCount )
     return ;
   }
 
-  // choose a channel by looping
-  // thru channels, from 0 to max #,
-  // make sure it isn't busy
-  FMOD_CHANNEL *channel = NULL ;
-  
-  for( int i = 0 ; i < fmodMaxChannels ; i++ ) // channels from 0 to maxChannels-1
+  if( loopCount != 0 )
+   loopCount-- ; // by default fmod wants to REPEAT the sound
+  // loopCount times .. i.e. plays it loopCount+1 times
+
+  FMOD_MODE fmodSoundMode ;
+  FMOD_Sound_GetMode( sound, &fmodSoundMode ) ;
+
+  if( notContainsFlag( fmodSoundMode, (FMOD_SOFTWARE|FMOD_CREATESTREAM) ) )
   {
-    // Get channel 'i'
-    FMOD_ErrorCheck( FMOD_System_GetChannel( fmodSys, i, &channel ) ) ;
-    
-    // Check if channel 'i' is playing something
-    FMOD_BOOL isPlaying ;
-    bool channelExists = FMOD_ErrorCheck(
-      FMOD_Channel_IsPlaying( channel, &isPlaying ) ) ;
-    if( channelExists && isPlaying )
-    {
-      // The channel is busy
-      info( "Channel %d is busy", i ) ;
-      continue ;
-    }
-    else
-    {
-      // This channel is not busy.
-      
-      // Use this un-busy channel
-      // to play the sound.
-      if( loopCount != 0 )
-       loopCount-- ; // by default fmod wants to REPEAT the sound
-      // loopCount times .. i.e. plays it loopCount+1 times
-
-      FMOD_Sound_SetLoopCount( sound, loopCount ) ;
-
-      FMOD_Sound_SetMode( sound, FMOD_LOOP_NORMAL | FMOD_SOFTWARE ) ;
-
-      FMOD_ErrorCheck(
-        FMOD_System_PlaySound(
-
-          fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel
-
-        )
-      ) ;
-
-      break ; // done
-    }
+    warning( "Sound %d was not created with FMOD_SOFTWARE "
+      "or FMOD_CREATESTREAM, this sound will loop forever.", id ) ;
   }
 
+  FMOD_ErrorCheck( FMOD_Sound_SetLoopCount( sound, loopCount ) ) ;
+
+  FMOD_ErrorCheck( FMOD_Sound_SetMode( sound, FMOD_LOOP_NORMAL ) ) ;
+
+  FMOD_CHANNEL* channel ;
+  FMOD_ErrorCheck(
+    FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel )
+  ) ;
+
+  fmodChannels.push_back( channel ) ;
+
+  // Now unset the loop, so that
+  // the sound is unaffected
+  FMOD_ErrorCheck( FMOD_Sound_SetMode( sound, FMOD_LOOP_OFF ) ) ;
+  FMOD_ErrorCheck( FMOD_Sound_SetLoopCount( sound, 0 ) ) ;
 
 }
 
@@ -1341,6 +1352,11 @@ bool Window::isSlow()
 float Window::getTimeElapsedSinceLastFrame()
 {
   return timer.time_since_last_frame ;
+}
+
+void Window::setBackgroundColor( D3DCOLOR color )
+{
+  clearColor = color ;
 }
 
 void Window::drawMouseCursor(int id)

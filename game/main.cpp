@@ -66,12 +66,22 @@ void Init()
   window->loadSound( HumanMusic, "sounds/Human1.mp3", FMOD_CREATESTREAM ) ;
   window->loadSound( TreeWhat, "sounds/What2.wav" ) ;
 
+  // Load a sound we don't intend to loop
   window->loadSound( ColdArrow1, "sounds/ColdArrow1.wav" ) ;
-  window->loadSound( ColdArrow2, "sounds/ColdArrow2.wav" ) ;
+
+  // If you're going to LOOP a sound,
+  // you MUST load it with FMOD_SOFTWARE
+  // OR with FMOD_CREATESTREAM.
+  // Use FMOD_CREATESTREAM for long (5 minute)
+  // songs that you will loop as background music
+  // and FMOD_SOFTWARE for short, 2-5 second sounds
+  // that you want to loop (e.g. a crackling fire,
+  // or dripping water).
+  window->loadSound( ColdArrow2, "sounds/ColdArrow2.wav", FMOD_SOFTWARE ) ; // load the sound we intend to loop
   window->loadSound( ColdArrow3, "sounds/ColdArrow3.wav" ) ;
   
   window->playSound( TreeWhat ) ;
-  //window->playSound( HumanMusic ) ;
+  window->playSound( HumanMusic ) ;
   #pragma endregion
 
   // sprite loading
@@ -106,7 +116,6 @@ void Init()
     // the way it looks
   ) ;
   
-  
   // You can have different padding on all the edges as well.
   RECT padding = { 35,12,35,12 } ; // left, top, bottom, left.
   padding.right = 12 ; // can also assign this way.
@@ -130,6 +139,9 @@ void Init()
     padding ) ;
   #pragma endregion
 
+  // Set the background clearing color to dk blue-gray
+  window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
+
 }
 
 void Update()
@@ -141,12 +153,12 @@ void Update()
   {
     bail( "game ended!" ) ;
   }
+
   if( window->mouseJustPressed( Mouse::Left )  )
   {
     info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
 
-    //window->playSound( Sounds::ColdArrow3 ) ;
-    window->loopSound( Sounds::ColdArrow1, 5 ) ;
+    window->playSound( Sounds::ColdArrow3 ) ;
   }
 
   // Mouse presses

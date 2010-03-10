@@ -109,4 +109,7 @@ bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed
 #define KEY_IS_DOWN(KeyStateArray,VK) (KeyStateArray[VK]&KEY_DOWN_MASK)
 #define KEY_IS_UP(KeyStateArray,VK) (!KEY_IS_DOWN(KeyStateArray,VK))
 
+#define containsFlag( val, flag ) ( val & flag )
+#define notContainsFlag( val, flag ) ( !(val & flag) )
+
 #endif // HELPER_FUNCTIONS_H

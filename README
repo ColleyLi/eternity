@@ -91,12 +91,15 @@
     that can loop a sound any number of times.
     Pass it -1 to loop forever.
     
+    /*
     Observational note:  If you play an FMOD_SOUND* twice,
     AND that sound was created with FMOD_CREATESTREAM,
     then, you don't get another "instance"
     of that sound, rather that sound starts over.
     That doesn't happen with normal (NON FMOD_CREATESTREAM)
     sounds though.
+    
+    */
     
   - Now:  Adding capability to STOP a sound,
     but that's done on a CHANNEL.
@@ -120,3 +123,9 @@
     Here I'm choosing the channel manually,
     hold on.
 
++ Mar 10 / 2010 v0.0.6-looping-sound
+  - Added guards on loadSound() for
+    file-not-found errors,
+  - Added handler code for sound already loaded id,
+    just replaces previously loaded sound
+    and removes the old sound from map.

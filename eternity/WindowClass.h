@@ -102,6 +102,7 @@ private:
   ID3DXFont *id3dxDefaultFont ;
   // </Direct3D objects>
 
+  D3DCOLOR clearColor ;
   D3DPRESENT_PARAMETERS d3dpps ;
   D3DCAPS9 caps ;  // represents the capabilities of the gpu device.
   bool isDeviceLost ; // remember whether the device was lost
@@ -158,6 +159,7 @@ public:
   void endDrawing() ;   // "flips the buffer" over so the user can see
   // what we just drew this frame
 
+  void setBackgroundColor( D3DCOLOR color ) ;
   
   void drawMouseCursor( int id ) ;
   void drawFrameCounter() ;
@@ -251,12 +253,24 @@ public:
   /// Note if you want to be able to
   /// LOOP the sound you have to use either
   /// FMOD_SOFTWARE or FMOD_CREATESTREAM
-  /// as the options value.
+  /// as the options value.  Use FMOD_SOFTWARE
+  /// for short, looping sounds (like a 2 second
+  /// torch/fire crackle) and FMOD_CREATESTREAM
+  /// for longer sounds (like a 5 minute background
+  /// music song).
   void loadSound( int id, char * filename, int options = 0 ) ;
 
   /// Plays a previously loaded sound by
   /// the same ID you passed to loadSound
   void playSound( int id ) ;
+
+  /// Stops playback of a sound
+  /// by the id you gave it when you
+  /// loaded it with loadSound().
+  /// Really most useful for stopping
+  /// one kind of background music
+  /// and starting another.
+  void stopSound( int id ) ;
 
   /// Loop a sound `loopCount` times,
   /// set `loopCount` to FMOD_LOOP_FOREVER
