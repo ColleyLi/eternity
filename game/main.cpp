@@ -55,7 +55,8 @@ enum Sounds
   TreeWhat,
   ColdArrow1,
   ColdArrow2,
-  ColdArrow3 
+  ColdArrow3,
+  ArthasMusic
 } ;
 
 void Init()
@@ -144,7 +145,8 @@ void Update()
   {
     info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
 
-    window->playSound( Sounds::ColdArrow2 ) ;
+    //window->playSound( Sounds::ColdArrow3 ) ;
+    window->loopSound( Sounds::ColdArrow1, 5 ) ;
   }
 
   // Mouse presses

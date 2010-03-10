@@ -56,7 +56,7 @@ void logShutdown() ;
 // Calls logShutdown() before exiting.
 void bail( char *msg, bool openLog=false ) ;
 
-void FMOD_ErrorCheck( FMOD_RESULT result ) ;
+bool FMOD_ErrorCheck( FMOD_RESULT result ) ;
 
 
 // numerical

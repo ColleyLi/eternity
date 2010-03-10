@@ -58,6 +58,9 @@ typedef map<int, FMOD_SOUND*>::iterator /* as simply */ SoundMapIter ;
 typedef map<int, Sprite*> /* as simply */ SpriteMap ;
 typedef map<int, Sprite*>::iterator /* as simply */ SpriteMapIter ;
 
+#define FMOD_LOOP_FOREVER -1 /* Use this constant in loopSound to have the
+sound loop forever */
+
 // A class that "abstracts away" the process
 // of getting a window up on the screen
 // (and initializing directx!)
@@ -80,7 +83,13 @@ private:
   // FMOD sound objects
   map<int, FMOD_SOUND*> sounds ; 
   FMOD_SYSTEM *fmodSys ;
-  FMOD_CHANNEL *fmodChannel ;
+
+  const static int fmodMaxChannels = 32 ;  // max # sounds that
+  // can be playing at a time on the sound card.
+
+  vector<FMOD_CHANNEL*> fmodChannels ; // keep a channel
+  // for every playing sound.
+
   FMOD_SOUND* defaultSound ;  // hard-coded default sound
   // not from a file.
 
@@ -236,8 +245,23 @@ private:
   void initFMOD() ;
 
 public:
+
+  /// Loads a sound, .wav, .mp3, etc.,
+  /// and assigns an ID to it.
+  /// Note if you want to be able to
+  /// LOOP the sound you have to use either
+  /// FMOD_SOFTWARE or FMOD_CREATESTREAM
+  /// as the options value.
   void loadSound( int id, char * filename, int options = 0 ) ;
+
+  /// Plays a previously loaded sound by
+  /// the same ID you passed to loadSound
   void playSound( int id ) ;
+
+  /// Loop a sound `loopCount` times,
+  /// set `loopCount` to FMOD_LOOP_FOREVER
+  /// to loop a sound infinitely
+  void loopSound( int id, int loopCount = FMOD_LOOP_FOREVER ) ;
 
   /*
             _           _                   

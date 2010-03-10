@@ -126,12 +126,15 @@ void bail( char *msg, bool openLog )
   exit( 1 );
 }
 
-void FMOD_ErrorCheck( FMOD_RESULT result )
+bool FMOD_ErrorCheck( FMOD_RESULT result )
 {
   if( result != FMOD_OK )
   {
     error( "FMOD error! (%d) %s", result, FMOD_ErrorString(result) );
+    return false ;
   }
+
+  return true ;
 }
 
 float randFloat( float a, float b )

@@ -85,5 +85,38 @@
   - Fixed cursor clip rectangle, not adjusted, on start with
     different window size, class Mouse
     [credit: Nick Taylor's find]
-  
+
++ Mar 9 / 2010 v0.0.6-looping-sound
+  - Added a function Window::loopSound( int id, int loopCount )
+    that can loop a sound any number of times.
+    Pass it -1 to loop forever.
+    
+    Observational note:  If you play an FMOD_SOUND* twice,
+    AND that sound was created with FMOD_CREATESTREAM,
+    then, you don't get another "instance"
+    of that sound, rather that sound starts over.
+    That doesn't happen with normal (NON FMOD_CREATESTREAM)
+    sounds though.
+    
+  - Now:  Adding capability to STOP a sound,
+    but that's done on a CHANNEL.
+    
+    So we maintain ANOTHER map<int, FMOD_CHANNEL*>
+    that retains active channels.  If a sound (BY ID!)
+    is currently playing then we can stop it
+    now.
+    
+    The problem now is we need to expire a channel
+    (remove it from the map<>) when the playing
+    sound stops playing.
+    
+    What we really needed to do here is to 
+    have a callback function to remove the
+    finished sound from the map<> when it
+    is done playing.  FMOD supplies
+    FMOD_CHANNEL_CALLBACK, which is great.
+    
+    Committing now, will complete the update.
+    Here I'm choosing the channel manually,
+    hold on.
 

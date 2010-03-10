@@ -693,8 +693,8 @@ void Window::initFMOD()
     error("FMOD Error!  You are using an old version of FMOD %08x.  This program requires %08x", version, FMOD_VERSION);
   }
 
-
-  FMOD_ErrorCheck( FMOD_System_Init( fmodSys, 32, FMOD_INIT_NORMAL, NULL ) ) ;
+  info( "Initializing fmod with %d channels . . .", fmodMaxChannels ) ;
+  FMOD_ErrorCheck( FMOD_System_Init( fmodSys, fmodMaxChannels, FMOD_INIT_NORMAL, NULL ) ) ;
 
 
   int numSamples = 8000 ;
@@ -852,7 +852,95 @@ void Window::playSound( int id )
   else
     warning( "Sound id=%d doesn't exist", id ) ;
 
-  FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &fmodChannel ) ;
+  FMOD_CHANNEL* channel ;
+
+  FMOD_ErrorCheck( FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel ) ) ;
+
+  fmodChannels.push_back( channel ) ;
+  
+  int numChannelsPlaying ;
+  FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
+
+  info( "There are %d channels playing right now", numChannelsPlaying ) ;
+}
+
+//!! NOTE!!  From FMOD docs:  FMOD_Sound_setLoopCount:
+//  "This function does not affect
+//   FMOD_HARDWARE based sounds that are not streamable."
+// So if you want to loop a sound less than INFINITY
+// times you must create it with the FMOD_CREATESTREAM
+// or FMOD_SOFTWARE flags, e.g.
+//
+// window->loadSound( HumanMusic, "sounds/loopingSoundEffect.mp3", FMOD_SOFTWARE ) ;
+//
+// OR
+//
+// window->loadSound( HumanMusic, "sounds/loopingSoundEffect.mp3", FMOD_CREATESTREAM ) ;
+//
+// otherwise it will loop forever
+void Window::loopSound( int id, int loopCount )
+{
+  FMOD_SOUND *sound = defaultSound ;
+  SoundMapIter soundEntry = sounds.find( id ) ;
+  
+  if( soundEntry != sounds.end() )
+    sound = soundEntry->second ;
+  else
+  {
+    warning( "Sound id=%d doesn't exist, not looping anything", id ) ;
+    
+    // We're returning here, because there's no use
+    // in looping the error sound
+    return ;
+  }
+
+  // choose a channel by looping
+  // thru channels, from 0 to max #,
+  // make sure it isn't busy
+  FMOD_CHANNEL *channel = NULL ;
+  
+  for( int i = 0 ; i < fmodMaxChannels ; i++ ) // channels from 0 to maxChannels-1
+  {
+    // Get channel 'i'
+    FMOD_ErrorCheck( FMOD_System_GetChannel( fmodSys, i, &channel ) ) ;
+    
+    // Check if channel 'i' is playing something
+    FMOD_BOOL isPlaying ;
+    bool channelExists = FMOD_ErrorCheck(
+      FMOD_Channel_IsPlaying( channel, &isPlaying ) ) ;
+    if( channelExists && isPlaying )
+    {
+      // The channel is busy
+      info( "Channel %d is busy", i ) ;
+      continue ;
+    }
+    else
+    {
+      // This channel is not busy.
+      
+      // Use this un-busy channel
+      // to play the sound.
+      if( loopCount != 0 )
+       loopCount-- ; // by default fmod wants to REPEAT the sound
+      // loopCount times .. i.e. plays it loopCount+1 times
+
+      FMOD_Sound_SetLoopCount( sound, loopCount ) ;
+
+      FMOD_Sound_SetMode( sound, FMOD_LOOP_NORMAL | FMOD_SOFTWARE ) ;
+
+      FMOD_ErrorCheck(
+        FMOD_System_PlaySound(
+
+          fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel
+
+        )
+      ) ;
+
+      break ; // done
+    }
+  }
+
+
 }
 
 void Window::drawBox( D3DCOLOR color, RECT &r )
