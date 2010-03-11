@@ -154,6 +154,6 @@
     
     Removed the line that causes it, but this
     should be tracked down some time in the future.
-    
-    
-    
+
++ Mar 10 / 2010 v0.0.7-custom-fonts
+  - Add custom fonts

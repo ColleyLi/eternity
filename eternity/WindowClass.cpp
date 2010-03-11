@@ -1082,6 +1082,50 @@ void Window::drawString( char *str, D3DCOLOR color, RECT &r, DWORD formatOptions
   id3dxDefaultFont->DrawTextA( NULL, str, -1, &r, formatOptions, color ) ;
 }
 
+void Window::createFont( int id, char *fontName, float size, int boldness, bool italics )
+{
+  ID3DXFont *font = id3dxDefaultFont ;
+  FontMapIter fontEntry = fonts.find( id ) ;
+
+  if( fontEntry != fonts.end() )
+  {
+    warning( "Font %d already existed, destroying and replacing..", id ) ;
+    SAFE_RELEASE( font ) ;
+  }
+
+  DX_CHECK( D3DXCreateFontA( gpu, size, 0, boldness, 1,
+    italics, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY,
+    DEFAULT_PITCH | FF_DONTCARE, fontName, &font ), "Create custom font" ) ;
+
+  
+  // Now add it to the map
+  fonts.insert( make_pair( id, font ) ) ;
+
+}
+
+void Window::drawString( int id, char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions )
+{
+  // Retrieve the font
+  ID3DXFont *font = id3dxDefaultFont ;
+  FontMapIter fontEntry = fonts.find( id ) ;
+
+  if( fontEntry == fonts.end() )
+  {
+    warning( "Font %d does not exist, using default font instead", id ) ;
+  }
+  else
+  {
+    font = fontEntry->second ;
+  }
+
+  RECT rect ;
+  SetRect( &rect, x, y, x + width, y + height ) ;
+
+  font->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
+
+}
+
+
 
 int Window::getWidth()
 {

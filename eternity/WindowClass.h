@@ -61,6 +61,8 @@ typedef map<int, Sprite*>::iterator /* as simply */ SpriteMapIter ;
 typedef multimap<int, FMOD_CHANNEL*> /* as simply */ ChannelMultimap ;
 typedef multimap<int, FMOD_CHANNEL*>::iterator /* as simply */ ChannelMultimapIter ;
 
+typedef map<int, ID3DXFont*> /* as simply */ FontMap ;
+typedef map<int, ID3DXFont*>::iterator /* as simply */ FontMapIter ;
 
 #define FMOD_LOOP_FOREVER -1 /* Use this constant in loopSound to have the
 sound loop forever */
@@ -112,6 +114,7 @@ private:
   IDirect3DDevice9 *gpu ;
   ID3DXSprite *id3dxSpriteRenderer ;
   ID3DXFont *id3dxDefaultFont ;
+  FontMap fonts ;
   // </Direct3D objects>
 
   D3DCOLOR clearColor ;
@@ -186,6 +189,21 @@ public:
 
   void drawString( char *str, D3DCOLOR color, float x, float y, float width, float height ) ;
   void drawString( char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions ) ;
+
+  /// Makes a font for you.  Remember
+  /// the integer ID you give the font!
+  /// fontName:  Just the font name as it appears
+  /// in C:\WINDOWS\Fonts.  You can use any font
+  /// that you have installed on your system.
+  /// Size:  The size of the font.
+  /// boldness:  Typeface "WEIGHT".  Usually a number between 100 and 900,
+  /// the higher the "bolder".  You can use the predefined
+  /// FW_* constants, like FW_NORMAL=400, which means "normal" weight
+  /// FW_BOLD=700, which means BOLD.  FW_THIN=100 is very thin.
+  void createFont( int id, char *fontName, float size, int boldness, bool italics ) ;
+
+  /// Draw a string using a font you loaded previously.
+  void drawString( int id, char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions ) ;
 
   // Draws a sprite centered @ (x,y)
   void drawSprite( int id, float x, float y ) ;

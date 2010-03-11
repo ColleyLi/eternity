@@ -59,6 +59,14 @@ enum Sounds
   NerzuhlWillHaveYourHead
 } ;
 
+enum Fonts
+{
+  Arial,
+  TimesNewRoman,
+  Elephant,
+  NotInstalledFont
+} ;
+
 void Init()
 {
   // Load sounds
@@ -144,6 +152,17 @@ void Init()
   // Set the background clearing color to dk blue-gray
   window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
 
+
+  // Create a font
+  window->createFont( Fonts::Arial, "Arial", 8, FW_NORMAL, false ) ;
+  
+  window->createFont( Fonts::TimesNewRoman, "Times New Roman", 24, FW_BOLD, true ) ;
+
+  window->createFont( Fonts::Elephant, "Elephant", 16, FW_NORMAL, false ) ;
+
+  // You get Arial
+  window->createFont( Fonts::NotInstalledFont, "NOTINSTALLED-FAKE-FONT", 12, FW_NORMAL, false ) ;
+
 }
 
 void Update()
@@ -208,6 +227,28 @@ void Draw()
     // that would be shining on him
   }
 
+  // Font samples.  'W' checks if the
+  // W key is pushed down.  There is no VK_W.
+  if( window->keyIsPressed( 'W' ) ) 
+  {
+    int y = 20 ;
+    window->drawString( Fonts::TimesNewRoman, "HELLO!!!", 
+      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
+      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
+
+    window->drawString( Fonts::Arial, "HELLO!!!", 
+      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
+      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
+
+    window->drawString( Fonts::Elephant, "HELLO!!!", 
+      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
+      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
+
+    window->drawString( Fonts::NotInstalledFont, "HELLO!!!", 
+      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
+      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
+
+  }
 
   // draw the mouse cursor with this sprite.
   window->drawMouseCursor( Mario ) ;
