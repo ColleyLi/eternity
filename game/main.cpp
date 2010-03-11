@@ -140,19 +140,41 @@ void Update()
   }
 
   // Press the "S" key to turn off the music
-  if( window->keyJustPressed( 'S' ) ) // There are no VK_* for normal character keys
+  if( window->keyJustPressed( 'S' ) )
   {
+    // Letter keys don't have VK_*
+    // constants.
+    
+    // Instead you check 
+    // if they are pressed exactly as
+    // we've shown here,
+    //   window->keyJustPressed( 'J' )
+    // MAKE SURE TO USE UPPERCASED LETTERS
+    // between 'SINGLE QUOTES'
+
     window->stopSound( Sounds::HumanMusic ) ;
   }
+
+  // Check for numbers across the top
+  // of the keyboard like this...
+  if( window->keyIsPressed( '1' ) )
+  {
+    info( "Uh.. ONE.  That's what you wanted, right?" ) ;
+  }
+
+  // Check for NUMPAD using VK_NUMPAD0-9
+  if( window->keyIsPressed( VK_NUMPAD1 ) )
+  {
+    info( "NUMPAD 1.  Numpad on laptop is awkward, so probably avoid it." ) ;
+  }
   
+  // Mouse presses
   if( window->mouseJustPressed( Mouse::Left )  )
   {
     info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
-
     window->playSound( Sounds::ColdArrow1 ) ;
   }
-
-  // Mouse presses
+  
   if( window->mouseJustReleased( Mouse::Right ) ) 
   {
     info( "RIGHT MOUSE BUTTON was RELEASED!!" ) ;
@@ -174,13 +196,36 @@ void Draw()
 {
   // Draw the game, happens 60 times a second
 
+  // Draw Chaos centered at (280, 230)
+  window->drawSprite( Sprites::Chaos, 280, 230 ) ;
+
   if( window->keyIsPressed( VK_SPACE ) )
   {
     // When space is down, draw the eye
-    // "as if he were in pure red light",
-    // and make him say hello
-    window->drawString( "Hello!", Color::Red, 200, 200, 90, 90 ) ;
-    window->drawSprite( Sprites::Mario, 320, 240, Color::Red ) ;
+    // shaded in red, partly see-thru
+
+    // Create color to shade it with.
+    D3DCOLOR seeThruRed = D3DCOLOR_ARGB( 180, 255, 0, 0 ) ;
+    // This is a partly see-thru RED color.
+    // The first number is ALPHA which is "solidness".
+    // 255 is FULLY SOLID, 0 is completely see thru
+    // the second number is RED,
+    // then GREEN
+    // then BLUE.
+    // Hence "ARGB", standing for
+    // "Alpha Red Green Blue"
+
+    // Draw the eye in partly see-thru
+    window->drawSprite(
+      Sprites::Eye, // Sprite to draw (previously loaded with loadSprite)
+      320,  // x position
+      240,  // y position
+      seeThruRed
+    ) ;
+
+    // show text
+    window->drawString( "Hello!", seeThruRed, 360, 200, 90, 90 ) ;
+
   }
   else
   {
@@ -190,7 +235,7 @@ void Draw()
     //window->drawSprite( Sprites::Eye, 320, 240, Color::White ) ;
     
     // The above line is completely equivalent to
-    window->drawSprite( Sprites::Mario, 320, 240 ) ; // just draw in
+    window->drawSprite( Sprites::Eye, 320, 240 ) ; // just draw in
     // original colors, without changing the light color
     // that would be shining on him
   }
