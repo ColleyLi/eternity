@@ -61,10 +61,9 @@ enum Sounds
 
 enum Fonts
 {
-  Arial,
-  TimesNewRoman,
-  Elephant,
-  NotInstalledFont
+  Arial8,
+  TimesNewRoman24,
+  Elephant16
 } ;
 
 void Init()
@@ -73,25 +72,14 @@ void Init()
   #pragma region load up sounds
   window->loadSound( HumanMusic, "sounds/Human1.mp3", FMOD_CREATESTREAM ) ;
   window->loadSound( TreeWhat, "sounds/What2.wav" ) ;
-
-  // Load a sound we don't intend to loop
   window->loadSound( ColdArrow1, "sounds/ColdArrow1.wav" ) ;
-
-  // If you're going to LOOP a sound,
-  // you MUST load it with FMOD_SOFTWARE
-  // OR with FMOD_CREATESTREAM.
-  // Use FMOD_CREATESTREAM for long (5 minute)
-  // songs that you will loop as background music
-  // and FMOD_SOFTWARE for short, 2-5 second sounds
-  // that you want to loop (e.g. a crackling fire,
-  // or dripping water).
-  window->loadSound( ColdArrow2, "sounds/ColdArrow2.wav", FMOD_SOFTWARE ) ; // load the sound we intend to loop
+  window->loadSound( ColdArrow2, "sounds/ColdArrow2.wav" ) ;
   window->loadSound( ColdArrow3, "sounds/ColdArrow3.wav" ) ;
 
   window->loadSound( NerzuhlWillHaveYourHead, "sounds/Odpissd3.wav" ) ;
   
   window->playSound( TreeWhat ) ;
-  window->playSound( HumanMusic ) ;
+  window->loopSound( HumanMusic ) ; // Loop this sound forever
   #pragma endregion
 
   // sprite loading
@@ -125,43 +113,19 @@ void Init()
     // try increasing / reducing this value to see
     // the way it looks
   ) ;
-  
-  // You can have different padding on all the edges as well.
-  RECT padding = { 35,12,35,12 } ; // left, top, bottom, left.
-  padding.right = 12 ; // can also assign this way.
-
-  // Create a sprite with this text in it..
-  // referenced by the MessagePressCtrlTaunt,
-  // enum'd value (which is really just an int)
-  window->boxedTextSprite( MessagePressCtrlTaunt,
-    "Is that the best you can do???  CTRL!! Go on!",
-    D3DCOLOR_ARGB( 235, 255, 0, 0 ),
-    D3DCOLOR_ARGB( 235, 255, 255, 0 ),
-    padding ) ;
-
-  // Final message, shown when frame rate
-  // starts to drop.
-  window->boxedTextSprite( 
-    MessageStruggling, "OK now i'm struggling.\n"
-        "Please take some away with SHIFT",
-    D3DCOLOR_ARGB( 255, 255, 255, 0 ),
-    D3DCOLOR_ARGB( 235, 0, 0, 128 ),
-    padding ) ;
   #pragma endregion
 
   // Set the background clearing color to dk blue-gray
   window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
 
 
-  // Create a font
-  window->createFont( Fonts::Arial, "Arial", 8, FW_NORMAL, false ) ;
+  // Create a few fonts
+  window->createFont( Fonts::Arial8, "Arial", 8, FW_NORMAL, false ) ;
   
-  window->createFont( Fonts::TimesNewRoman, "Times New Roman", 24, FW_BOLD, true ) ;
+  window->createFont( Fonts::TimesNewRoman24, "Times New Roman", 24, FW_BOLD, true ) ;
 
-  window->createFont( Fonts::Elephant, "Elephant", 16, FW_NORMAL, false ) ;
-
-  // You get Arial
-  window->createFont( Fonts::NotInstalledFont, "NOTINSTALLED-FAKE-FONT", 12, FW_NORMAL, false ) ;
+  // If you don't have this font, you should get Arial instead.
+  window->createFont( Fonts::Elephant16, "Elephant", 16, FW_NORMAL, false ) ;
 
 }
 
@@ -169,28 +133,32 @@ void Update()
 {
   // update the game, happens 60 times a second
 
-  // Key presses
+  // Quit if the user presses ESCAPE
   if( window->keyJustPressed( VK_ESCAPE ) )
   {
     bail( "game ended!" ) ;
   }
 
+  // Press the "S" key to turn off the music
+  if( window->keyJustPressed( 'S' ) ) // There are no VK_* for normal character keys
+  {
+    window->stopSound( Sounds::HumanMusic ) ;
+  }
+  
   if( window->mouseJustPressed( Mouse::Left )  )
   {
-    //info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
+    info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
 
-    window->playSound( NerzuhlWillHaveYourHead ) ;
+    window->playSound( Sounds::ColdArrow1 ) ;
   }
 
   // Mouse presses
   if( window->mouseJustReleased( Mouse::Right ) ) 
   {
-    //info( "RIGHT MOUSE BUTTON was RELEASED!!" ) ;
+    info( "RIGHT MOUSE BUTTON was RELEASED!!" ) ;
     
     // purposefully test playing invalid sound
-    //window->playSound( 502005 ) ;
-
-    window->stopSound( Sounds::HumanMusic ) ;
+    window->playSound( 502005 ) ;
   }
 
   if( window->mouseIsPressed( Mouse::Middle ) )
@@ -231,22 +199,17 @@ void Draw()
   // W key is pushed down.  There is no VK_W.
   if( window->keyIsPressed( 'W' ) ) 
   {
-    int y = 20 ;
-    window->drawString( Fonts::TimesNewRoman, "HELLO!!!", 
+    window->drawString( Fonts::TimesNewRoman24, "Times New Roman 24 font!!!", 
       D3DCOLOR_ARGB( 255, 255, 255, 255 ),
-      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
+      20, 20, 300, 300, DT_CENTER | DT_VCENTER ) ;
 
-    window->drawString( Fonts::Arial, "HELLO!!!", 
+    window->drawString( Fonts::Arial8, "Hello, this is Arial 8 font",
       D3DCOLOR_ARGB( 255, 255, 255, 255 ),
-      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
+      20, 60, 300, 300, DT_CENTER | DT_VCENTER ) ;
 
-    window->drawString( Fonts::Elephant, "HELLO!!!", 
+    window->drawString( Fonts::Elephant16, "Hello, this is Elephant font", 
       D3DCOLOR_ARGB( 255, 255, 255, 255 ),
-      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
-
-    window->drawString( Fonts::NotInstalledFont, "HELLO!!!", 
-      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
-      20, y+=40, 300, 300, DT_CENTER | DT_VCENTER ) ;
+      20, 100, 300, 300, DT_CENTER | DT_VCENTER ) ;
 
   }
 
