@@ -157,3 +157,34 @@
 
 + Mar 10 / 2010 v0.0.7-custom-fonts
   - Add custom fonts
+
++ Mar 11 / 2010 v0.0.8-new-project-layout
+  * NEW PROJECT LAYOUT:  individual projects
+    for each week of GDW.
+  
+  * Common directory to store
+    assets in:  $solutionDir/assets.
+    * Added ASSET macro
+      
+  - Note:  I've disabled warnings:
+    - C4244:  'conversion' conversion from 'type1' to 'type2', possible loss of data
+      http://msdn.microsoft.com/en-us/library/th7a07tz%28VS.80%29.aspx
+      
+    - C4482:  nonstandard extension used: enum 'enum' used in qualified name
+      http://msdn.microsoft.com/en-us/library/ms173704%28VS.80%29.aspx
+    
+    - C4800:  'type' : forcing value to bool 'true' or 'false' (performance warning)
+      http://msdn.microsoft.com/en-us/library/b6801kcy%28VS.71%29.aspx
+      
+  - We've disabled the warnings in the interests of keeping
+    code UNCLUTTERED with casts.
+    (warnings disabled in Visual Studio project settings, not
+     using #pragma's.)
+     
+  - TODO:
+    - Separation of concerns
+    - Use a vector class in examples
+    
+    - Start using DOXYGEN style comments
+    - Fix the ORDER of the functions listed in
+      WindowClass.h with the .cpp file

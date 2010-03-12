@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="game"
-	ProjectGUID="{FB8CA3FB-9161-49C8-80B3-628AFB0D8DB5}"
-	RootNamespace="game"
+	Name="gdw-week-8"
+	ProjectGUID="{EFAAA804-B1D3-4DC9-B343-C51D928F3560}"
+	RootNamespace="gdwweek8"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -26,7 +26,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -64,11 +63,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				SuppressStartupBanner="false"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
-				Profile="false"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -178,7 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath=".\week-8.cpp"
 				>
 			</File>
 		</Filter>
@@ -187,10 +184,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\GameObject.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

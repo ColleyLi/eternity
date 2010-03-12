@@ -19,9 +19,10 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)\Build"
-			IntermediateDirectory="$(SolutionDir)\Build"
+			IntermediateDirectory="$(SolutionDir)\Build\Files"
 			ConfigurationType="4"
 			CharacterSet="1"
+			BuildLogFile="$(SolutionDir)\Build\Files\BuildLog-$(InputName).htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -46,6 +47,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)\vc90.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 				DisableSpecificWarnings="4244, 4482, 4800"
@@ -80,11 +82,12 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			OutputDirectory="$(SolutionDir)\Release"
+			IntermediateDirectory="$(SolutionDir)\Release\Files"
+			ConfigurationType="4"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
+			BuildLogFile="$(SolutionDir)\Release\Files\BuildLog-$(InputName).htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -105,12 +108,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4244, 4482, 4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -122,19 +126,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="1"
-				GenerateDebugInformation="true"
-				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -144,9 +139,6 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -247,6 +239,14 @@
 			>
 			<FileConfiguration
 				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
 				ExcludedFromBuild="true"
 				>
 				<Tool

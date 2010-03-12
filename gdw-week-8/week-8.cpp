@@ -14,6 +14,13 @@
      \/__/                     \/__/         \|__|         \/__/                                           
 
 
+
+
+     GDW - WEEK - 8
+
+
+
+
 */
 //
 // ascii text by http://www.network-science.de/ascii
@@ -25,12 +32,14 @@
 // VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
 // Your code starts below this line.
 
-#define ASSET(x) ("../assets/"##x)
-
-#include "GameObject.h"
-vector<GameObject> gameObjects ; // a vector of game objects
-
 Window *window ;  // the main window object
+
+// The ASSET macro Prepends "../assets/" to whatever you want.
+// So ASSET("sprites/Chaos.gif") turns into "../assets/sprites/Chaos.gif"
+// The reason this is done is so all the separate
+// Visual Studio projects can share the same ASSETS folder,
+// so we don't have to keep duplicating assets.
+#define ASSET(x) ("../assets/"##x)
 
 enum Sprites
 {
@@ -44,11 +53,7 @@ enum Sprites
   Lich,
   Phantom,
   Pirate,
-  Chaos,
-  BoxedTextTest,
-  GDIPlusTextureTest,
-  MessagePressCtrlTaunt,
-  MessageStruggling
+  Chaos
 } ;
 
 enum Sounds
@@ -57,8 +62,7 @@ enum Sounds
   TreeWhat,
   ColdArrow1,
   ColdArrow2,
-  ColdArrow3,
-  NerzuhlWillHaveYourHead
+  ColdArrow3
 } ;
 
 enum Fonts
@@ -70,22 +74,18 @@ enum Fonts
 
 void Init()
 {
+
   // Load sounds
-  #pragma region load up sounds
   window->loadSound( HumanMusic, ASSET("sounds/Human1.mp3"), FMOD_CREATESTREAM ) ;
   window->loadSound( TreeWhat, ASSET("sounds/What2.wav") ) ;
   window->loadSound( ColdArrow1, ASSET("sounds/ColdArrow1.wav") ) ;
   window->loadSound( ColdArrow2, ASSET("sounds/ColdArrow2.wav") ) ;
   window->loadSound( ColdArrow3, ASSET("sounds/ColdArrow3.wav") ) ;
 
-  window->loadSound( NerzuhlWillHaveYourHead, ASSET("sounds/Odpissd3.wav") ) ;
-  
   window->playSound( TreeWhat ) ;
   window->loopSound( HumanMusic ) ; // Loop this sound forever
-  #pragma endregion
 
   // sprite loading
-  #pragma region load up sprites
   window->loadSprite( Mario, ASSET("sprites/mario.png") ) ;
 
   // Animated sprite
@@ -96,38 +96,17 @@ void Init()
   window->loadSprite( Eye, ASSET("sprites/Eye.png") ) ;
   window->loadSprite( Garland, ASSET("sprites/Garland.png") ) ;
   window->loadSprite( Kary, ASSET("sprites/Kary.png") ) ;
-  window->loadSprite( Kraken, ASSET("sprites/Kraken.png") ) ;
-  window->loadSprite( Lich, ASSET("sprites/Lich.png") ) ;
-  window->loadSprite( Phantom, ASSET("sprites/Phantom.png") ) ;
-  window->loadSprite( Pirate, ASSET("sprites/Pirate.png") ) ;
-  window->loadSprite( Chaos, ASSET("sprites/Chaos.gif") ) ;
-  #pragma endregion
-
-  #pragma region create boxed text sprites
-  // Create boxed text as a sprite.  If you do this
-  // to your text before hand, it may run faster than if you
-  // simply running drawBox() and drawString() every call.
-  window->boxedTextSprite( BoxedTextTest,
-    "Some boxed text",
-    D3DCOLOR_ARGB( 255, 255, 0, 0 ), // fg color
-    D3DCOLOR_ARGB( 200, 129, 47, 0 ),// bg color
-    15  // "padding" around the edges of the text,
-    // try increasing / reducing this value to see
-    // the way it looks
-  ) ;
-  #pragma endregion
-
-  // Set the background clearing color to dk blue-gray
-  window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
-
+  window->loadSprite( Chaos, ASSET("sprites/Chaos.png") ) ;
 
   // Create a few fonts
   window->createFont( Fonts::Arial8, "Arial", 8, FW_NORMAL, false ) ;
-  
   window->createFont( Fonts::TimesNewRoman24, "Times New Roman", 24, FW_BOLD, true ) ;
-
   // If you don't have this font, you should get Arial instead.
   window->createFont( Fonts::Elephant16, "Elephant", 16, FW_NORMAL, false ) ;
+
+    // Set the background clearing color to dk blue-gray
+  window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
+
 
 
   char cwd[260];
