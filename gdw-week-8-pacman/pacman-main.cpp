@@ -159,7 +159,6 @@ void Update()
       // Start up the game play music
       window->playSound( Sounds::PacmanGamePlayMusic ) ;
 
-      
       // Load "lvl1.txt"
       game->loadLevel( "lvl1.txt" ) ;
 

@@ -73,6 +73,8 @@ public:
         
           // put nothing in the tiles map..
         case Tiles::PacmanStart:
+          // This should not be a tile...
+          // Let's make it a game object!
           tile->setSpriteId( Sprites::Pacman ) ;
           break;
 

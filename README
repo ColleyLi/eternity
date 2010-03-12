@@ -190,6 +190,8 @@
     
   - Added auto-center drawString() function
     void drawString( int fontId, char *str, D3DCOLOR color ) ;
+    
+  - bunch of other things in the pacman project
   
   - TODO:
     - Separation of concerns
