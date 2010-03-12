@@ -8,7 +8,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "game\game.vcproj", 
 		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gdw-week-8", "gdw-week-8\gdw-week-8.vcproj", "{EFAAA804-B1D3-4DC9-B343-C51D928F3560}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gdw-week-8-asteroid", "gdw-week-8-asteroid\gdw-week-8-asteroid.vcproj", "{7091693D-0F46-443A-B28C-43E09B0CA8FA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gdw-week-8-pacman", "gdw-week-8-pacman\gdw-week-8-pacman.vcproj", "{09EA15FC-902B-4EA2-8E0C-13F4EF9CC895}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
 	EndProjectSection
@@ -27,10 +32,14 @@ Global
 		{FB8CA3FB-9161-49C8-80B3-628AFB0D8DB5}.Debug|Win32.Build.0 = Debug|Win32
 		{FB8CA3FB-9161-49C8-80B3-628AFB0D8DB5}.Release|Win32.ActiveCfg = Release|Win32
 		{FB8CA3FB-9161-49C8-80B3-628AFB0D8DB5}.Release|Win32.Build.0 = Release|Win32
-		{EFAAA804-B1D3-4DC9-B343-C51D928F3560}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EFAAA804-B1D3-4DC9-B343-C51D928F3560}.Debug|Win32.Build.0 = Debug|Win32
-		{EFAAA804-B1D3-4DC9-B343-C51D928F3560}.Release|Win32.ActiveCfg = Release|Win32
-		{EFAAA804-B1D3-4DC9-B343-C51D928F3560}.Release|Win32.Build.0 = Release|Win32
+		{7091693D-0F46-443A-B28C-43E09B0CA8FA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7091693D-0F46-443A-B28C-43E09B0CA8FA}.Debug|Win32.Build.0 = Debug|Win32
+		{7091693D-0F46-443A-B28C-43E09B0CA8FA}.Release|Win32.ActiveCfg = Release|Win32
+		{7091693D-0F46-443A-B28C-43E09B0CA8FA}.Release|Win32.Build.0 = Release|Win32
+		{09EA15FC-902B-4EA2-8E0C-13F4EF9CC895}.Debug|Win32.ActiveCfg = Debug|Win32
+		{09EA15FC-902B-4EA2-8E0C-13F4EF9CC895}.Debug|Win32.Build.0 = Debug|Win32
+		{09EA15FC-902B-4EA2-8E0C-13F4EF9CC895}.Release|Win32.ActiveCfg = Release|Win32
+		{09EA15FC-902B-4EA2-8E0C-13F4EF9CC895}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

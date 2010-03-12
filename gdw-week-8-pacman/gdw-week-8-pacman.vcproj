@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="gdw-week-8"
-	ProjectGUID="{EFAAA804-B1D3-4DC9-B343-C51D928F3560}"
-	RootNamespace="gdwweek8"
+	Name="gdw-week-8-pacman"
+	ProjectGUID="{09EA15FC-902B-4EA2-8E0C-13F4EF9CC895}"
+	RootNamespace="gdwweek8pacman"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -91,12 +91,11 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\Release"
-			IntermediateDirectory="$(SolutionDir)\Release\Files"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
-			BuildLogFile="$(SolutionDir)\Release\Files\BuildLog-$(InputName).htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -117,13 +116,12 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4244, 4482, 4800"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -175,7 +173,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\week-8.cpp"
+				RelativePath=".\pacman-main.cpp"
 				>
 			</File>
 		</Filter>
@@ -184,6 +182,22 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\EnumDefinitions.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GameObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GameWorld.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Tile.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -191,6 +205,18 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
+		<File
+			RelativePath=".\lvl1.txt"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

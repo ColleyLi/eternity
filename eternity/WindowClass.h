@@ -283,14 +283,39 @@ private:
 public:
   void addSprite( int id, Sprite *sprite ) ;
 
+  // Load a static sprite with only 1 frame (not animated)
+  // Loads width and height values from file
+  // Assume background color is Photoshop's "transparent"
+  void loadSprite( int id, char *filename ) ;
+
+  // Load a static sprite from a file
+  // consider "backgroundColor" as
+  // the transparent color (doesn't have to be
+  // photoshop "transparent")
+  void loadSprite( int id, char *filename, D3DCOLOR backgroundColor ) ;
+
+  // Load an animated sprite from a file,
+  // singleSpriteWidth and singleSpriteHeight
+  // are the width and height of a single frame,
+  // numFrames is the number of frames you've got
+  // in the sprite.
+  void loadSprite( int id, char *filename,
+    D3DCOLOR backgroundColor,
+    int singleSpriteWidth,
+    int singleSpriteHeight,
+    int numFrames,
+    float timeBetweenFrames ) ;
+
+  /*
+  // Old signature.  The default parameters
+  // look awkward in VS autocomplete.
   void loadSprite( int id, char *filename,
     D3DCOLOR backgroundColor = D3DCOLOR_ARGB( 0,0,0,0 ),
     int singleSpriteWidth = SPRITE_READ_FROM_FILE,
     int singleSpriteHeight = SPRITE_READ_FROM_FILE,
     int numFrames = SPRITE_READ_FROM_FILE,
     float timeBetweenFrames = 0.5f ) ;
-
-
+  */
 
   // Gets you a random sprite id from the map.
   // Useful for testing, not much else

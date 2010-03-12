@@ -554,6 +554,22 @@ void Window::addSprite( int id, Sprite *sprite )
   sprites.insert( make_pair( id, sprite ) ) ;
 }
 
+
+
+void Window::loadSprite( int id, char *filename )
+{
+  loadSprite( id, filename, D3DCOLOR_ARGB( 0,0,0,0 ),
+    SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
+    SPRITE_READ_FROM_FILE, 0.5f ) ;
+}
+
+void Window::loadSprite( int id, char *filename, D3DCOLOR backgroundColor )
+{
+  loadSprite( id, filename, backgroundColor,
+    SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
+    SPRITE_READ_FROM_FILE, 0.5f ) ;
+}
+
 // id is how you will refer to this sprite after its been loaded
 // filename is just the filename on the disk drive
 void Window::loadSprite( int id, char *filename,

@@ -15,167 +15,101 @@
 
 
 */
-
-////////////////////////////////////////////
-//             GDW - WEEK - 8
 //
-Window *window ;  // the main window object
+// ascii text by http://www.network-science.de/ascii
+//
+// REQUIRES:  DIRECTX
+//            FMOD
 
-// The ASSET macro adds
-// "../assets/" IN FRONT of
-// to whatever you want.
-// So:
-//    ASSET("sprites/Chaos.gif")
-// turns into
-//    "../assets/sprites/Chaos.gif"
-// In the pre-processor.
-// The reason this is done is so all the separate
-// projects ("game", "gdw-week-8" etc.)
-// can share the same ASSETS folder,
-// so we don't have to keep duplicating assets
-// and wasting MB.
-// This also makes it work if you double-click
-// the .exe file in the /Build folder.
-// Your game will still be able to find
-// the assets.
+// Here we demonstrate the use of vectors :)
+
+
+// VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
+// Your code starts below this line.
+
 #define ASSET(x) ("../assets/"##x)
 
-// This game has a couple of states
-enum GameState
-{
-  Menu,
-  Running,
-  Paused,
-  GameOver
-};
+Window *window ;  // the main window object
 
-// Declare a global GameState,
-// to be used .. game-wide.
-GameState gameState ;
-
-#pragma region a few enums
+#pragma region some enums
 enum Sprites
 {
   Mario = 1,
-  MenuNewGame
+  SixteenCounter,
+  Astos,
+  Eye,
+  Garland,
+  Kary,
+  Kraken,
+  Lich,
+  Phantom,
+  Pirate,
+  Chaos,
+  BoxedTextTest,
+  GDIPlusTextureTest,
+  MessagePressCtrlTaunt,
+  MessageStruggling
 } ;
 
 enum Sounds
 {
-  HumanMusic = 1,
-  TreeWhat,
-  ColdArrow1,
-  ColdArrow2,
-  ColdArrow3
+  Explode1 = 1,
+  Explode2,
+  Explode3
 } ;
 
 enum Fonts
 {
-  Arial24 = 1,
-  TimesNewRoman18
+  Arial24,
+  TimesNewRoman24
 } ;
 #pragma endregion
 
+#include "Vector2.h"
+
 void Init()
 {
-  #pragma region asset load and font create
-  // Load sounds.  Notice how
-  // we use the ASSET() macro to
-  // make all filenames start with "../assets/"
-  window->loadSound( HumanMusic, ASSET("sounds/Human1.mp3"), FMOD_CREATESTREAM ) ;
-  window->loadSound( TreeWhat, ASSET("sounds/What2.wav") ) ;
-  window->loadSound( ColdArrow1, ASSET("sounds/ColdArrow1.wav") ) ;
-  window->loadSound( ColdArrow2, ASSET("sounds/ColdArrow2.wav") ) ;
-  window->loadSound( ColdArrow3, ASSET("sounds/ColdArrow3.wav") ) ;
-
-  window->playSound( TreeWhat ) ;
-  window->loopSound( HumanMusic ) ; // Loop this sound forever
+  // Load sounds
+  window->loadSound( Explode1, ASSET("sounds/BuildingDeathSmallHuman.wav") ) ;
+  window->loadSound( Explode2, ASSET("sounds/BuildingDeathLargeHuman.wav") ) ;
+  window->loadSound( Explode3, ASSET("sounds/BuildingDeathLargeOrc.wav") ) ;
 
   // sprite loading
+  #pragma region load up sprites
   window->loadSprite( Mario, ASSET("sprites/mario.png") ) ;
-  window->loadSprite( Sprites::MenuNewGame, ASSET("sprites/MenuNewGame.png") ) ;
+
+  // Animated sprite
+  window->loadSprite( SixteenCounter, ASSET("sprites/16counter.png"), 0, 32, 32, 16, 0.5f ) ;
+
+  // other sprites
+  window->loadSprite( Astos, ASSET("sprites/ff/Astos.png") ) ;
+  window->loadSprite( Eye, ASSET("sprites/ff/Eye.png") ) ;
+  window->loadSprite( Garland, ASSET("sprites/ff/Garland.png") ) ;
+  window->loadSprite( Kary, ASSET("sprites/ff/Kary.png") ) ;
+  window->loadSprite( Kraken, ASSET("sprites/ff/Kraken.png") ) ;
+  window->loadSprite( Lich, ASSET("sprites/ff/Lich.png") ) ;
+  window->loadSprite( Phantom, ASSET("sprites/ff/Phantom.png") ) ;
+  window->loadSprite( Pirate, ASSET("sprites/ff/Pirate.png") ) ;
+  window->loadSprite( Chaos, ASSET("sprites/ff/Chaos.gif") ) ;
+  #pragma endregion
+
+  // Set the background clearing color to dk blue-gray
+  window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
 
   // Create a few fonts
   window->createFont( Fonts::Arial24, "Arial", 24, FW_NORMAL, false ) ;
-  window->createFont( Fonts::TimesNewRoman18, "Times New Roman", 18, FW_BOLD, false ) ;
-
-  // Black bkg color to start
-  window->setBackgroundColor( D3DCOLOR_ARGB( 255, 0, 0, 0 ) ) ;
-  #pragma endregion
-
+  window->createFont( Fonts::TimesNewRoman24, "Times New Roman", 24, FW_BOLD, false ) ;
 }
 
 void Update()
 {
   // update the game, happens 60 times a second
 
-  // How we update the game really
-  // depends on __WHAT STATE__
-  // the game is IN.
-
-  switch( gameState )
+  if( window->keyIsPressed( VK_ESCAPE ) )
   {
-  case GameState::Menu:
-    if( window->mouseJustPressed( Mouse::Left ) )
-    {
-      // There was a click.  Hmm.  Was it
-      // on a button?  Let's assume the
-      // person clicked the button.
-
-      // You can figure out how to see if a person
-      // clicked within a rectangle pretty easily
-      int xClick = window->getMouseX() ;
-      int yClick = window->getMouseY() ;
-      // if( click location is in box of button ... ) 
-      // You could even make a Button class...
-
-
-
-      // Anyway, here's the code to run
-      // when it is time to start the game
-      // from the menu
-      gameState = GameState::Running ; // Start the game.
-      window->setBackgroundColor( D3DCOLOR_ARGB( 255, 64, 0, 0 ) ) ;
-    }
-    break;
-
-  case GameState::Running:
-    // Here we run the game.
-    // Allow PAUSE by pressing 'P'
-    if( window->keyJustPressed( 'P' ) )
-    {
-      gameState = GameState::Paused;
-      window->pause() ; // Pause the engine as well
-      // This halts animations.
-
-      info( "Paused..." ) ;
-    }
-    break;
-
-  case GameState::Paused:
-    // ((do nothing except check))
-    // for P again to unpause
-    if( window->keyJustPressed( 'P' ) )
-    {
-      gameState = GameState::Running ;
-      window->unpause() ;
-      info( "UNPAUSED" ) ;
-    }
-    break;
-
-  case GameState::GameOver:
-    //
-    break;
+    bail( "Game over" ) ;
   }
-
-  // This code runs every frame
-  // regardless of what "state"
-  // the game is in.
-  // Quit if the user presses ESCAPE
-  if( window->keyJustPressed( VK_ESCAPE ) )
-  {
-    bail( "game ended!" ) ;
-  }
+  
 }
 
 
@@ -184,35 +118,11 @@ void Draw()
 {
   // Draw the game, happens 60 times a second
 
-  // What we draw
-  // also depends
-  // on game state
-  switch( gameState )
-  {
-  case GameState::Menu:
-    window->drawString(
-      Fonts::Arial24,
-      "Click the mouse to start",
-      Color::White );
-    break;
-
-  case GameState::Running:
-    break;
-
-  case GameState::Paused:
-    break;
-
-  case GameState::GameOver:
-    break;
-  }
-
-
-  // Run these draw calls regardless of game state
+  // draw the mouse cursor with this sprite.
   window->drawMouseCursor( Mario ) ;
 
   window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
-
 }
 
 
