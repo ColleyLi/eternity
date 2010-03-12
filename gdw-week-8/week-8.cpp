@@ -14,46 +14,50 @@
      \/__/                     \/__/         \|__|         \/__/                                           
 
 
-
-
-     GDW - WEEK - 8
-
-
-
-
 */
+
+////////////////////////////////////////////
+//             GDW - WEEK - 8
 //
-// ascii text by http://www.network-science.de/ascii
-//
-// REQUIRES:  DIRECTX
-//            FMOD
-
-
-// VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
-// Your code starts below this line.
-
 Window *window ;  // the main window object
 
-// The ASSET macro Prepends "../assets/" to whatever you want.
-// So ASSET("sprites/Chaos.gif") turns into "../assets/sprites/Chaos.gif"
+// The ASSET macro adds
+// "../assets/" IN FRONT of
+// to whatever you want.
+// So:
+//    ASSET("sprites/Chaos.gif")
+// turns into
+//    "../assets/sprites/Chaos.gif"
+// In the pre-processor.
 // The reason this is done is so all the separate
-// Visual Studio projects can share the same ASSETS folder,
-// so we don't have to keep duplicating assets.
+// projects ("game", "gdw-week-8" etc.)
+// can share the same ASSETS folder,
+// so we don't have to keep duplicating assets
+// and wasting MB.
+// This also makes it work if you double-click
+// the .exe file in the /Build folder.
+// Your game will still be able to find
+// the assets.
 #define ASSET(x) ("../assets/"##x)
 
+// This game has a couple of states
+enum GameState
+{
+  Menu,
+  Running,
+  Paused,
+  GameOver
+};
+
+// Declare a global GameState,
+// to be used .. game-wide.
+GameState gameState ;
+
+#pragma region a few enums
 enum Sprites
 {
   Mario = 1,
-  SixteenCounter,
-  Astos,
-  Eye,
-  Garland,
-  Kary,
-  Kraken,
-  Lich,
-  Phantom,
-  Pirate,
-  Chaos
+  MenuNewGame
 } ;
 
 enum Sounds
@@ -67,15 +71,17 @@ enum Sounds
 
 enum Fonts
 {
-  Arial8,
-  TimesNewRoman24,
-  Elephant16
+  Arial24 = 1,
+  TimesNewRoman18
 } ;
+#pragma endregion
 
 void Init()
 {
-
-  // Load sounds
+  #pragma region asset load and font create
+  // Load sounds.  Notice how
+  // we use the ASSET() macro to
+  // make all filenames start with "../assets/"
   window->loadSound( HumanMusic, ASSET("sounds/Human1.mp3"), FMOD_CREATESTREAM ) ;
   window->loadSound( TreeWhat, ASSET("sounds/What2.wav") ) ;
   window->loadSound( ColdArrow1, ASSET("sounds/ColdArrow1.wav") ) ;
@@ -87,31 +93,15 @@ void Init()
 
   // sprite loading
   window->loadSprite( Mario, ASSET("sprites/mario.png") ) ;
-
-  // Animated sprite
-  window->loadSprite( SixteenCounter, ASSET("sprites/16counter.png"), 0, 32, 32, 16, 0.5f ) ;
-
-  // other sprites
-  window->loadSprite( Astos, ASSET("sprites/Astos.png") ) ;
-  window->loadSprite( Eye, ASSET("sprites/Eye.png") ) ;
-  window->loadSprite( Garland, ASSET("sprites/Garland.png") ) ;
-  window->loadSprite( Kary, ASSET("sprites/Kary.png") ) ;
-  window->loadSprite( Chaos, ASSET("sprites/Chaos.png") ) ;
+  window->loadSprite( Sprites::MenuNewGame, ASSET("sprites/MenuNewGame.png") ) ;
 
   // Create a few fonts
-  window->createFont( Fonts::Arial8, "Arial", 8, FW_NORMAL, false ) ;
-  window->createFont( Fonts::TimesNewRoman24, "Times New Roman", 24, FW_BOLD, true ) ;
-  // If you don't have this font, you should get Arial instead.
-  window->createFont( Fonts::Elephant16, "Elephant", 16, FW_NORMAL, false ) ;
+  window->createFont( Fonts::Arial24, "Arial", 24, FW_NORMAL, false ) ;
+  window->createFont( Fonts::TimesNewRoman18, "Times New Roman", 18, FW_BOLD, false ) ;
 
-    // Set the background clearing color to dk blue-gray
-  window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
-
-
-
-  char cwd[260];
-  GetCurrentDirectoryA( 260, cwd ) ;
-  info( "Current working directory is '%s'", cwd ) ;
+  // Black bkg color to start
+  window->setBackgroundColor( D3DCOLOR_ARGB( 255, 0, 0, 0 ) ) ;
+  #pragma endregion
 
 }
 
@@ -119,61 +109,73 @@ void Update()
 {
   // update the game, happens 60 times a second
 
+  // How we update the game really
+  // depends on __WHAT STATE__
+  // the game is IN.
+
+  switch( gameState )
+  {
+  case GameState::Menu:
+    if( window->mouseJustPressed( Mouse::Left ) )
+    {
+      // There was a click.  Hmm.  Was it
+      // on a button?  Let's assume the
+      // person clicked the button.
+
+      // You can figure out how to see if a person
+      // clicked within a rectangle pretty easily
+      int xClick = window->getMouseX() ;
+      int yClick = window->getMouseY() ;
+      // if( click location is in box of button ... ) 
+      // You could even make a Button class...
+
+
+
+      // Anyway, here's the code to run
+      // when it is time to start the game
+      // from the menu
+      gameState = GameState::Running ; // Start the game.
+      window->setBackgroundColor( D3DCOLOR_ARGB( 255, 64, 0, 0 ) ) ;
+    }
+    break;
+
+  case GameState::Running:
+    // Here we run the game.
+    // Allow PAUSE by pressing 'P'
+    if( window->keyJustPressed( 'P' ) )
+    {
+      gameState = GameState::Paused;
+      window->pause() ; // Pause the engine as well
+      // This halts animations.
+
+      info( "Paused..." ) ;
+    }
+    break;
+
+  case GameState::Paused:
+    // ((do nothing except check))
+    // for P again to unpause
+    if( window->keyJustPressed( 'P' ) )
+    {
+      gameState = GameState::Running ;
+      window->unpause() ;
+      info( "UNPAUSED" ) ;
+    }
+    break;
+
+  case GameState::GameOver:
+    //
+    break;
+  }
+
+  // This code runs every frame
+  // regardless of what "state"
+  // the game is in.
   // Quit if the user presses ESCAPE
   if( window->keyJustPressed( VK_ESCAPE ) )
   {
     bail( "game ended!" ) ;
   }
-
-  // Press the "S" key to turn off the music
-  if( window->keyJustPressed( 'S' ) )
-  {
-    // Letter keys don't have VK_*
-    // constants.
-    
-    // Instead you check 
-    // if they are pressed exactly as
-    // we've shown here,
-    //   window->keyJustPressed( 'J' )
-    // MAKE SURE TO USE UPPERCASED LETTERS
-    // between 'SINGLE QUOTES'
-
-    window->stopSound( Sounds::HumanMusic ) ;
-  }
-
-  // Check for numbers across the top
-  // of the keyboard like this...
-  if( window->keyIsPressed( '1' ) )
-  {
-    info( "Uh.. ONE.  That's what you wanted, right?" ) ;
-  }
-
-  // Check for NUMPAD using VK_NUMPAD0-9
-  if( window->keyIsPressed( VK_NUMPAD1 ) )
-  {
-    info( "NUMPAD 1.  Numpad on laptop is awkward, so probably avoid it." ) ;
-  }
-  
-  // Mouse presses
-  if( window->mouseJustPressed( Mouse::Left )  )
-  {
-    info( "LEFT MOUSE BUTTON was PUSHED!" ) ;
-    window->playSound( Sounds::ColdArrow1 ) ;
-  }
-  
-  if( window->mouseJustReleased( Mouse::Right ) ) 
-  {
-    info( "RIGHT MOUSE BUTTON was RELEASED!!" ) ;
-    
-    // purposefully test playing invalid sound
-    window->playSound( 502005 ) ;
-  }
-
-  if( window->mouseIsPressed( Mouse::Middle ) )
-  {
-    info( "MIDDLE MOUSE is being HELD DOWN!" ) ;
-  }
-  
 }
 
 
@@ -182,69 +184,30 @@ void Draw()
 {
   // Draw the game, happens 60 times a second
 
-  // Draw Chaos centered at (280, 230)
-  window->drawSprite( Sprites::Chaos, 280, 230 ) ;
-
-  if( window->keyIsPressed( VK_SPACE ) )
+  // What we draw
+  // also depends
+  // on game state
+  switch( gameState )
   {
-    // When space is down, draw the eye
-    // shaded in red, partly see-thru
+  case GameState::Menu:
+    window->drawString(
+      Fonts::Arial24,
+      "Click the mouse to start",
+      Color::White );
+    break;
 
-    // Create color to shade it with.
-    D3DCOLOR seeThruRed = D3DCOLOR_ARGB( 180, 255, 0, 0 ) ;
-    // This is a partly see-thru RED color.
-    // The first number is ALPHA which is "solidness".
-    // 255 is FULLY SOLID, 0 is completely see thru
-    // the second number is RED,
-    // then GREEN
-    // then BLUE.
-    // Hence "ARGB", standing for
-    // "Alpha Red Green Blue"
+  case GameState::Running:
+    break;
 
-    // Draw the eye in partly see-thru
-    window->drawSprite(
-      Sprites::Eye, // Sprite to draw (previously loaded with loadSprite)
-      320,  // x position
-      240,  // y position
-      seeThruRed
-    ) ;
+  case GameState::Paused:
+    break;
 
-    // show text
-    window->drawString( "Hello!", seeThruRed, 360, 200, 90, 90 ) ;
-
-  }
-  else
-  {
-    // When space is NOT down, just draw
-    // the eye "as if he were in pure white light"
-    // (which means to totally use the original colors)
-    //window->drawSprite( Sprites::Eye, 320, 240, Color::White ) ;
-    
-    // The above line is completely equivalent to
-    window->drawSprite( Sprites::Eye, 320, 240 ) ; // just draw in
-    // original colors, without changing the light color
-    // that would be shining on him
+  case GameState::GameOver:
+    break;
   }
 
-  // Font samples.  'W' checks if the
-  // W key is pushed down.  There is no VK_W.
-  if( window->keyIsPressed( 'W' ) ) 
-  {
-    window->drawString( Fonts::TimesNewRoman24, "Times New Roman 24 font!!!", 
-      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
-      20, 20, 300, 300, DT_CENTER | DT_VCENTER ) ;
 
-    window->drawString( Fonts::Arial8, "Hello, this is Arial 8 font",
-      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
-      20, 60, 300, 300, DT_CENTER | DT_VCENTER ) ;
-
-    window->drawString( Fonts::Elephant16, "Hello, this is Elephant font", 
-      D3DCOLOR_ARGB( 255, 255, 255, 255 ),
-      20, 100, 300, 300, DT_CENTER | DT_VCENTER ) ;
-
-  }
-
-  // draw the mouse cursor with this sprite.
+  // Run these draw calls regardless of game state
   window->drawMouseCursor( Mario ) ;
 
   window->drawFrameCounter(); // erase this if you don't like

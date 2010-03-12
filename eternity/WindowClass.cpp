@@ -83,6 +83,8 @@ Window::Window( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int wind
   // start up fmod
   initFMOD() ;
 
+  paused = false ;
+
 }
 
 Window::~Window()
@@ -441,25 +443,39 @@ void Window::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCO
 
 void Window::drawSprite( int id, float x, float y )
 {
-  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
+}
+
+void Window::drawSprite( int id, float x, float y, SpriteCentering centering )
+{
+  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), centering ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, D3DCOLOR modulatingColor )
 {
-  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, modulatingColor ) ;
+  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, modulatingColor, SpriteCentering::Center ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, float width, float height )
 {
-  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
+}
+
+void Window::drawSprite( int id, float x, float y, float width, float height, SpriteCentering centering )
+{
+  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), centering ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, float width, float height, float angle )
 {
-  drawSprite( id, x, y, width, height, angle, D3DCOLOR_ARGB( 255, 255, 255, 255 ) ) ;
+  drawSprite( id, x, y, width, height, angle, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
 }
 
 void Window::drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor )
+{
+  drawSprite( id, x, y, width, height, angle, modulatingColor, SpriteCentering::Center ) ;
+}
+void Window::drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor, SpriteCentering centering )
 {
   Sprite *sprite = defaultSprite ;
   SpriteMapIter spriteEntry = sprites.find( id ) ;
@@ -489,7 +505,14 @@ void Window::drawSprite( int id, float x, float y, float width, float height, fl
 
   //printf( "Scale %f %f\n", vec2Scale.x, vec2Scale.y ) ;
   
-  D3DXVECTOR3 vec3Center( sprite->getCenterX(), sprite->getCenterY(), 0 ) ;
+  D3DXVECTOR3 vec3Center( 0.0f, 0.0f, 0.0f ) ;
+  if( centering == SpriteCentering::Center )
+  {
+    vec3Center.x = sprite->getCenterX() ;
+    vec3Center.y = sprite->getCenterY() ;
+  }
+  // (otherwise its 0, for top left corner "centering")
+
   //D3DXVECTOR3 vec3Pos( x, y, 0 ) ; ; // do not use this.
 
   D3DXMATRIX matrix ;
@@ -513,9 +536,7 @@ void Window::drawSprite( int id, float x, float y, float width, float height, fl
   
   ) ;
   id3dxSpriteRenderer->End();
-
 }
-
 
 //!! this really needs to be in a spriteManager so we can adequately
 // protect the sprites map from collision
@@ -1059,27 +1080,56 @@ void Window::getBoxDimensions( char *str, RECT &r )
     DT_CALCRECT /* | dtOptions */, 0 ) ;
 }
 
-void Window::drawString( char *str, D3DCOLOR color, float x, float y, float width, float height )
-{
-  drawString( str, color, x, y, width, height, DT_CENTER | DT_VCENTER ) ;
-}
-
-void Window::drawString( char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions )
+void Window::drawString( int fontId, char *str, D3DCOLOR color )
 {
   RECT rect ;
-  SetRect( &rect, x, y, x + width, y + height ) ;
+  SetRect( &rect, 0, 0, getWidth(), getHeight() ) ;
 
-  id3dxDefaultFont->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
+  drawString( fontId, str, color, rect, DT_CENTER | DT_VCENTER ) ;
 }
 
-void Window::drawString( char *str, D3DCOLOR color, RECT &r )
+void Window::drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight )
 {
-  id3dxDefaultFont->DrawTextA( NULL, str, -1, &r, DT_CENTER | DT_VCENTER, color ) ;
+  RECT rect ;
+  SetRect( &rect, x, y, x + boxWidth, y + boxHeight ) ;
+
+  drawString( fontId, str, color, rect, DT_CENTER | DT_VCENTER ) ;
 }
 
-void Window::drawString( char *str, D3DCOLOR color, RECT &r, DWORD formatOptions )
+void Window::drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight, DWORD formatOptions )
 {
-  id3dxDefaultFont->DrawTextA( NULL, str, -1, &r, formatOptions, color ) ;
+  RECT rect ;
+  SetRect( &rect, x, y, x + boxWidth, y + boxHeight ) ;
+
+  drawString( fontId, str, color, rect, formatOptions ) ;
+}
+
+void Window::drawString( int fontId, char *str, D3DCOLOR color, RECT &rect )
+{
+  drawString( fontId, str, color, rect, DT_CENTER | DT_VCENTER ) ;
+}
+
+void Window::drawString( int fontId, char *str, D3DCOLOR color, RECT &rect, DWORD formatOptions )
+{
+  // Retrieve the font
+  ID3DXFont *font = id3dxDefaultFont ;
+
+  if( fontId != DEFAULT_FONT )
+  {
+    FontMapIter fontEntry = fonts.find( fontId ) ;
+
+    if( fontEntry == fonts.end() )
+    {
+      warning( "Font %d does not exist, using default font instead", fontId ) ;
+    }
+    else
+    {
+      font = fontEntry->second ;
+    }
+  }
+
+  font->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
+
 }
 
 void Window::createFont( int id, char *fontName, float size, int boldness, bool italics )
@@ -1102,30 +1152,6 @@ void Window::createFont( int id, char *fontName, float size, int boldness, bool 
   fonts.insert( make_pair( id, font ) ) ;
 
 }
-
-void Window::drawString( int id, char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions )
-{
-  // Retrieve the font
-  ID3DXFont *font = id3dxDefaultFont ;
-  FontMapIter fontEntry = fonts.find( id ) ;
-
-  if( fontEntry == fonts.end() )
-  {
-    warning( "Font %d does not exist, using default font instead", id ) ;
-  }
-  else
-  {
-    font = fontEntry->second ;
-  }
-
-  RECT rect ;
-  SetRect( &rect, x, y, x + width, y + height ) ;
-
-  font->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
-
-}
-
-
 
 int Window::getWidth()
 {
@@ -1391,9 +1417,15 @@ void Window::step()
 
 
   // Advance sprite animations.
-  foreach( SpriteMapIter, iter, sprites )
+  // This is the only thing that
+  // is PAUSED when the game is
+  // PAUSED.  TODO:  Pause sounds here as well...
+  if( !paused )
   {
-    iter->second->advance( timer.time_since_last_frame ) ;
+    foreach( SpriteMapIter, iter, sprites )
+    {
+      iter->second->advance( timer.time_since_last_frame ) ;
+    }
   }
 
   // Copy over "current" states to "previous" states
@@ -1447,17 +1479,20 @@ void Window::setBackgroundColor( D3DCOLOR color )
   clearColor = color ;
 }
 
-void Window::drawMouseCursor(int id)
+void Window::drawMouseCursor(int spriteId, bool showCursorCoordinates)
 {
-  drawSprite( id, mouse.getX(), mouse.getY() ) ;
+  drawSprite( spriteId, mouse.getX(), mouse.getY(), SpriteCentering::TopLeft ) ;
 
-  char buf[ 300 ] ;
-  sprintf( buf, "mouse\n(%d, %d)", mouse.getX(), mouse.getY() ) ;
+  if( showCursorCoordinates )
+  {
+    char buf[ 300 ] ;
+    sprintf( buf, "mouse\n(%d, %d)", mouse.getX(), mouse.getY() ) ;
 
-  RECT r ;
-  getBoxDimensions( buf, r ) ;
-  drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), mouse.getX(), mouse.getY(), r.right-r.left, r.bottom-r.top ) ;
-  drawString( buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), mouse.getX(), mouse.getY(), r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
+    RECT r ;
+    getBoxDimensions( buf, r ) ;
+    drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), mouse.getX(), mouse.getY(), r.right-r.left, r.bottom-r.top ) ;
+    drawString( DEFAULT_FONT, buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), mouse.getX(), mouse.getY(), r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
+  }
 }
 
 // Show fps
@@ -1479,7 +1514,7 @@ void Window::drawFrameCounter()
   
   int left = getWidth() - 10 - 100 ;
   drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 10, 100, 30 ) ;
-  drawString( buf, Color::White, left, 10, 100, 30 ) ;
+  drawString( DEFAULT_FONT, buf, Color::White, left, 10, 100, 30 ) ;
 }
 
 
@@ -1496,6 +1531,10 @@ void Window::pause()
   if( !paused )
   {
     // ..then pause everything
+    foreach( ChannelMultimapIter, channelIter, fmodChannels )
+    {
+      FMOD_Channel_SetPaused( channelIter->second, TRUE ) ;
+    }
 
     paused = true ;  // this member is checked
     // in Window::step()
@@ -1503,7 +1542,16 @@ void Window::pause()
 }
 void Window::unpause()
 {
-  paused = false ;
+  if( paused )
+  {
+    // unpause all channels..
+    foreach( ChannelMultimapIter, channelIter, fmodChannels )
+    {
+      FMOD_Channel_SetPaused( channelIter->second, FALSE ) ;
+    }
+
+    paused = false ;
+  }
 }
 bool Window::isPaused()
 {

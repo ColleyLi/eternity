@@ -67,6 +67,14 @@ typedef map<int, ID3DXFont*>::iterator /* as simply */ FontMapIter ;
 #define FMOD_LOOP_FOREVER -1 /* Use this constant in loopSound to have the
 sound loop forever */
 
+#define DEFAULT_FONT -1 /* drawString() draws with a default font */
+
+enum SpriteCentering
+{
+  TopLeft,
+  Center
+} ;
+
 // A class that "abstracts away" the process
 // of getting a window up on the screen
 // (and initializing directx!)
@@ -176,7 +184,11 @@ public:
 
   void setBackgroundColor( D3DCOLOR color ) ;
   
-  void drawMouseCursor( int id ) ;
+  // Draws the mouse cursor with the sprite you pass
+  // If you say "showCursorCoordinates=true" then
+  // it will print the cursor coordinate values
+  // at the bottom right corner of the mouse
+  void drawMouseCursor( int spriteId, bool showCursorCoordinates=false ) ;
   void drawFrameCounter() ;
   
   void drawBox( D3DCOLOR color, int x, int y, int width, int height ) ;
@@ -184,12 +196,31 @@ public:
   void drawBoxCentered( D3DCOLOR color, int xCenter, int yCenter, int width, int height ) ;
   void getBoxDimensions( char *str, RECT &r ) ;
 
-  void drawString( char *str, D3DCOLOR color, RECT &r ) ;
-  void drawString( char *str, D3DCOLOR color, RECT &r, DWORD formatOptions ) ;
+  // Draws a string center screen.
+  // If you pass DEFAULT_FONT(-1) for fontId,
+  // you get a default font (which is just Arial 18)
+  void drawString( int fontId, char *str, D3DCOLOR color ) ;
 
-  void drawString( char *str, D3DCOLOR color, float x, float y, float width, float height ) ;
-  void drawString( char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions ) ;
+  // Draw a string with its top left corner at position x, y,
+  // bounded by a box of boxWidth, boxHeight pixels.  Text
+  // wraps automatically.
+  void drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight ) ;
 
+  // formatOptions:
+  // DT_LEFT - left align text
+  // DT_RIGHT - right align text
+  // DT_CENTER - centers the text horizontally
+  // DT_VCENTER - centers text vertically
+  // DT_TOP - mashes text to top of box
+  // DT_BOTTOM - mashes text to bottom of box
+  // So if you want TOP LEFT aligned text,
+  // use (DT_TOP | DT_LEFT)
+  void drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight, DWORD formatOptions ) ;
+
+  void drawString( int fontId, char *str, D3DCOLOR color, RECT &r ) ;
+  void drawString( int fontId, char *str, D3DCOLOR color, RECT &r, DWORD formatOptions ) ;
+
+  
   /// Makes a font for you.  Remember
   /// the integer ID you give the font!
   /// fontName:  Just the font name as it appears
@@ -202,11 +233,11 @@ public:
   /// FW_BOLD=700, which means BOLD.  FW_THIN=100 is very thin.
   void createFont( int id, char *fontName, float size, int boldness, bool italics ) ;
 
-  /// Draw a string using a font you loaded previously.
-  void drawString( int id, char *str, D3DCOLOR color, float x, float y, float width, float height, DWORD formatOptions ) ;
-
   // Draws a sprite centered @ (x,y)
   void drawSprite( int id, float x, float y ) ;
+
+  // Draws at (x,y) "centered" where you want it
+  void drawSprite( int id, float x, float y, SpriteCentering centering ) ;
 
   // draws a sprite centered @ (x,y) modulated by color specified
   // You can use this fucntion to make your sprite appear "ghostly"
@@ -216,12 +247,16 @@ public:
   // draws a sprite centered @ (x,y) of width and height specified
   void drawSprite( int id, float x, float y, float width, float height ) ;
 
+  void drawSprite( int id, float x, float y, float width, float height, SpriteCentering centering ) ;
+
   // draws a sprite centered @ (x,y) of width and height specified, using modulating color
   void drawSprite( int id, float x, float y, float width, float height, float angle ) ;
 
   void drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor ) ;
 
-  
+  void drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor, SpriteCentering centering ) ;
+
+
 
   /* Creates boxed text as a sprite
   Uses the default font (Arial 18) to draw the text

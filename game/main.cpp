@@ -231,7 +231,7 @@ void Draw()
     ) ;
 
     // show text
-    window->drawString( "Hello!", seeThruRed, 360, 200, 90, 90 ) ;
+    window->drawString( Fonts::Arial8, "Hello!", seeThruRed, 360, 200, 90, 90 ) ;
 
   }
   else

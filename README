@@ -181,6 +181,16 @@
     (warnings disabled in Visual Studio project settings, not
      using #pragma's.)
      
++ Mar 11 / 2010 v0.0.9-gdw-week-8
+  - Paused sounds using FMOD when Window::pause() is
+    called.
+    
+  - Changed function signatures of drawString
+    to ALL require a FONT ID.
+    
+  - Added auto-center drawString() function
+    void drawString( int fontId, char *str, D3DCOLOR color ) ;
+  
   - TODO:
     - Separation of concerns
     - Use a vector class in examples
@@ -188,3 +198,5 @@
     - Start using DOXYGEN style comments
     - Fix the ORDER of the functions listed in
       WindowClass.h with the .cpp file
+      
+    
