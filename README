@@ -193,6 +193,10 @@
     
   - bunch of other things in the pacman project
   
++ Mar 12 / 2010 v0.0.10-loopSound-fix
+  - Minor fix to loopSound()
+  - A few changes to the layout of default projects
+  
   - TODO:
     - Separation of concerns
     - Use a vector class in examples

@@ -1,20 +1,4 @@
 #include "../eternity/eternity.h"
-/*
-
-      ___         ___           ___           ___           ___                     ___         ___     
-     /\  \       /\  \         /\  \         /\  \         /\__\          ___      /\  \       |\__\    
-    /::\  \      \:\  \       /::\  \       /::\  \       /::|  |        /\  \     \:\  \      |:|  |   
-   /:/\:\  \      \:\  \     /:/\:\  \     /:/\:\  \     /:|:|  |        \:\  \     \:\  \     |:|  |   
-  /::\~\:\  \     /::\  \   /::\~\:\  \   /::\~\:\  \   /:/|:|  |__      /::\__\    /::\  \    |:|__|__ 
- /:/\:\ \:\__\   /:/\:\__\ /:/\:\ \:\__\ /:/\:\ \:\__\ /:/ |:| /\__\  __/:/\/__/   /:/\:\__\   /::::\__\
- \:\~\:\ \/__/  /:/  \/__/ \:\~\:\ \/__/ \/_|::\/:/  / \/__|:|/:/  / /\/:/  /     /:/  \/__/  /:/~~/~   
-  \:\ \:\__\   /:/  /       \:\ \:\__\      |:|::/  /      |:/:/  /  \::/__/     /:/  /      /:/  /     
-   \:\ \/__/   \/__/         \:\ \/__/      |:|\/__/       |::/  /    \:\__\     \/__/       \/__/      
-    \:\__\                    \:\__\        |:|  |         /:/  /      \/__/    
-     \/__/                     \/__/         \|__|         \/__/                                           
-
-
-*/
 
 ////////////////////////////////////////////
 //             GDW - WEEK - 8
@@ -90,7 +74,7 @@ void Init()
   // we use the ASSET() macro to
   // make all filenames start with "../assets/"
   window->loadSound( Sounds::PacmanTitleThemeLoop, ASSET("sounds/pacman-theme-loop.mp3"), FMOD_CREATESTREAM ) ;
-  window->loadSound( Sounds::PacmanGamePlayMusic, ASSET("sounds/powerpill.mp3") ) ;
+  window->loadSound( Sounds::PacmanGamePlayMusic, ASSET("sounds/powerpill.mp3"), FMOD_CREATESTREAM ) ;
   window->loadSound( Sounds::PacmanPellet1, ASSET("sounds/pacman-pellet-1.wav" ) ) ;
   window->loadSound( Sounds::PacmanPellet2, ASSET("sounds/pacman-pellet-2.wav" ) ) ;
   window->loadSound( Sounds::PacmanPellet3, ASSET("sounds/pacman-pellet-3.wav" ) ) ;

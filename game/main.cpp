@@ -33,9 +33,6 @@
 
 #define ASSET(x) ("../assets/"##x)
 
-#include "GameObject.h"
-vector<GameObject> gameObjects ; // a vector of game objects
-
 Window *window ;  // the main window object
 
 enum Sprites

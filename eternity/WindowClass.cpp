@@ -1003,7 +1003,7 @@ void Window::loopSound( int id, int loopCount )
     return ;
   }
 
-  if( loopCount != 0 )
+  if( loopCount > 0 )
    loopCount-- ; // by default fmod wants to REPEAT the sound
   // loopCount times .. i.e. plays it loopCount+1 times
 
@@ -1028,9 +1028,11 @@ void Window::loopSound( int id, int loopCount )
   fmodChannels.insert( make_pair( id, channel ) ) ;
 
   // Now unset the loop, so that
-  // the sound is unaffected
-  FMOD_ErrorCheck( FMOD_Sound_SetMode( sound, FMOD_LOOP_OFF ) ) ;
-  FMOD_ErrorCheck( FMOD_Sound_SetLoopCount( sound, 0 ) ) ;
+  // the sound is unaffected for future plays
+  //FMOD_ErrorCheck( FMOD_Sound_SetMode( sound, FMOD_LOOP_OFF ) ) ;
+  //FMOD_ErrorCheck( FMOD_Sound_SetLoopCount( sound, 0 ) ) ;
+  // ^^This causes a problem for FMOD_CREATESTREAM loaded
+  // sounds
 
 }
 
