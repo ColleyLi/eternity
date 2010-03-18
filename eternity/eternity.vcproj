@@ -166,6 +166,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SoundMan.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\WindowClass.cpp"
 				>
 			</File>
@@ -205,6 +209,10 @@
 			</File>
 			<File
 				RelativePath=".\Mouse.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SoundMan.h"
 				>
 			</File>
 			<File

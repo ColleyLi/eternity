@@ -21,16 +21,14 @@
 
 #include <dxerr.h>     // detailed error messages
 
-// Sound
-#include <fmod.h>      // not working?  Did you install fmod!
-#include <fmod_errors.h>
-
 #include "GDIPlusTexture.h"
 #include "Timer.h"
 #include "helperFunctions.h"
 #include "D3DVertex.h"
 #include "Sprite.h"
 #include "Mouse.h"
+
+#include "SoundMan.h"
 
 using namespace Gdiplus ;
 using namespace std ;
@@ -50,22 +48,14 @@ using namespace std ;
 
 #pragma endregion
 
-// Map type for FSOUND
-typedef map<int, FMOD_SOUND*> /* as simply */ SoundMap ;
-typedef map<int, FMOD_SOUND*>::iterator /* as simply */ SoundMapIter ;
-
 // Map type for "textures" (which are "images" in direct3d)
 typedef map<int, Sprite*> /* as simply */ SpriteMap ;
 typedef map<int, Sprite*>::iterator /* as simply */ SpriteMapIter ;
 
-typedef multimap<int, FMOD_CHANNEL*> /* as simply */ ChannelMultimap ;
-typedef multimap<int, FMOD_CHANNEL*>::iterator /* as simply */ ChannelMultimapIter ;
 
 typedef map<int, ID3DXFont*> /* as simply */ FontMap ;
 typedef map<int, ID3DXFont*>::iterator /* as simply */ FontMapIter ;
 
-#define FMOD_LOOP_FOREVER -1 /* Use this constant in loopSound to have the
-sound loop forever */
 
 #define DEFAULT_FONT -1 /* drawString() draws with a default font */
 
@@ -75,45 +65,26 @@ enum SpriteCentering
   Center
 } ;
 
+
+
+
+
 // A class that "abstracts away" the process
 // of getting a window up on the screen
 // (and initializing directx!)
 LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam ) ;
 
-class Window
+class Window : public SoundMan
 { 
 private:
   // Windows
   HINSTANCE hInstance ;
   HWND hwnd ;
-  
 
   // Game
   char *gameName ;
   bool paused ;  // game paused or unpaused.
   Timer timer ;  // frame limiter
-
-
-  // FMOD sound objects
-  map<int, FMOD_SOUND*> sounds ; 
-
-  // This has to be static to account for the fact
-  // that FMOD is a C-API.  The channelEndCallback
-  // has to be a static function (or a c-style function)
-  // so for the channelEndCallback function to access
-  // fmodChannels, fmodChannels must also be static.
-  static multimap<int, FMOD_CHANNEL*> fmodChannels ; // keep a channel
-  // for every playing sound, remembering what
-  // the id of that sound is (to support stopSound(id) function)
-
-  FMOD_SYSTEM *fmodSys ;
-
-  const static int fmodMaxChannels = 32 ;  // max # sounds that
-  // can be playing at a time on the sound card.
-
-
-  FMOD_SOUND* defaultSound ;  // hard-coded default sound
-  // not from a file.
 
   // <Direct3D objects>:  All must be
   // released on shut down and reset
@@ -324,90 +295,9 @@ public:
 
   void drawAxes() ;
 
-  /*
-    __                     _ 
-   / _|_ __ ___   ___   __| |
-  | |_| '_ ` _ \ / _ \ / _` |
-  |  _| | | | | | (_) | (_| |
-  |_| |_| |_| |_|\___/ \__,_|
 
-  */
-private:
-  // initialize FMOD sound system
-  void initFMOD() ;
 
 public:
-
-  /// Loads a sound, .wav, .mp3, etc.,
-  /// and assigns an ID to it.
-  /// Note if you want to be able to
-  /// LOOP the sound you have to use either
-  /// FMOD_SOFTWARE or FMOD_CREATESTREAM
-  /// as the options value.  Use FMOD_SOFTWARE
-  /// for short, looping sounds (like a 2 second
-  /// torch/fire crackle) and FMOD_CREATESTREAM
-  /// for longer sounds (like a 5 minute background
-  /// music song).
-  void loadSound( int id, char * filename, int options = 0 ) ;
-
-  /// Plays a previously loaded sound by
-  /// the same ID you passed to loadSound
-  void playSound( int id ) ;
-
-  /// Stops playback of ALL sounds
-  /// by id.
-  /// Really most useful for stopping
-  /// one kind of background music
-  /// and starting another.
-  void stopSound( int id ) ;
-
-  /// Loop a sound `loopCount` times,
-  /// set `loopCount` to FMOD_LOOP_FOREVER
-  /// to loop a sound infinitely
-  void loopSound( int id, int loopCount = FMOD_LOOP_FOREVER ) ;
-
-  /// Channel callback
-  static FMOD_RESULT F_CALLBACK channelEndCallback(
-    FMOD_CHANNEL* channel,
-    FMOD_CHANNEL_CALLBACKTYPE type,
-    void* data1, void* data2 )
-  {
-    if( type == FMOD_CHANNEL_CALLBACKTYPE_END )
-    {
-      //info( "Sound %p has finished playing", channel ) ;
-
-      // Now we need to remove the multimap entry
-      // where this FMOD_CHANNEL* is the __value__
-
-      ChannelMultimapIter channelIter = fmodChannels.begin() ;
-      while( channelIter != fmodChannels.end() )
-      {
-        if( channelIter->second == channel )
-        {
-          // Delete it from the multimap,
-          // as it has finished playing.
-
-          // !! Bug::"map/set iterator not incrementable"
-          // These are cleaned up in Window::stopSound anyway..
-          // but this should be fixed.
-          //fmodChannels.erase( channelIter ) ;
-          
-          return FMOD_OK ;
-        }
-
-        channelIter++;
-      }
-    }
-
-
-    warning( "I could not find sound in channel '%p' "
-      "in the fmodChannels multimap.  Have you cleared "
-      "the multimap?", channel ) ;
-    
-    return FMOD_OK ;
-
-  }
-
 
   /*
             _           _                   
