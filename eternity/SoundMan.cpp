@@ -6,7 +6,7 @@ SoundMan::SoundMan()
 {
 }
 
-void SoundMan::initFMOD()
+void SoundMan::initSoundMan()
 {
   FMOD_ErrorCheck( FMOD_System_Create( &fmodSys ) ) ;
 

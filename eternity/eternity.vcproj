@@ -153,26 +153,58 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<File
-				RelativePath=".\ConsoleColors.cpp"
+			<Filter
+				Name="Windowing"
 				>
-			</File>
-			<File
-				RelativePath=".\GDIPlusTexture.cpp"
+				<File
+					RelativePath=".\D3DWindow.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GameWindow.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\WindowClass.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Managers"
 				>
-			</File>
-			<File
-				RelativePath=".\helperFunctions.cpp"
+				<File
+					RelativePath=".\InputMan.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\SoundMan.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\SpriteMan.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="C-Style"
 				>
-			</File>
-			<File
-				RelativePath=".\SoundMan.cpp"
+				<File
+					RelativePath=".\ConsoleColors.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\helperFunctions.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="GDI+"
 				>
-			</File>
-			<File
-				RelativePath=".\WindowClass.cpp"
-				>
-			</File>
+				<File
+					RelativePath=".\GDIPlusTexture.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -180,61 +212,101 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\ConsoleColors.h"
-				>
-			</File>
-			<File
-				RelativePath=".\D3DVertex.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DrawSpriteCommand.h"
-				>
-			</File>
-			<File
 				RelativePath=".\eternity.h"
 				>
 			</File>
-			<File
-				RelativePath=".\GameObject.h"
+			<Filter
+				Name="C-Style"
 				>
-			</File>
-			<File
-				RelativePath=".\GDIPlusTexture.h"
+				<File
+					RelativePath=".\ConsoleColors.h"
+					>
+				</File>
+				<File
+					RelativePath=".\helperFunctions.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="draft_and_unused"
 				>
-			</File>
-			<File
-				RelativePath=".\helperFunctions.h"
+				<File
+					RelativePath=".\D3DVertex.h"
+					>
+				</File>
+				<File
+					RelativePath=".\DrawSpriteCommand.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Text.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Tones.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Managers"
 				>
-			</File>
-			<File
-				RelativePath=".\Mouse.h"
+				<File
+					RelativePath=".\InputMan.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SoundMan.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SpriteMan.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Windowing"
 				>
-			</File>
-			<File
-				RelativePath=".\SoundMan.h"
+				<File
+					RelativePath=".\D3DWindow.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GameWindow.h"
+					>
+				</File>
+				<File
+					RelativePath=".\WindowClass.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="GDI+"
 				>
-			</File>
-			<File
-				RelativePath=".\Sprite.h"
+				<File
+					RelativePath=".\GDIPlusTexture.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Aux_And_Util"
 				>
-			</File>
-			<File
-				RelativePath=".\Text.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Timer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Tones.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WindowClass.h"
-				>
-			</File>
+				<File
+					RelativePath=".\Keyboard.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Mouse.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Sprite.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Timer.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

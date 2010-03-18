@@ -33,7 +33,7 @@
 
 #define ASSET(x) ("../assets/"##x)
 
-Window *window ;  // the main window object
+GameWindow *window ;  // the main window object
 
 enum Sprites
 {
@@ -444,7 +444,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
   // Setup the window
-  window = new Window( hInstance, TEXT( "eternity engine base" ),
+  window = new GameWindow( hInstance, TEXT( "eternity engine base" ),
      32, 32, // x pos, y pos
      640, 480 // width, height
   ) ;

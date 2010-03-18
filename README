@@ -320,7 +320,8 @@
     don't like pass-thrus is because it tends to
     give these illusions in the code base about WHERE
     THINGS HAPPEN.
-    
-    
+ 
+ + DO WE REALLY NEED D3DVertex
+   Consider removing unused items
     
   

@@ -2,7 +2,7 @@
 #define ETERNITY_H
 
 // Master include file
-#include "WindowClass.h"
+#include "GameWindow.h"
 #include "ConsoleColors.h"
 
 #endif

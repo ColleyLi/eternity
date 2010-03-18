@@ -22,7 +22,7 @@
 
 
 
-Window *window ;  // the main window object
+GameWindow *window ;  // the main window object
 
 #pragma region explaining the ASSET macro
 // The ASSET macro adds
@@ -121,6 +121,12 @@ void Update()
   // How we update the game really
   // depends on __WHAT STATE__
   // the game is IN.
+
+  if( window->keyIsPressed( VK_MENU ) &&
+      window->keyJustPressed( VK_RETURN ) )
+  {
+    window->fullScreenInMaxResolution() ;
+  }
 
   switch( gameState )
   {
@@ -428,7 +434,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
   // Setup the window
-  window = new Window( hInstance, TEXT( "pacman" ),
+  window = new GameWindow( hInstance, TEXT( "pacman" ),
      32, 32, // x pos, y pos
      640, 480 // width, height
   ) ;

@@ -9,6 +9,9 @@
 #define SPRITE_READ_FROM_FILE -1 /* read the property from the file */
 #define SPRITE_INFINITY_LONG -1 /* don't advance the frame rate */
 
+#include "helperFunctions.h"
+#include "GDIPlusTexture.h"
+
 class Sprite
 {
 private:
