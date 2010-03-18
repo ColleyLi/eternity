@@ -74,6 +74,7 @@ public:
   Window( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
   ~Window() ;
 
+  virtual bool setSize( int width, int height, bool fullScreen ) ;
   //!! Provide virtual functions getWidth(), getHeight() which
   // get the client area width and height.
 } ;

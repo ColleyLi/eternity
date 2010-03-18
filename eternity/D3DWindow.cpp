@@ -173,6 +173,16 @@ bool D3DWindow::initD3D()
 void D3DWindow::d3dLoseDevice()
 {
   isDeviceLost = true ;
+
+  foreach( vector<ID3DXSprite*>::iterator, iter, registeredSprites )
+  {
+    DX_CHECK( (*iter)->OnLostDevice(), "vector: sprite renderer OnLostDevice" ) ;
+  }
+
+  foreach( vector<ID3DXFont*>::iterator, iter, registeredFonts )
+  {
+    DX_CHECK( (*iter)->OnLostDevice(), "vector: font OnLostDevice" ) ;
+  }
 }
 
 bool D3DWindow::d3dResetDevice( D3DPRESENT_PARAMETERS & pps )
@@ -185,19 +195,27 @@ bool D3DWindow::d3dResetDevice( D3DPRESENT_PARAMETERS & pps )
 
   // This is written out this way to make it clear
   // how the program logic goes.
-  if( !succeeded )
-    isDeviceLost = true ;
-  else
+  if( succeeded )
+  {
     isDeviceLost = false ;
 
-  // If the previous call to Reset the GPU _worked_, then
-  // we should reset all the id3dx objects
-  if( !isDeviceLost )
-  {
     info( "GPU reset complete" ) ;
+
+    // If the previous call to Reset the GPU _worked_, then
+    // we should reset all the id3dx objects
+    foreach( vector<ID3DXSprite*>::iterator, iter, registeredSprites )
+    {
+      DX_CHECK( (*iter)->OnResetDevice(), "vector: sprite renderer OnResetDevice" ) ;
+    }
+
+    foreach( vector<ID3DXFont*>::iterator, iter, registeredFonts )
+    {
+      DX_CHECK( (*iter)->OnResetDevice(), "vector: font OnResetDevice" ) ;
+    }
   }
   else
   {
+    isDeviceLost = true ;
     error( "I could not reset the gpu" ) ;
   }
 
@@ -252,7 +270,6 @@ void D3DWindow::d3dDeviceCheck()
     // Device is ok, so don't do anything here
     break ;
   }
-  
 }
 
 void D3DWindow::d3dShutdown()
@@ -271,7 +288,11 @@ bool D3DWindow::d3dSupportsNonPowerOf2Textures()
 
 
 
-
+void D3DWindow::d3dWindowStep()
+{
+  // check the d3ddevice, in case its been lost
+  d3dDeviceCheck() ;
+}
 
 
 bool D3DWindow::beginDrawing()
@@ -351,7 +372,7 @@ int D3DWindow::getHeight()
 
 bool D3DWindow::setSize( int width, int height, bool fullScreen )
 {
-  info( "Changing resolution to width=%d, height=%d", width, height ) ;
+  info( "D3DWindow changing resolution to width=%d, height=%d", width, height ) ;
 
   // Before trying to setSize(), remember the old (default) present parameters
   D3DPRESENT_PARAMETERS oldd3dpps = d3dpps ;
@@ -382,49 +403,30 @@ bool D3DWindow::setSize( int width, int height, bool fullScreen )
       if( !initD3D() )
       {
         bail( "Couldn't even re-initialize d3d" ) ;
+        return false ;
       }
     }
   }
 
 
-  // Ok, now that d3d buffer/device resize was successful,
-  // resize the actual window now, if its in windowed mode
-
-  RECT wndSize ;
-  wndSize.left = 0 ;
-  wndSize.right = width ;
-  wndSize.top =  0 ;
-  wndSize.bottom = height ;
-
-  // tell the mouse about the resize, before you
-  // adjust the rect
-  //!! Need to find a way to pass this message
-  // to GameWindow
-  /////mouse.setClipZone( wndSize ) ;
-
-
-  // We have to AdjustWindowRectEx() so the client area
-  // is exactly the right size
-  AdjustWindowRectEx( &wndSize, WS_OVERLAPPEDWINDOW, NULL, 0 ) ;
-
-  SetWindowPos( hwnd, HWND_TOP, 0, 0, wndSize.right - wndSize.left, wndSize.bottom - wndSize.top, 
-    SWP_NOMOVE | SWP_NOZORDER ) ;
-
-
-  // Now NOTIFY INPUTMAN AND SPRITEMAN
-  // OF THESE CHANGES!
-  //inputManSetWidth( width ) ;
-  //inputManSetHeight( height ) ;
-
-  //spriteManSetWidth( width ) ;
-  //spriteManSetHeight( height ) ;
-
-
+  
+  Window::setSize( width, height, fullScreen ) ;
   return true ;
 }
 
 bool D3DWindow::fullScreenInMaxResolution()
 {
   return setSize( GetSystemMetrics( SM_CXSCREEN ), GetSystemMetrics( SM_CYSCREEN ), true ) ;
+}
+
+
+void D3DWindow::registerFont( ID3DXFont* font )
+{
+  registeredFonts.push_back( font ) ;
+}
+
+void D3DWindow::registerSpriteRenderer( ID3DXSprite* spriteRenderer )
+{
+  registeredSprites.push_back( spriteRenderer ) ;
 }
 

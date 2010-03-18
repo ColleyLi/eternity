@@ -53,7 +53,7 @@ public:
   bool mouseIsPressed( Mouse::Button button ) ;
   bool mouseJustReleased( Mouse::Button button ) ;
 
-
+  void inputManSetClipZone( RECT & clipZone ) ;
 } ;
 
 #endif

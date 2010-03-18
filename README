@@ -196,13 +196,7 @@
 + Mar 12 / 2010 v0.0.10-loopSound-fix
   - Minor fix to loopSound()
   - A few changes to the layout of default projects
-  
-  - TODO:
-    - Separation of concerns
-    - Start using DOXYGEN style comments
-    - Fix the ORDER of the functions listed in
-      WindowClass.h with the .cpp file
-      
+        
 + Mar 17 / 2010 v0.0.11-soc
   [[ + Mar 6 / 2010 v0.0.5-split-concerns [[ originally Feb 26 / 2010 v0.0.4-split-concerns ]] ]]
   * ( This note was copied from another abandoned branch.
@@ -321,7 +315,11 @@
     give these illusions in the code base about WHERE
     THINGS HAPPEN.
  
- + DO WE REALLY NEED D3DVertex
-   Consider removing unused items
+  - TODO:
+    - Start using DOXYGEN style comments
+    - Fix the ORDER of the functions listed in
+      WindowClass.h with the .cpp file
+    - Delete unused objects and classes
+      - DO WE REALLY NEED D3DVertex
     
   

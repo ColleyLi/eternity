@@ -133,7 +133,10 @@ bool InputMan::mouseJustReleased( Mouse::Button button )
 {
   return mouse.justReleased( button ) ;
 }
-
+void InputMan::inputManSetClipZone( RECT & clipZone )
+{
+  mouse.setClipZone( clipZone ) ;
+}
 
 
 

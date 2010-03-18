@@ -89,7 +89,7 @@ void Init()
   window->loadSprite( Sprites::Mario, ASSET("sprites/mario.png") ) ;
 
   window->loadSprite( Sprites::Pacman, ASSET("sprites/pacman-spritesheet.png"), 0, 16, 16, 4, 0.4f ) ;
-  window->loadSprite( Sprites::PacmanTitle, ASSET("sprites/pacman-title-ii.png") ) ;
+  window->loadSprite( Sprites::PacmanTitle, ASSET("sprites/pacman-title.png") ) ;
 
   window->loadSprite( Sprites::Pellet, ASSET("sprites/normal-pellet.png") ) ;
   window->loadSprite( Sprites::Powerpellet, ASSET("sprites/powerpellet.png") ) ;
@@ -436,7 +436,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   // Setup the window
   window = new GameWindow( hInstance, TEXT( "pacman" ),
      32, 32, // x pos, y pos
-     640, 480 // width, height
+     640, 480// width, height
   ) ;
 
   // After the window comes up, we call Init

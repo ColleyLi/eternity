@@ -74,3 +74,25 @@ Window::~Window()
 }
 
 
+bool Window::setSize( int width, int height, bool fullScreen )
+{
+  info( "WindowClass resizing window to %d %d", width, height ) ;
+
+  RECT wndSize ;
+  wndSize.left = 0 ;
+  wndSize.right = width ;
+  wndSize.top =  0 ;
+  wndSize.bottom = height ;
+
+  // tell the mouse about the resize, before you
+  // adjust the rect
+
+  // We have to AdjustWindowRectEx() so the client area
+  // is exactly the right size
+  AdjustWindowRectEx( &wndSize, WS_OVERLAPPEDWINDOW, NULL, 0 ) ;
+
+  SetWindowPos( hwnd, HWND_TOP, 0, 0, wndSize.right - wndSize.left, wndSize.bottom - wndSize.top, 
+    SWP_NOMOVE | SWP_NOZORDER ) ;
+
+  return true ;
+}

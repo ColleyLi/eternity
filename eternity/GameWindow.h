@@ -50,11 +50,6 @@ public:
 
 
 
-  // Take care of d3d lost devices
-  virtual void d3dLoseDevice() override ;
-  virtual bool d3dResetDevice( D3DPRESENT_PARAMETERS & pps ) override ;
-  virtual void d3dDeviceCheck() override ;
-
   // Draws the mouse cursor with the sprite you pass
   // If you say "showCursorCoordinates=true" then
   // it will print the cursor coordinate values
@@ -63,6 +58,29 @@ public:
   void drawFrameCounter() ;
   
 
+
+
+
+  // The createFont function has to be HERE
+  // so that it can call addFont() in spriteManager
+  // and registerFont in D3DWindow.
+
+
+  /// Makes a font for you.  Remember
+  /// the integer ID you give the font!
+  /// fontName:  Just the font name as it appears
+  /// in C:\WINDOWS\Fonts.  You can use any font
+  /// that you have installed on your system.
+  /// Size:  The size of the font.
+  /// boldness:  Typeface "WEIGHT".  Usually a number between 100 and 900,
+  /// the higher the "bolder".  You can use the predefined
+  /// FW_* constants, like FW_NORMAL=400, which means "normal" weight
+  /// FW_BOLD=700, which means BOLD.  FW_THIN=100 is very thin.
+  void createFont( int fontId, char *fontName, float size, int boldness, bool italics ) ;
+
+
+
+  virtual bool setSize( int width, int height, bool fullScreen ) override ;
 
 } ;
 #endif

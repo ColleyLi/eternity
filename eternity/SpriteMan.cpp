@@ -34,6 +34,11 @@ void SpriteMan::initSpriteMan( IDirect3DDevice9 *theGpu, int scrWidth, int scrHe
   DEFAULT_PITCH | FF_DONTCARE, "Arial", &id3dxDefaultFont ) ;
 
   D3DXCreateSprite( lgpu, &id3dxSpriteRenderer ) ;
+
+  // The above 2 (defaultFont + defaultSprite)
+  // are registered with D3DWindow when
+  // this function call returns
+
 }
 
 void SpriteMan::initDefaultSprite()
@@ -108,15 +113,11 @@ void SpriteMan::spriteManStep( float time )
   }
 }
 
-void SpriteMan::spriteManD3DDeviceLost()
+//This is a little bit of cruft
+void SpriteMan::spriteManSetWindowSize( int width, int height )
 {
-  DX_CHECK( id3dxDefaultFont->OnLostDevice(), "font onlostdevice" ) ;
-  DX_CHECK( id3dxSpriteRenderer->OnLostDevice(), "sprite renderer onlostdevice" ) ;
-
-  foreach( FontMapIter, fontIter, fonts )
-  {
-    fontIter->second->OnLostDevice() ;
-  }
+  screenWidth = width ;
+  screenHeight = height ;
 }
 
 
@@ -238,35 +239,7 @@ void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, RECT &rect, D
   }
 
   font->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
-
 }
-
-void SpriteMan::createFont( int id, char *fontName, float size, int boldness, bool italics )
-{
-  ID3DXFont *font = id3dxDefaultFont ;
-  FontMapIter fontEntry = fonts.find( id ) ;
-
-  if( fontEntry != fonts.end() )
-  {
-    warning( "Font %d already existed, destroying and replacing..", id ) ;
-    SAFE_RELEASE( font ) ;
-  }
-
-  DX_CHECK( D3DXCreateFontA( lgpu, size, 0, boldness, 1,
-    italics, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY,
-    DEFAULT_PITCH | FF_DONTCARE, fontName, &font ), "Create custom font" ) ;
-
-  
-  // Now add it to the map
-  fonts.insert( make_pair( id, font ) ) ;
-
-}
-
-
-
-
-
-
 
 
 // Generates you a texture with colored
@@ -521,8 +494,6 @@ void SpriteMan::drawSprite( int id, float x, float y, float width, float height,
   id3dxSpriteRenderer->End();
 }
 
-//!! this really needs to be in a spriteManager so we can adequately
-// protect the sprites map from collision
 void SpriteMan::addSprite( int id, Sprite *sprite )
 {
   SpriteMapIter existingSpritePtr = sprites.find( id ) ;
@@ -536,8 +507,6 @@ void SpriteMan::addSprite( int id, Sprite *sprite )
   // now add it
   sprites.insert( make_pair( id, sprite ) ) ;
 }
-
-
 
 void SpriteMan::loadSprite( int id, char *filename )
 {
@@ -604,7 +573,8 @@ int SpriteMan::randomSpriteId( int below )
   return sprites.begin()->first ;
 }
 
-void SpriteMan::drawAxes()
+//!! marked for deletion
+ /* -- */ void SpriteMan::drawAxes()  /* -- */
 {
   int LEN = 40 ;
   
@@ -647,3 +617,15 @@ void SpriteMan::drawAxes()
 }
 
 
+void SpriteMan::addFont( int fontId, ID3DXFont* font )
+{
+  FontMapIter fontEntry = fonts.find( fontId ) ;
+
+  if( fontEntry != fonts.end() )
+  {
+    warning( "Font %d already existed, destroying and replacing..", fontId ) ;
+    SAFE_RELEASE( fontEntry->second ) ;
+  }
+
+  fonts.insert( make_pair( fontId, font ) ) ;
+}

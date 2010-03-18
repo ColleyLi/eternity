@@ -8,6 +8,14 @@ GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
              windowWidth, windowHeight )
 {
   initSpriteMan( gpu, windowWidth, windowHeight ) ;
+
+  // Some coupling..
+  // it isn't possible to reach D3DWindow
+  // from SpriteMan, so the tie together
+  // is actually here, in this class
+  registerFont( id3dxDefaultFont ) ;
+  registerSpriteRenderer( id3dxSpriteRenderer ) ;
+
   initInputMan( hwnd, windowWidth, windowHeight );
   initSoundMan() ;
   paused = false ;
@@ -19,25 +27,21 @@ GameWindow::~GameWindow()
 
 void GameWindow::step()
 {
-  // check the d3ddevice, in case its been lost
-  d3dDeviceCheck() ;
-  
+  d3dWindowStep() ;  
 
+  inputManStep() ;
 
   soundStep();
 
   // Advance sprite animations.
   // This is the only thing that
   // is PAUSED when the game is
-  // PAUSED.  TODO:  Pause sounds here as well...
+  // PAUSED.
   if( !paused )
   {
     spriteManStep( timer.time_since_last_frame ) ;
   }
 
-  inputManStep() ;
-
-  
   timer.lock( 60 ) ; // // ^^Leave as last line: YES, RECOMMENDED.  Use this line to LOCK FRAMERATE
   // at 60 fps max.  This will "waste" any idle time at the end of
   // processing a frame.
@@ -55,9 +59,6 @@ void GameWindow::step()
   
   // NOTE:  YOU MUST ALSO FIND AND UNCOMMENT THE LINE
   // that says FRAMERATE::UNBOUNDED
-
-
-
 }
 
 
@@ -89,11 +90,11 @@ void GameWindow::unpause()
     paused = false ;
   }
 }
+
 bool GameWindow::isPaused()
 {
   return paused ;
 }
-
 
 bool GameWindow::isSlow()
 {
@@ -104,68 +105,6 @@ float GameWindow::getTimeElapsedSinceLastFrame()
 {
   return timer.time_since_last_frame ;
 }
-
-
-void GameWindow::d3dLoseDevice()
-{
-  //!!
-}
-bool GameWindow::d3dResetDevice( D3DPRESENT_PARAMETERS & pps )
-{
-  return true ;
-}
-void GameWindow::d3dDeviceCheck()
-{
-  /*
-  switch( hr )
-  {
-  case D3DERR_DRIVERINTERNALERROR:
-    error( "Hmm, the driver experienced an internal error.  This is unusual." ) ;
-
-    // Try and re-initialize d3d.  If it fails, quit.
-    if( !initD3D() )
-    {
-      bail( "Experienced D3DERR_DRIVERINTERNALERROR" ) ;
-    }
-    break ;
-
-  case D3DERR_DEVICELOST:
-    if( !isDeviceLost )  // if the device wasn't already lost..
-    {
-      // tell the spriteman that the device has just been lost
-      // to call the onLostDevice function of every id3dx object
-      spriteManD3DDeviceLost() ;
-    }
-    break ;
-
-  case D3DERR_DEVICENOTRESET:
-    if( isDeviceLost )
-    {
-      // The device was lost, but now we have the chance
-      // to reset it.
-      info( "Resetting the gpu device.." ) ;
-      d3dResetDevice( d3dpps ) ;
-
-      DX_CHECK( id3dxDefaultFont->OnResetDevice(), "font onlostdevice" ) ;
-      DX_CHECK( id3dxSpriteRenderer->OnResetDevice(), "sprite renderer onlostdevice" ) ;
-
-    }
-    else
-    {
-      // This should not happen, but if it does, we want to know about it
-      error( "Device wasn't lost, yet we were given D3DERR_DEVICENOTRESET" ) ;
-    }
-    break ;
-  
-  case D3D_OK:
-  default:
-    // Device is ok, so don't do anything here
-    break ;
-  }
-  */
-
-}
-
 
 void GameWindow::drawMouseCursor(int spriteId, bool showCursorCoordinates)
 {
@@ -203,4 +142,48 @@ void GameWindow::drawFrameCounter()
   int left = getWidth() - 10 - 100 ;
   drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 10, 100, 30 ) ;
   drawString( DEFAULT_FONT, buf, Color::White, left, 10, 100, 30 ) ;
+}
+
+
+void GameWindow::createFont( int fontId, char *fontName, float size, int boldness, bool italics )
+{
+  ID3DXFont *font ;
+  DX_CHECK( D3DXCreateFontA( gpu, size, 0, boldness, 1,
+    italics, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY,
+    DEFAULT_PITCH | FF_DONTCARE, fontName, &font ), "Create custom font" ) ;
+
+  // Register the font with D3DWindow, so
+  // it will be released and reset ondevicelost
+  // and ondevicereset
+  registerFont( font ) ;
+
+  // Now add it to the map in SpriteMan
+  addFont( fontId, font ) ;
+
+}
+
+
+bool GameWindow::setSize( int width, int height, bool fullScreen )
+{
+  D3DWindow::setSize( width, height, fullScreen ) ;
+
+  info( "GameWindow setSize( %d, %d, %d )", width, height, fullScreen ) ;
+
+  // Now NOTIFY INPUTMAN AND SPRITEMAN
+  // OF THESE CHANGES!
+  RECT wndSize ;
+  wndSize.left = 0 ;
+  wndSize.right = width ;
+  wndSize.top = 0 ;
+  wndSize.bottom = height ;
+
+  inputManSetClipZone( wndSize ) ;
+  
+  
+  spriteManSetWindowSize( width, height ) ;
+
+
+  return true ;
+
+
 }
