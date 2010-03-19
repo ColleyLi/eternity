@@ -137,6 +137,17 @@ bool FMOD_ErrorCheck( FMOD_RESULT result )
   return true ;
 }
 
+
+int XINPUT_Check( int errCode )
+{
+  if( errCode != ERROR_SUCCESS ) // what genius..
+  {
+    error( "XInput error: (%d) - is the controller connected?", errCode ) ;
+  }
+
+  return errCode ;
+}
+
 float randFloat( float a, float b )
 {
   return lerp( a, b, randFloat() ) ;
@@ -158,6 +169,13 @@ double lerp( double a, double b, double t )
   return a + ( b - a )*t ;
 }
 
+void clamp( float &num, float low, float high )
+{
+  if( num < low )
+    num = low ;
+  if( num > high )
+    num = high ;
+}
 
 void addSinewave( short *data, int durationInSamples,
                   int offset, int frequency,

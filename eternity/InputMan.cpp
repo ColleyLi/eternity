@@ -73,6 +73,7 @@ void InputMan::inputManStep()
 {
   keyboard.step() ;
   mouse.step() ;
+  gamepad.step() ;
 }
 
 int InputMan::getMouseX()
@@ -138,7 +139,63 @@ void InputMan::inputManSetClipZone( RECT & clipZone )
   mouse.setClipZone( clipZone ) ;
 }
 
+bool InputMan::gamepadJustPressed(
+  Gamepad::PlayerIndex playerIndex, Gamepad::Button button )
+{
+  return gamepad.justPressed( playerIndex, button ) ;
+}
 
+bool InputMan::gamepadIsPressed(
+  Gamepad::PlayerIndex playerIndex, Gamepad::Button button )
+{
+  return gamepad.isPressed( playerIndex, button ) ;
+}
+
+bool InputMan::gamepadJustReleased(
+  Gamepad::PlayerIndex playerIndex, Gamepad::Button button )
+{
+  return gamepad.justReleased( playerIndex, button ) ;
+}
+
+float InputMan::gamepadThumbLeftX( Gamepad::PlayerIndex playerIndex )
+{
+  return gamepad.leftThumbX( playerIndex ) ;
+}
+
+float InputMan::gamepadThumbLeftY( Gamepad::PlayerIndex playerIndex )
+{
+  return gamepad.leftThumbY( playerIndex ) ;
+}
+
+float InputMan::gamepadThumbRightX( Gamepad::PlayerIndex playerIndex )
+{
+  return gamepad.rightThumbX( playerIndex ) ;
+}
+
+float InputMan::gamepadThumbRightY( Gamepad::PlayerIndex playerIndex )
+{
+  return gamepad.rightThumbY( playerIndex ) ;
+}
+
+float InputMan::gamepadTriggerLeft( Gamepad::PlayerIndex playerIndex )
+{
+  return gamepad.leftTrigger( playerIndex ) ;
+}
+
+float InputMan::gamepadTriggerRight( Gamepad::PlayerIndex playerIndex )
+{
+  return gamepad.rightTrigger( playerIndex ) ;
+}
+
+void InputMan::gamepadVibrate( Gamepad::PlayerIndex playerIndex, float leftRumble, float rightBuzz )
+{
+  gamepad.setVibrate( playerIndex, leftRumble, rightBuzz ) ;
+}
+
+void InputMan::gamepadStopVibrate( Gamepad::PlayerIndex playerIndex )
+{
+  gamepad.stopVibrate( playerIndex ) ;
+}
 
 
 

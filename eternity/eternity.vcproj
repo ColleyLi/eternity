@@ -291,6 +291,10 @@
 				Name="Aux_And_Util"
 				>
 				<File
+					RelativePath=".\Gamepad.h"
+					>
+				</File>
+				<File
 					RelativePath=".\Keyboard.h"
 					>
 				</File>

@@ -91,8 +91,8 @@ void Init()
   window->loadSprite( Sprites::Pacman, ASSET("sprites/pacman-spritesheet.png"), 0, 16, 16, 4, 0.4f ) ;
   window->loadSprite( Sprites::PacmanTitle, ASSET("sprites/pacman-title.png") ) ;
 
-  window->loadSprite( Sprites::Pellet, ASSET("sprites/normal-pellet.png") ) ;
-  window->loadSprite( Sprites::Powerpellet, ASSET("sprites/powerpellet.png") ) ;
+  window->loadSprite( Sprites::Pellet, ASSET("sprites/normal-pellet-sheet.png"), 0, 16, 16, 4, 0.2f ) ;
+  window->loadSprite( Sprites::Powerpellet, ASSET("sprites/powerpellet-sheet.png"), 0, 16, 16, 4, 0.2f ) ;
   window->loadSprite( Sprites::Wall, ASSET( "sprites/wall.png" ) ) ;
   window->loadSprite( Sprites::Barrier, ASSET( "sprites/ghost-door-barrier.png" ) ) ;
 
@@ -161,6 +161,7 @@ void Update()
     break;
 
   case GameState::Running:
+
     // Here we run the game.
     // Allow PAUSE by pressing 'P'
     if( window->keyJustPressed( 'P' ) )
@@ -227,6 +228,19 @@ void Draw()
       // ask the GameWorld object
       // to draw itself
       game->draw();
+
+
+      // Draw in the joypad meters
+      float tlx = window->gamepadThumbLeftX( Gamepad::One ) ;
+      float tly = window->gamepadThumbLeftY( Gamepad::One ) ;
+
+      float tRx = window->gamepadThumbRightX( Gamepad::One ) ;
+      float tRy = window->gamepadThumbRightY( Gamepad::One ) ;
+
+      float xRight = tlx + 1 ;
+
+      window->drawBox( Color::Red, 400, 100, xRight*100, 20 ) ;
+
     }
     break;
 

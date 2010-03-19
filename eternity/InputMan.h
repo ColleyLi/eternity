@@ -5,6 +5,7 @@
 #include "helperFunctions.h"
 #include "Mouse.h"
 #include "Keyboard.h"
+#include "Gamepad.h"
 
 /*
  _                   _   
@@ -20,6 +21,7 @@ class InputMan
 private:
   Keyboard keyboard ;
   Mouse mouse ;
+  Gamepad gamepad ;
 
 protected:
   void initInputMan( HWND hwnd, int windowWidth, int windowHeight );
@@ -52,8 +54,25 @@ public:
   bool mouseJustPressed( Mouse::Button button ) ;
   bool mouseIsPressed( Mouse::Button button ) ;
   bool mouseJustReleased( Mouse::Button button ) ;
-
   void inputManSetClipZone( RECT & clipZone ) ;
+
+  // Gamepad
+  bool gamepadJustPressed( Gamepad::PlayerIndex playerIndex, Gamepad::Button button ) ;
+  bool gamepadIsPressed( Gamepad::PlayerIndex playerIndex, Gamepad::Button button ) ;
+  bool gamepadJustReleased( Gamepad::PlayerIndex playerIndex, Gamepad::Button button ) ;
+
+  float gamepadThumbLeftX( Gamepad::PlayerIndex playerIndex ) ;
+  float gamepadThumbLeftY( Gamepad::PlayerIndex playerIndex ) ;
+
+  float gamepadThumbRightX( Gamepad::PlayerIndex playerIndex ) ;
+  float gamepadThumbRightY( Gamepad::PlayerIndex playerIndex ) ;
+
+  float gamepadTriggerLeft( Gamepad::PlayerIndex playerIndex ) ;
+  float gamepadTriggerRight( Gamepad::PlayerIndex playerIndex ) ;
+
+  void gamepadVibrate( Gamepad::PlayerIndex playerIndex, float leftRumble, float rightBuzz ) ;
+  void gamepadStopVibrate( Gamepad::PlayerIndex playerIndex ) ;
+
 } ;
 
 #endif

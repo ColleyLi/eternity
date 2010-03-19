@@ -58,6 +58,7 @@ void bail( char *msg, bool openLog=false ) ;
 
 bool FMOD_ErrorCheck( FMOD_RESULT result ) ;
 
+int XINPUT_Check( int errCode ) ;
 
 // numerical
 float randFloat( float a, float b ) ;
@@ -66,6 +67,8 @@ float randFloat() ;
 float lerp( float a, float b, float t ) ;
 
 double lerp( double a, double b, double t ) ;
+
+void clamp( float &num, float low, float high ) ;
 
 void addSinewave( short *data, int durationInSamples,
                   int offset, int frequency,
