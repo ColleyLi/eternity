@@ -3,21 +3,25 @@
 
 SpriteMan::SpriteMan()
 {
-
+  // nuffin.  Everything happens
+  // in initSpriteMan().
 }
 
 SpriteMan::~SpriteMan()
 {
+  // Delete all the sprites
   foreach( SpriteMapIter, iter, sprites )
   {
     delete iter->second ;
   }
 
+  // Release all the fonts
   foreach( FontMapIter, fontIter, fonts )
   {
     SAFE_RELEASE( fontIter->second ) ;
   }
 
+  // release the default font and default sprite renderer
   SAFE_RELEASE( id3dxSpriteRenderer ) ;
   SAFE_RELEASE( id3dxDefaultFont ) ;
 
@@ -181,10 +185,23 @@ void SpriteMan::drawBoxCentered( D3DCOLOR color, int xCenter, int yCenter, int w
   DX_CHECK( id3dxSpriteRenderer->End(), "End draw box, sprite" ) ;
 }
 
-void SpriteMan::getBoxDimensions( char *str, RECT &r )
+void SpriteMan::getBoxDimensions( int fontId, char *str, RECT &r )
 {
+  // Retrieve the font
+  ID3DXFont *font = id3dxDefaultFont ;
+
+  if( fontId != DEFAULT_FONT )
+  {
+    FontMapIter fontEntry = fonts.find( fontId ) ;
+
+    if( fontEntry == fonts.end() )
+      warning( "Font %d does not exist, using default font instead", fontId ) ;
+    else
+      font = fontEntry->second ;
+  }
+
   SetRect( &r, 0, 0, 1, 1 ) ;
-  int height = id3dxDefaultFont->DrawTextA(
+  int height = font->DrawTextA(
     id3dxSpriteRenderer, str, -1,
     &r,
     DT_CALCRECT /* | dtOptions */, 0 ) ;
@@ -229,13 +246,9 @@ void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, RECT &rect, D
     FontMapIter fontEntry = fonts.find( fontId ) ;
 
     if( fontEntry == fonts.end() )
-    {
       warning( "Font %d does not exist, using default font instead", fontId ) ;
-    }
     else
-    {
       font = fontEntry->second ;
-    }
   }
 
   font->DrawTextA( NULL, str, -1, &rect, formatOptions, color ) ;
@@ -397,53 +410,60 @@ void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3
   SAFE_RELEASE( pixelPatch4x4 ) ;
 }
 
-void SpriteMan::drawSprite( int id, float x, float y )
+void SpriteMan::drawSprite( int spriteId, float x, float y )
 {
-  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
+  drawSprite( spriteId, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
 }
 
-void SpriteMan::drawSprite( int id, float x, float y, SpriteCentering centering )
+void SpriteMan::drawSprite( int spriteId, float x, float y, SpriteCentering centering )
 {
-  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), centering ) ;
+  drawSprite( spriteId, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), centering ) ;
 }
 
-void SpriteMan::drawSprite( int id, float x, float y, D3DCOLOR modulatingColor )
+void SpriteMan::drawSprite( int spriteId, float x, float y, D3DCOLOR modulatingColor )
 {
-  drawSprite( id, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, modulatingColor, SpriteCentering::Center ) ;
+  drawSprite( spriteId, x, y, SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE, 0.0f, modulatingColor, SpriteCentering::Center ) ;
 }
 
-void SpriteMan::drawSprite( int id, float x, float y, float width, float height )
+void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float height )
 {
-  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
+  drawSprite( spriteId, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
 }
 
-void SpriteMan::drawSprite( int id, float x, float y, float width, float height, SpriteCentering centering )
+void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float height, SpriteCentering centering )
 {
-  drawSprite( id, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), centering ) ;
+  drawSprite( spriteId, x, y, width, height, 0.0f, D3DCOLOR_ARGB( 255, 255, 255, 255 ), centering ) ;
 }
 
-void SpriteMan::drawSprite( int id, float x, float y, float width, float height, float angle )
+void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float height, float angle )
 {
-  drawSprite( id, x, y, width, height, angle, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
+  drawSprite( spriteId, x, y, width, height, angle, D3DCOLOR_ARGB( 255, 255, 255, 255 ), SpriteCentering::Center ) ;
 }
 
-void SpriteMan::drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor )
+void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor )
 {
-  drawSprite( id, x, y, width, height, angle, modulatingColor, SpriteCentering::Center ) ;
+  drawSprite( spriteId, x, y, width, height, angle, modulatingColor, SpriteCentering::Center ) ;
 }
-void SpriteMan::drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor, SpriteCentering centering )
+
+void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor, SpriteCentering centering )
 {
   Sprite *sprite = defaultSprite ;
-  SpriteMapIter spriteEntry = sprites.find( id ) ;
+  SpriteMapIter spriteEntry = sprites.find( spriteId ) ;
 
   if( spriteEntry != sprites.end() )
     sprite = spriteEntry->second ;
   else
-    warning( "Sprite %d not loaded, using default sprite instead", id ) ;
+    warning( "Sprite %d not loaded, using default sprite instead", spriteId ) ;
   
-  //!!! BUGS for -1 scale.  this won't work.
-  // no sentinel value.  use separate function
-  // for scaling a sprite
+  // There was a very subtle bug here
+  // when someone tries to scale
+  // by EXACTLY -1, it would show the
+  // sprite full size.  To fix this,
+  // we chose an extremely large constant
+  // value for SPRITE_READ_FROM_FILE,
+  // (-5925499), which no one will ever
+  // chose (you'd never want to draw something
+  // -5925499 pixels would you?)
   if( width == SPRITE_READ_FROM_FILE )
     width = sprite->getSpriteWidth() ;
   if( height == SPRITE_READ_FROM_FILE )
@@ -473,6 +493,11 @@ void SpriteMan::drawSprite( int id, float x, float y, float width, float height,
 
   D3DXMATRIX matrix ;
   //D3DXMatrixIdentity( &matrix ) ;
+
+  // convert angle to radians,
+  // because it should be received in degrees,
+  // but D3DXMatrix* wants radians
+  angle = RADIANS( angle ) ;
   D3DXMatrixTransformation2D( &matrix, NULL, 0, &vec2Scale, NULL, angle, &vec2Trans ) ;
 
   //!! performance.  All this starting and stopping
@@ -494,44 +519,30 @@ void SpriteMan::drawSprite( int id, float x, float y, float width, float height,
   id3dxSpriteRenderer->End();
 }
 
-void SpriteMan::addSprite( int id, Sprite *sprite )
+void SpriteMan::loadSprite( int spriteId, char *filename )
 {
-  SpriteMapIter existingSpritePtr = sprites.find( id ) ;
-  if( existingSpritePtr != sprites.end() )
-  {
-    // the sprite with that id existed.  erase it
-    warning( "Sprite with id=%d already existed.  Destroying it..", id ) ;
-    delete existingSpritePtr->second ;
-  }
-
-  // now add it
-  sprites.insert( make_pair( id, sprite ) ) ;
-}
-
-void SpriteMan::loadSprite( int id, char *filename )
-{
-  loadSprite( id, filename, D3DCOLOR_ARGB( 0,0,0,0 ),
+  loadSprite( spriteId, filename, D3DCOLOR_ARGB( 0,0,0,0 ),
     SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
     SPRITE_READ_FROM_FILE, 0.5f ) ;
 }
 
-void SpriteMan::loadSprite( int id, char *filename, D3DCOLOR backgroundColor )
+void SpriteMan::loadSprite( int spriteId, char *filename, D3DCOLOR backgroundColor )
 {
-  loadSprite( id, filename, backgroundColor,
+  loadSprite( spriteId, filename, backgroundColor,
     SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
     SPRITE_READ_FROM_FILE, 0.5f ) ;
 }
 
 // id is how you will refer to this sprite after its been loaded
 // filename is just the filename on the disk drive
-void SpriteMan::loadSprite( int id, char *filename,
+void SpriteMan::loadSprite( int spriteId, char *filename,
                          D3DCOLOR backgroundColor,
                          int singleSpriteWidth, int singleSpriteHeight,
                          int numFrames, float timeBetweenFrames )
 {
   Sprite *sprite = new Sprite( lgpu, filename, backgroundColor,
     singleSpriteWidth, singleSpriteHeight, numFrames, timeBetweenFrames ) ;
-  addSprite( id, sprite ) ;
+  addSprite( spriteId, sprite ) ;
 }
 
 int SpriteMan::randomSpriteId()
@@ -542,6 +553,18 @@ int SpriteMan::randomSpriteId()
   return iter->first ;
 }
 
+Sprite* SpriteMan::getSprite( int spriteId )
+{
+  Sprite *sprite = defaultSprite ;
+  SpriteMapIter spriteEntry = sprites.find( spriteId ) ;
+
+  if( spriteEntry != sprites.end() )
+    sprite = spriteEntry->second ;
+  else
+    warning( "Sprite %d not loaded, you got the default sprite instead!", spriteId ) ;
+
+  return sprite ;
+}
 
 // Try 3 times.  if you miss 3 times,
 // (x--then proceed forward through from low to high
@@ -614,6 +637,20 @@ int SpriteMan::randomSpriteId( int below )
 
   hr = lgpu->DrawPrimitiveUP( D3DPT_POINTLIST, 3, points, sizeof( D3DVertex ) ) ;
   DX_CHECK( hr, "DrawPrimitiveUP FAILED!" ) ;
+}
+
+void SpriteMan::addSprite( int spriteId, Sprite *sprite )
+{
+  SpriteMapIter existingSpritePtr = sprites.find( spriteId ) ;
+  if( existingSpritePtr != sprites.end() )
+  {
+    // the sprite with that id existed.  erase it
+    warning( "Sprite with id=%d already existed.  Destroying it..", spriteId ) ;
+    delete existingSpritePtr->second ;
+  }
+
+  // now add it
+  sprites.insert( make_pair( spriteId, sprite ) ) ;
 }
 
 

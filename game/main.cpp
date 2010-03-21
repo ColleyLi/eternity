@@ -230,7 +230,8 @@ void Draw()
       Sprites::Eye, // Sprite to draw (previously loaded with loadSprite)
       320,  // x position
       240,  // y position
-      seeThruRed
+      seeThruRed    // color of light to "shine" on him,
+      // or consider it the color to "shade him in" with
     ) ;
 
     // show text

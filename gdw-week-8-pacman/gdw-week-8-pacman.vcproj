@@ -173,9 +173,49 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\GameWorld.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\pacman-main.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\Vector2.cpp"
+				>
+			</File>
+			<Filter
+				Name="GameObjects"
+				>
+				<File
+					RelativePath=".\FourDirectionMovingObject.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GameObject.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Ghost.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Player.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Projectile.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Tile"
+				>
+				<File
+					RelativePath=".\Tile.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -187,17 +227,49 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GameObject.h"
-				>
-			</File>
-			<File
 				RelativePath=".\GameWorld.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Tile.h"
+				RelativePath=".\pacman-main.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Vector2.h"
+				>
+			</File>
+			<Filter
+				Name="GameObjects"
+				>
+				<File
+					RelativePath=".\FourDirectionMovingObject.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GameObject.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Ghost.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Player.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Projectile.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Tile"
+				>
+				<File
+					RelativePath=".\Tile.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -207,6 +279,18 @@
 		</Filter>
 		<File
 			RelativePath=".\lvl1.txt"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\sources.txt"
 			>
 			<FileConfiguration
 				Name="Debug|Win32"

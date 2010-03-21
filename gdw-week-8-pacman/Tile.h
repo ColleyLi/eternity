@@ -55,11 +55,9 @@ public:
   bool isPassable(){ return passable; }
   void setPassable( bool i_passable ){ passable = i_passable; }
 
-  /// A function you call when the player
+  ///!! A function you call when the player
   /// runs into this tile.
-  void intersectAction()
-  {
-  }
+  virtual void intersectAction() ;
 } ;
 
 // TILE NOTES:

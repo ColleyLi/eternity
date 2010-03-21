@@ -42,6 +42,9 @@ void GameWindow::step()
     spriteManStep( timer.time_since_last_frame ) ;
   }
 
+  // Call all callbacks due to execute now
+  runCallbacks() ;
+
   timer.lock( 60 ) ; // // ^^Leave as last line: YES, RECOMMENDED.  Use this line to LOCK FRAMERATE
   // at 60 fps max.  This will "waste" any idle time at the end of
   // processing a frame.
@@ -101,9 +104,14 @@ bool GameWindow::isSlow()
   return timer.frames_per_second < 55 ;
 }
 
-float GameWindow::getTimeElapsedSinceLastFrame()
+double GameWindow::getTimeElapsedSinceLastFrame()
 {
   return timer.time_since_last_frame ;
+}
+
+double GameWindow::getTimeElapsedSinceGameStart()
+{
+  return timer.game_time ;
 }
 
 void GameWindow::drawMouseCursor(int spriteId, bool showCursorCoordinates)
@@ -116,7 +124,7 @@ void GameWindow::drawMouseCursor(int spriteId, bool showCursorCoordinates)
     sprintf( buf, "mouse\n(%d, %d)", getMouseX(), getMouseY() ) ;
 
     RECT r ;
-    getBoxDimensions( buf, r ) ;
+    getBoxDimensions( DEFAULT_FONT, buf, r ) ;
     drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), getMouseX(), getMouseY(), r.right-r.left, r.bottom-r.top ) ;
     drawString( DEFAULT_FONT, buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), getMouseX(), getMouseY(), r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
   }
@@ -142,6 +150,29 @@ void GameWindow::drawFrameCounter()
   int left = getWidth() - 10 - 100 ;
   drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 10, 100, 30 ) ;
   drawString( DEFAULT_FONT, buf, Color::White, left, 10, 100, 30 ) ;
+}
+
+
+void GameWindow::drawTimer()
+{
+  static char buf[ 60 ];
+  sprintf( buf, "Time: %.2f", timer.game_time ) ;
+
+  /*
+  // There's no point in computing this.  its a jittery box.
+  RECT r ;
+  getBoxDimensions( buf, r ) ;
+  
+  r.left = getWidth() - r.right - 10  ;
+  r.right = getWidth() - 10 ;
+  r.top += 10 ;
+  r.bottom += 10 ;
+  */
+  
+  int left = getWidth() - 10 - 100 ;
+  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 40, 100, 30 ) ;
+  drawString( DEFAULT_FONT, buf, Color::White, left, 40, 100, 30 ) ;
+
 }
 
 
@@ -186,4 +217,53 @@ bool GameWindow::setSize( int width, int height, bool fullScreen )
   return true ;
 
 
+}
+
+void GameWindow::addCallback( Callback *callback )
+{
+  // Add time to make it "when" seconds from now
+  callback->when += timer.game_time ;
+
+  callbacks.push_back( callback ) ;
+}
+
+void GameWindow::addCallbackAbsolute( Callback *callback )
+{
+  // Check if its expired..
+  if( callback->when < timer.game_time )
+  {
+    warning( "A callback was set to execute some time "
+      "in the past, so it will execute immediately..!  "
+      "Are you sure you set the callback correctly?" ) ;
+  }
+
+  callbacks.push_back( callback ) ;
+}
+
+
+void GameWindow::runCallbacks()
+{
+  // rather than iterate let's just
+  // loop backwards using numerical access
+  for( int i = callbacks.size() - 1 ;
+       i >= 0 ;
+       i-- )
+  {
+
+    // If its time to exec it..
+    if( timer.game_time >= callbacks[i]->when ) 
+    {
+      // exec it..
+      callbacks[i]->exec() ;
+
+      // and erase it..
+      delete (callbacks[ i ]) ;
+
+      // and remove it from
+      // the container
+      callbacks.erase( callbacks.begin()+i ) ;
+
+      info( "A callback executed.  %d callbacks remain on the buffer", callbacks.size() ) ;
+    }
+  }
 }

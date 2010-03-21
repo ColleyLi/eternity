@@ -320,11 +320,39 @@
   - The minor version increment is for separation of
     concerns being done.
   
++ Mar 18 / 2010 v0.1.1-gdw-week-9
+  - renamed all "id" in drawSprite to "spriteId"
+  - doxygenated InputMan.h
+    http://www.doxygen.nl/docblocks.html
+  - The sentinel value SPRITE_READ_FROM_FILE
+    was changed from -1 to -5925499.
+    You couldn't scale a sprite to -1 pixel
+    when it was -1, but nobody will ever
+    want to scale a sprite to -5925499 pixels
+
++ Mar 20 / 2010 v0.1.2-callbacks
+  - addition of a simple timer/callback mechanism.
+    - uses boost 1.42
+      - at what level should callbacks be provided?
+      - as a principal MOST of what eternity provides
+        that draws or plays a sound or.. "seems to" come
+        out of the WINDOW is added as a member function
+        to WindowClass, D3DWindow, or GameWindow
+        
+      - But callback functionality.. needs to be
+        part of GameWindow because it needs
+        direct access to GameWindow::Timer.
+        
+        * Callbacks were implemented inside
+          the GameWindow object.
+  
+  - plenty of updates to the pacman project
+  
   - TODO:
-    - Start using DOXYGEN style comments
+    - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in
       WindowClass.h with the .cpp file
     - Delete unused objects and classes
       - DO WE REALLY NEED D3DVertex
-    
-  
+
+

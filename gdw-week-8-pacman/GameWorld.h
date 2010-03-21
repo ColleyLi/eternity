@@ -1,8 +1,11 @@
 #ifndef GAMEWORLD_H
 #define GAMEWORLD_H
 
+#include "pacman-main.h"
+
 #include <iostream>  /// bleeaaaaaaagh.  Because you love it.
 #include <fstream>   /// blaaaaaaaaargh.  For ifstream.
+#include <vector>
 using namespace std ;
 
 // This GameWorld class is a
@@ -13,13 +16,18 @@ using namespace std ;
 // one copy of the GameWorld object
 // in our game
 
-// The GameWorld contains Tiles and GameObjects, basically
+// The GameWorld contains Tiles and GameObjects and
+// stats, basically
+#include "Vector2.h"
 #include "Tile.h"
 #include "GameObject.h"
 #include "EnumDefinitions.h"
+#include "Player.h"
+#include "Ghost.h"
 
 class GameWorld
 {
+public:
   // define game-wide vars
   // We have to have a WAY to __STORE AND REMEMBER__
   // game world data for the level.
@@ -36,132 +44,119 @@ class GameWorld
   const static int tileSize  = 16 ;  // Tile size, in pixels.
   // Each tile is 16x16 pixels.
 
+  // This game has a couple of states.
+  // I number them explicitly for easy reference
+  enum GameState
+  {
+    /// The splash screen is where you display your
+    /// company logo etc
+    Splash  = 1,
+
+    /// The menu screen where you start
+    /// to choose what mode to play in or whatever
+    Menu    = 2,
+
+    /// The game is ACTUALLY RUNNING.  Most time
+    /// is spent in this state.
+    Running = 3,
+
+    /// The game is PAUSED, from the running state.
+    /// You may choose to continue to run the music,
+    /// or run some alternate form of music during
+    /// the Paused state, BUT YOU STILL NEED to draw
+    /// the game out!
+    Paused  = 4,
+
+    /// The game is over and the next logical step
+    /// is to move back to the menu.
+    GameOver= 5
+  };
+
+  /*
+  Allowable state transitions:
+  Here's a rough ASCII state change diagram.
+  Its a lot better to draw these in POWERPOINT
+  or something.  This actually LOOKS a lot
+  more complicated than it is.
+  Its just a diagram of WHAT STATES
+  transition to WHAT STATES and how
+  it happens.
+
+                  BOOT GAME
+                    |
+                    | (load minimal things to minimize wait)
+                    v
+                  Splash
+                    |
+                    | (load more things, takes a couple of sec.)
+                    |
+                    |
+                    v   User "quit" ESC
+              ---->Menu----------------> QUIT
+   5 sec ----/      |                     ^
+    ----/           |user "start game"    |
+    |               |                     |user presses ESC
+    |               |                     |
+    |               |   -----------------/
+    |               |  /
+   /     user dies  v /   User presses 'P'
+GameOver<--------Running <-------------> Paused
+                    
+  */
+
+
+private:
   // Define the array to hold
-  // the game level. 
-  Tile* level[ mapRows ][ mapCols ] ;// OPEN lvl1.txt TO SEE
+  // the game level.
+  Tile* level[ mapRows ][ mapCols ] ; // OPEN lvl1.txt TO SEE
   // Notice we're using pointers...
   // Notice also this could be layered...
 
+  // The GameState.
+  GameState gameState ;
+
+private:
+  // offset to draw the game board at
+  float xBoardOffset, yBoardOffset,
+        xStatsOffset, yStatsOffset ;
+
+  Player *pacman ;
+  vector<Ghost*> ghosts ;
+
+
 public:
-  void loadLevel( char *filename )
-  {
-    // Parse-out the level text from the filename
-    
-    // Because you are C++ HACKERS
-    // I'm using ifstream here.
+  GameWorld() ;
 
-    // Open the file in read mode.
-    ifstream in( filename ) ;
+  /// Gets the current gamestate
+  GameState getState() ;
 
-    for( int row = 0 ; row < mapRows ; row++ )
-    {
-      for( int col = 0 ; col < mapCols ; col++ )
-      {
-        char mapChar = in.get() ;
-        
-        // Set up the tile according
-        // to the character loaded.
-        // To avoid cluttering the Tile
-        // class with level construction information,
-        // I've chosen to put the SWITCH HERE
-        // and _not_ in the Tile object.
-        
-        Tile *tile = new Tile();
-        
-        switch( mapChar )
-        {
-        
-          // put nothing in the tiles map..
-        case Tiles::PacmanStart:
-          // This should not be a tile...
-          // Let's make it a game object!
-          tile->setSpriteId( Sprites::Pacman ) ;
-          break;
+  /// Sets the gamestate to some new state
+  void setState( GameState newState ) ;
 
-        case Tiles::Bonus:
-          tile->setSpriteId( Sprites::Bonus ) ;
-          break;
+  /// Loads a level
+  void loadLevel( char *filename ) ;
 
-        case Tiles::Pellet:
-          tile->setSpriteId( Sprites::Pellet ) ;
-          break;
+  /// update the game just a fraction
+  void step( float time ) ;
 
-        case Tiles::PowerPellet:
-          tile->setSpriteId( Sprites::Powerpellet ) ;
-          break;
+  /// Draw the game
+  /// world board
+  void drawBoard() ;
 
-        case Tiles::Wall:
-          tile->setSpriteId( Sprites::Wall ) ;
-          break;
+  /// Draws stat charts
+  /// at right side of screen
+  /// (lives, health, etc)
+  void drawStats() ;
 
-        case Tiles::Empty:
-          tile->setSpriteId( Sprites::Empty ) ;
-          break;
-
-        case Tiles::Barrier:
-          tile->setSpriteId( Sprites::Barrier ) ;
-          break;
-
-        default:
-          // Just make it mario if there's
-          // some sprite that isn't accounted
-          // for here yet.  Mario will remind us
-          // to make a sprite for it
-          tile->setSpriteId( Sprites::Mario ) ;
-          break;
-        }
-        
-        level[ row ][ col ] = tile ;
-
-        // Now if the mapChar was one of
-        // the NPC ones, we need to add
-        // a GameObject to the OBJECTS array
-
-      }
-
-      // The newline will be the 21st character
-      // on each line, so we can discard it
-      char newLine = in.get() ;
-      if( !in.eof() && newLine != '\n' )
-      {
-        // Whoops!  The person must
-        // have fed in a wrong file
-        warning( "Line lengths are not %d characters...", mapCols ) ;
-      }
-    }
-
-    in.close() ;
-
-  }
-
-  // Draw the game world
-  void draw()
-  {
-    // Draw each tile
-    for( int row = 0 ; row < mapRows; row++ )
-    {
-      for( int col = 0 ; col < mapCols ; col++ )
-      {
-        // Retrieve a pointer to the tile.
-        // Notice this isn't a wasteful copy
-        // because its only a pointer assignment.
-        Tile *currentTile = level[ row ][ col ] ;
-
-        // the X, Y position of each tile
-        // depends on the row, col it is in
-        // in the "level" array AS WELL AS
-        // TileSize.  But notice the currentTile
-        // object doesn't really know the x,y position.
-        float x = col * tileSize ;
-        float y = row * tileSize ;
-
-        // Draw these tiles using
-        // the TOP LEFT CORNER
-        // as the origin
-        window->drawSprite( currentTile->getSpriteId(), x, y, tileSize, tileSize, SpriteCentering::TopLeft ) ;
-      }
-    }
-  }
+  /// Draws all game units
+  /// order matters!  the last thing
+  /// you draw shows up on top.
+  void drawPeople() ;
 } ;
+
+extern GameWorld *game ; // an extern is
+// like a "variable prototype".  Declare one here,
+// and actually instantiate it in
+// the GameWorld.cpp file
 
 #endif

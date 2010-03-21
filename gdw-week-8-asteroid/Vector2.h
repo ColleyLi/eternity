@@ -1,6 +1,11 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 #include <math.h>
+
+#ifdef near
+#undef near
+// Conflict between WinDef.h archaic
+// "near" and our Vector2.near()
 // If two vectors v1 and v2
 // are within EPS of each other
 // in both x and y,
@@ -19,12 +24,10 @@ public:
   }
 
   // Almost equal
-  // Cannot use "near" because
-  // WinDef.h removes it
-  bool isNear( const Vector2* other )
+  bool near( const Vector2& other )
   {
-    if( fabs( x - other->x ) < EPS &&
-        fabs( y - other->y ) < EPS )
+    if( fabs( x - other.x ) < EPS &&
+        fabs( y - other.y ) < EPS )
       return true ;
     else
       return false ;
@@ -77,4 +80,6 @@ float dot(const Vector2& a, const Vector2& b)
 {
   return a.x*b.x + a.y*b.y ;
 }
+
+#endif
 #endif

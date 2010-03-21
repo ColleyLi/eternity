@@ -28,16 +28,19 @@ protected:
   vector<ID3DXFont*>   registeredFonts ;   // there could be many of these.
   vector<ID3DXSprite*> registeredSprites ; // there really
   // should only be one sprite drawing object.
-  // BUT, it still is defined in a derived class of
-  // this class.  So for the derived class
+  // BUT, it still is defined in "SpriteMan",
+  // and SpriteMan is accessible to only
+  // GameWindow (derived class of this class.)
+  // So for the derived class
   // to "communicate" with this base class,
-  // instead of trying to educate the base class
-  // about the derived class (which is really very bad),
   // provide a "receiving point" in the base class
   // that the derived class should just know to call.
-
-  // With inheritance the communication goes the opposite way.
-
+  
+  // Think about the direction the inheritance arrow goes in..
+  
+  // We won't try to tell the base class
+  // about the derived class (would be really very bad)
+   
   D3DCOLOR clearColor ;
 
 public:

@@ -42,13 +42,15 @@ private:
   // for convenience
   IDirect3DDevice9 * lgpu ;
 
-  SpriteMap sprites ;
-  Sprite *defaultSprite ; 
-  Sprite *whitePixel ;    // used for drawing solid colored boxes.
-  // a failsafe default sprite
+  SpriteMap sprites ;     // all sprites get stored here.
+
+  Sprite *defaultSprite ; // a failsafe default sprite
   // who doesn't get loaded from a file, rather its
   // a hard-coded sprite in the code here that gets
-  // generated at runtime.
+  // generated at runtime.  See initWhitePixel()
+
+  Sprite *whitePixel ;    // used for drawing solid colored boxes.
+  
 
   int screenWidth, screenHeight ;
 
@@ -72,14 +74,42 @@ public:
 public:
 
   void spriteManStep( float time ) ;
-
   void spriteManSetWindowSize( int width, int height ) ;
 
-  void drawBox( D3DCOLOR color, int x, int y, int width, int height ) ;
-  void drawBox( D3DCOLOR color, RECT &r ) ;
-  void drawBoxCentered( D3DCOLOR color, int xCenter, int yCenter, int width, int height ) ;
-  void getBoxDimensions( char *str, RECT &r ) ;
+  /*
+     _                     ___           
+  __| |_ __ __ ___      __/ __\ _____  __
+ / _` | '__/ _` \ \ /\ / /__\/// _ \ \/ /
+| (_| | | | (_| |\ V  V / \/  \ (_) >  < 
+ \__,_|_|  \__,_| \_/\_/\_____/\___/_/\_\
 
+  */
+  // Draws you a solid box of a particular color,
+  // (x,y) is top left corner
+  void drawBox( D3DCOLOR color, int x, int y, int width, int height ) ;
+
+  // Draws you a solid box of a particular color
+  void drawBox( D3DCOLOR color, RECT &r ) ;
+  
+  // Draws you a solid box of a particular color,
+  // centered @(x,y)
+  void drawBoxCentered( D3DCOLOR color, int xCenter, int yCenter, int width, int height ) ;
+
+  // Gets you the measurement dimensions
+  // that a boxful of text WOULD have when
+  // it is drawn.
+  void getBoxDimensions( int fontId, char *str, RECT &r ) ;
+
+
+  /*
+     _                     __ _        _             
+  __| |_ __ __ ___      __/ _\ |_ _ __(_)_ __   __ _ 
+ / _` | '__/ _` \ \ /\ / /\ \| __| '__| | '_ \ / _` |
+| (_| | | | (_| |\ V  V / _\ \ |_| |  | | | | | (_| |
+ \__,_|_|  \__,_| \_/\_/  \__/\__|_|  |_|_| |_|\__, |
+                                               |___/ 
+
+  */
   // Draws a string center screen.
   // If you pass DEFAULT_FONT(-1) for fontId,
   // you get a default font (which is just Arial 18)
@@ -105,33 +135,51 @@ public:
   void drawString( int fontId, char *str, D3DCOLOR color, RECT &r, DWORD formatOptions ) ;
 
 
-  //////////////////
-  // SPRITE RENDER
+  /*
+     _                     __            _ _       
+  __| |_ __ __ ___      __/ _\_ __  _ __(_) |_ ___ 
+ / _` | '__/ _` \ \ /\ / /\ \| '_ \| '__| | __/ _ \
+| (_| | | | (_| |\ V  V / _\ \ |_) | |  | | ||  __/
+ \__,_|_|  \__,_| \_/\_/  \__/ .__/|_|  |_|\__\___|
+                             |_|                   
+
+  */
   // Draws a sprite centered @ (x,y)
-  void drawSprite( int id, float x, float y ) ;
+  void drawSprite( int spriteId, float x, float y ) ;
 
   // Draws at (x,y) "centered" where you want it
-  void drawSprite( int id, float x, float y, SpriteCentering centering ) ;
+  void drawSprite( int spriteId, float x, float y, SpriteCentering centering ) ;
 
   // draws a sprite centered @ (x,y) modulated by color specified
   // You can use this fucntion to make your sprite appear "ghostly"
   // (by using a translucent whitish color like ARGB(128,255,255,255))
-  void drawSprite( int id, float x, float y, D3DCOLOR modulatingColor ) ;
+  void drawSprite( int spriteId, float x, float y, D3DCOLOR modulatingColor ) ;
 
   // draws a sprite centered @ (x,y) of width and height specified
-  void drawSprite( int id, float x, float y, float width, float height ) ;
+  void drawSprite( int spriteId, float x, float y, float width, float height ) ;
 
-  void drawSprite( int id, float x, float y, float width, float height, SpriteCentering centering ) ;
+  void drawSprite( int spriteId, float x, float y, float width, float height, SpriteCentering centering ) ;
 
-  // draws a sprite centered @ (x,y) of width and height specified, using modulating color
-  void drawSprite( int id, float x, float y, float width, float height, float angle ) ;
+  /// Draws a sprite centered @ (x,y) of width and height specified,
+  /// using modulating color, at an angle
+  /// @param angle The angle in degrees
+  void drawSprite( int spriteId, float x, float y, float width, float height, float angle ) ;
 
-  void drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor ) ;
+  void drawSprite( int spriteId, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor ) ;
 
-  void drawSprite( int id, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor, SpriteCentering centering ) ;
+  void drawSprite( int spriteId, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor, SpriteCentering centering ) ;
 
 
 
+  /*
+ _                       _ _____          _   __            _ _       
+| |__   _____  _____  __| /__   \_____  _| |_/ _\_ __  _ __(_) |_ ___ 
+| '_ \ / _ \ \/ / _ \/ _` | / /\/ _ \ \/ / __\ \| '_ \| '__| | __/ _ \
+| |_) | (_) >  <  __/ (_| |/ / |  __/>  <| |__\ \ |_) | |  | | ||  __/
+|_.__/ \___/_/\_\___|\__,_|\/   \___/_/\_\\__\__/ .__/|_|  |_|\__\___|
+                                                |_|                   
+
+  */
   /* Creates boxed text as a sprite
   Uses the default font (Arial 18) to draw the text
   in the textColor you specify */
@@ -154,9 +202,18 @@ public:
 private:
   void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, ID3DXFont *font ) ;
 
-public:
-  void addSprite( int id, Sprite *sprite ) ;
 
+
+public:
+/*
+ _                 _ __            _ _       
+| | ___   __ _  __| / _\_ __  _ __(_) |_ ___ 
+| |/ _ \ / _` |/ _` \ \| '_ \| '__| | __/ _ \
+| | (_) | (_| | (_| |\ \ |_) | |  | | ||  __/
+|_|\___/ \__,_|\__,_\__/ .__/|_|  |_|\__\___|
+                       |_|                   
+
+*/
   // Load a static sprite with only 1 frame (not animated)
   // Loads width and height values from file
   // Assume background color is Photoshop's "transparent"
@@ -196,9 +253,15 @@ public:
   int randomSpriteId() ;
   int randomSpriteId( int below ) ;
 
+  // Gives you a Sprite object by ID
+  // that you loaded previously with
+  // loadSprite()
+  Sprite* getSprite( int spriteId ) ;
+
   //!! marked for deletion
   /* -- */ void drawAxes() ; /* -- */
 
+  void addSprite( int id, Sprite *sprite ) ;
 
   void addFont( int fontId, ID3DXFont* font ) ;
 

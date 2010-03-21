@@ -105,6 +105,10 @@ bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed
 #define SAFE_RELEASE(ptr) if(ptr) { ptr->Release(); ptr = NULL; }
 #define CAST_AS_DWORD(x) *((DWORD*)&x)
 #define PI 3.1415926535897932384626433832795
+#define DEGTORADCONST 0.017453292519943295769236907684886
+#define RADTODEGCONST 57.295779513082320876798154814105
+#define RADIANS(degreeMeasure) (degreeMeasure*DEGTORADCONST)
+#define DEGREES(radianMeasure) (radianMeasure*RADTODEGCONST)
 
 #define KEY_DOWN_MASK 0x80
 #define KEY_TOGGLE_MASK 0x1

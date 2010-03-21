@@ -6,7 +6,14 @@
 #include <d3d9.h>      // core direct3d
 #include <d3dx9.h>     // aux libs
 
-#define SPRITE_READ_FROM_FILE -1 /* read the property from the file */
+#define SPRITE_READ_FROM_FILE -5925499 /* read the property from the file */
+// Why is it -5925499?  It was too likely
+// someone would WANT TO SCALE by -1.
+// So we chose a large, large value
+// You won't ever want to draw something
+// -5925499 pixels would you?
+// -5925499 also happens to be
+// a telephone number .. :).
 #define SPRITE_INFINITY_LONG -1 /* don't advance the frame rate */
 
 #include "helperFunctions.h"
@@ -23,11 +30,11 @@ private:
   int spriteHeight ;
 
   // Animation and frame counting
-  int n ; // (n)umber frame you're on
-  int numFrames ; // the number of frames
-  // this sprite is known to have.  A sheet
-  // can have some empty cells at the end
-  // that are not used.
+  int n ; /*!< (n)umber frame you're on */
+  int numFrames ; /*!< the number of frames
+  this sprite is known to have.  A sheet
+  can have some empty cells at the end
+  that are not used. */
 
   float internalClock ;     // the internalClock that
   // keeps track of "what time it is".  This is used
@@ -120,31 +127,13 @@ public:
     spriteHeight = singleSpriteHeight ;
     numFrames = numFramesToUse ;
 
-    #pragma region param value error_check
+    // Some parameter value checking
     if( !spriteWidth )
       warning( "Sprite width was 0.  Not changing anything, but are you sure that's what you want?" ) ;
     if( !spriteHeight )
       warning( "Sprite height was 0.  Not changing anything, but are you sure that's what you want?" ) ;
     if( !numFrames )
       warning( "numFrames was 0.  Not changing anything, but are you sure that's what you want?" ) ;
-
-    if( spriteWidth < -1 )
-    {
-      warning( "singleSpriteWidth can't be negative (sent %d).  Reversing the sign.", singleSpriteWidth ) ;
-      spriteWidth = -spriteWidth ;
-    }
-    if( spriteHeight < -1 )
-    {
-      warning( "singleSpriteHeight can't be negative (sent %d).  Reversing the sign.", singleSpriteHeight ) ;
-      spriteHeight = -spriteHeight ;
-    }
-    if( numFrames < -1 )
-    {
-      warning( "numFrames can't be negative (sent %d).  Reversing the sign.", numFrames ) ;
-      numFrames = -numFrames ;
-    }
-    #pragma endregion
-
 
 
     HRESULT hr ;
@@ -322,16 +311,35 @@ private:
 
   public:
 
-  // How long to stay at frame before advancing to the next frame
+  /// How long to stay at frame before advancing to the next frame.
+  /// Set to any negative value (e.g. SPRITE_INFINITY_LONG)
+  /// to prevent the sprite from animating
   void setTimePerFrame( float secondsToSpendOnEachFrame )
   {
     secondsPerFrame = secondsToSpendOnEachFrame ;
+  }
+
+  void setFrame( int frameNumber )
+  {
+    // no negative frame numbers!
+    if( frameNumber < 0 )
+    {
+      warning( "Attempt to set negative frame # %d on sprite=%s, "
+        "setting to frame=0", frameNumber, originalFilename ) ;
+      frameNumber = 0 ;
+    }
+
+    n = frameNumber ; // set the frame number
+      if( n >= numFrames )
+        n = 0 ;
   }
   
   // advance this sprite by this much TIME
   void advance( float timeElapsed )
   {
-    if( secondsPerFrame == SPRITE_INFINITY_LONG )
+    // negative value for "secondsPerFrame" means
+    // to NOT animate.
+    if( secondsPerFrame < 0 ) // SPRITE_INFINITY_LONG is -1,
       return ; // we're not going to increment the frame.
 
     internalClock += timeElapsed ;

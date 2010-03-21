@@ -6,6 +6,7 @@
 enum Sprites
 {
   Mario = 1,
+  Splash,
   PacmanTitle,
   Pacman,
   Pellet,
@@ -15,7 +16,17 @@ enum Sprites
   Empty,
 
   /// The ghost door barrier
-  Barrier
+  Barrier,
+
+  Gun,
+  Flamethrower,
+  Uzi,
+
+  Inky,
+  Blinky,
+  Pinky,
+  Sue
+
 } ;
 
 enum Sounds
@@ -30,7 +41,8 @@ enum Sounds
 enum Fonts
 {
   Arial24 = 1,
-  TimesNewRoman18
+  TimesNewRoman18,
+  PacFont24
 } ;
 
 #endif

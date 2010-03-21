@@ -1,28 +1,63 @@
-#include "../eternity/eternity.h"
+#include "pacman-main.h"
 
-////////////////////////////////////////////
-//             GDW - WEEK - 8
-//
-
-// Notes:
-// The font is PacFont from http://www.fontspace.com/font-a-licious/pacfont-good
-// I created images of the text though
-// because you probably don't have PacFont installed,
-// and we're not running installers here
-
-// PACMAN is a tile-based game.
+// OUR VERSION of PACMAN is a tile-based game.
+// The original one wasn't really tile-based,
+// but this one is.
 
 // Tile-based games are nice because we can
-// specify levels with a simple .txt file,
-// one character per block.
+// make levels with a simple .txt file,
+// one character per block.  See lvl1.txt.
 
-// But movement between the tiles is continuous.  So we
-// clearly can't use TILES for the player
-// and ghost objects.
-
-
-
-GameWindow *window ;  // the main window object
+//////////////////////////////////////////
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//(If there are enough exclamation marks,
+// students MIGHT read it)
+//
+// THE WAY THIS PROGRAM IS STRUCTURED.
+// -----------------------------------
+// So, how's it going.  You decided
+// to read the comments.  smart++ to you.
+// So, there are 2 main objects.
+//   - Window
+//   - GameWorld
+// 
+// WINDOW:
+//
+GameWindow *window ;  // the main window object, which
+// provides:
+//  - SOUND LOAD&PLAY
+//  - SPRITE LOAD&DRAW
+//  - INPUT MANAGEMENT from mouse, keyboard and gamepad
+// Please browse InputMan.h, SoundMan.h and SpriteMan.h
+// for further details.
+//
+// GAMEWORLD:
+// Our entire game will be
+// stored in the GameWorld
+// object.
+#include "GameWorld.h"
+// ! RULE:
+//   ----
+//   Every code file here that wants the
+//   privilege of accessing "game" (THE
+//   one and only GameWorld object) AND
+//   "window" (to do window->drawSprite() etc)
+//   __must__ #include "pacman-main.h".
+// 
+//   More detail:  If you look in "pacman-main.h", you
+//   will see it has a magical "extern" declaration..
+//   an "extern" variable is like a c++ function
+//   prototype, only for VARIABLES.. This is hard
+//   to explain, so if you really want to understand it,
+//   you should see me during office hours or read up on the internet.
+//   
+// ! RULE THAT YOU REALLY SHOULD FOLLOW:
+//   ----------------------------------
+//   + Always split your source code
+//     into a .h and .cpp files or you
+//     __will__ run into problems!
+//     
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #pragma region explaining the ASSET macro
 // The ASSET macro adds
@@ -45,28 +80,6 @@ GameWindow *window ;  // the main window object
 #pragma endregion
 #define ASSET(x) ("../assets/"##x)
 
-// This game has a couple of states
-enum GameState
-{
-  Menu,
-  Running,
-  Paused,
-  GameOver
-};
-
-// Declare a global GameState,
-// to be used .. game-wide.
-GameState gameState ;
-
-// All of the enums for Sprites, Sounds and Fonts
-#include "EnumDefinitions.h"
-
-// For all other game-specific variables,
-// they will be stored in the GameWorld
-// object.
-#include "GameWorld.h"
-GameWorld *game ;
-
 void Init()
 {
   #pragma region asset load and font create
@@ -88,6 +101,8 @@ void Init()
   window->loadSprite( Sprites::Bonus, ASSET("sprites/cherries.png"), 0, 16, 16, 4, 0.5f ) ;
   window->loadSprite( Sprites::Mario, ASSET("sprites/mario.png") ) ;
 
+  window->loadSprite( Sprites::Splash, ASSET("sprites/gdw-splash.png") ) ;
+
   window->loadSprite( Sprites::Pacman, ASSET("sprites/pacman-spritesheet.png"), 0, 16, 16, 4, 0.4f ) ;
   window->loadSprite( Sprites::PacmanTitle, ASSET("sprites/pacman-title.png") ) ;
 
@@ -96,14 +111,26 @@ void Init()
   window->loadSprite( Sprites::Wall, ASSET( "sprites/wall.png" ) ) ;
   window->loadSprite( Sprites::Barrier, ASSET( "sprites/ghost-door-barrier.png" ) ) ;
 
+
+
   // It may seem silly to load and draw an empty sprite,
   // but it makes programming the game logic easier for a tile
   // with "nothing in it"
   window->loadSprite( Sprites::Empty, ASSET( "sprites/empty.png" ) ) ;
 
+  window->loadSprite( Sprites::Gun, ASSET( "sprites/gun.png" ) ) ;
+  window->loadSprite( Sprites::Flamethrower, ASSET( "sprites/flamethrower.png" ) ) ;
+  window->loadSprite( Sprites::Uzi, ASSET( "sprites/uzi.png" ) ) ;
+
+  window->loadSprite( Sprites::Inky, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
+  window->loadSprite( Sprites::Blinky, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
+  window->loadSprite( Sprites::Pinky, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
+  window->loadSprite( Sprites::Sue, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
+
   // Create a few fonts
   window->createFont( Fonts::Arial24, "Arial", 24, FW_NORMAL, false ) ;
   window->createFont( Fonts::TimesNewRoman18, "Times New Roman", 18, FW_BOLD, false ) ;
+  window->createFont( Fonts::PacFont24, "PacFont Good", 24, FW_NORMAL, false ) ;
 
   // Black bkg color to start
   window->setBackgroundColor( D3DCOLOR_ARGB( 255, 0, 0, 0 ) ) ;
@@ -111,7 +138,7 @@ void Init()
 
   // Start up the game world
   info( "Starting up the GameWorld..." ) ;
-  game = new GameWorld() ;
+  game = new GameWorld() ;  // create GameWorld object.
 }
 
 void Update()
@@ -122,15 +149,23 @@ void Update()
   // depends on __WHAT STATE__
   // the game is IN.
 
+  // ALT+ENTER for full screen mode..
   if( window->keyIsPressed( VK_MENU ) &&
       window->keyJustPressed( VK_RETURN ) )
   {
     window->fullScreenInMaxResolution() ;
   }
 
-  switch( gameState )
+
+
+  // I chose to leave this mammoth switch in here,
+  // because I like how Update() ties everything together.
+  // Note though, if you wanted to, you could migrate
+  // all this code in the switch here (and in the Draw() function)
+  // into GameWorld.h
+  switch( game->getState() )
   {
-  case GameState::Menu:
+  case GameWorld::GameState::Menu:
     // In the menu state, ALL we're doing
     // is listening for a click.  A click
     // means the user wants to start the game.
@@ -139,53 +174,37 @@ void Update()
       // There was a click.  The person
       // wants to start the game.
 
-      // Here's the code we want to run
-      // when it is time to start the game
-      // from the menu.
-
-      // Stop the title theme music
-      window->stopSound( Sounds::PacmanTitleThemeLoop ) ;
-
-      // Start up the game play music
-      window->playSound( Sounds::PacmanGamePlayMusic ) ;
-
-      // Load "lvl1.txt"
-      game->loadLevel( "lvl1.txt" ) ;
-
-      // Change the background color to something else
-      window->setBackgroundColor( D3DCOLOR_ARGB( 255, 0, 0, 64 ) ) ;
-
-      // Finally, TRANSITION STATE to Running.
-      gameState = GameState::Running ; // Start the game.
+      // TRANSITION STATE to Running.
+      // IN the handler code for when
+      // a transition from Menu to Running
+      // occurs is the level load, etc.
+      game->setState( GameWorld::GameState::Running ) ; // Start the game.
     }
     break;
 
-  case GameState::Running:
+  case GameWorld::GameState::Running:
 
     // Here we run the game.
+
+    game->step( window->getTimeElapsedSinceLastFrame() ) ;
+
     // Allow PAUSE by pressing 'P'
     if( window->keyJustPressed( 'P' ) )
     {
-      gameState = GameState::Paused;
-      window->pause() ; // Pause the engine as well
-      // This halts animations.
-
-      info( "Paused..." ) ;
+      game->setState( GameWorld::GameState::Paused ) ;
     }
     break;
 
-  case GameState::Paused:
+  case GameWorld::GameState::Paused:
     // ((do nothing except check))
     // for P again to unpause
     if( window->keyJustPressed( 'P' ) )
     {
-      gameState = GameState::Running ;
-      window->unpause() ;
-      info( "UNPAUSED" ) ;
+      game->setState( GameWorld::GameState::Running ) ;
     }
     break;
 
-  case GameState::GameOver:
+  case GameWorld::GameState::GameOver:
     // End the game and transition to menu
     break;
   }
@@ -212,9 +231,9 @@ void Draw()
 
   // If you picture a money sorter
   // this kind of makes sense
-  switch( gameState )
+  switch( game->getState() )
   {
-  case GameState::Menu:
+  case GameWorld::GameState::Menu:
     // Draw the title
     window->drawSprite( Sprites::PacmanTitle, window->getWidth()/2, 150 ) ;
 
@@ -222,47 +241,29 @@ void Draw()
     window->drawString( Fonts::Arial24, "Click the mouse to start", Color::White );
     break;
 
-  case GameState::Running:
+  // When paused..
+  // we also must draw the
+  // game world, or else
+  // you'll see nothing.
+  // The only difference when
+  // paused is we limit our
+  // response to input commands
+  // to only "unpause" command
+  case GameWorld::GameState::Running:
+  case GameWorld::GameState::Paused:
     {
       // When the game is running,
       // ask the GameWorld object
       // to draw itself
-      game->draw();
+      game->drawBoard() ;
+      game->drawStats() ;
 
-
-      // Draw in the joypad meters
-      float tlx = window->gamepadThumbLeftX( Gamepad::One ) ;
-      float tly = window->gamepadThumbLeftY( Gamepad::One ) ;
-
-      float tRx = window->gamepadThumbRightX( Gamepad::One ) ;
-      float tRy = window->gamepadThumbRightY( Gamepad::One ) ;
-
-      float xRight = tlx + 1 ;
-
-      window->drawBox( Color::Red, 400, 100, xRight*100, 20 ) ;
-
+      // Now draw the player and enemies
+      game->drawPeople() ;
     }
     break;
 
-  case GameState::Paused:
-    // When paused..
-    // we also must draw the
-    // game world, or else
-    // you'll see nothing.
-    // The only difference when
-    // paused is we limit our
-    // response to input commands
-    // to only "unpause" command
-    {
-      // Really we could have
-      // put this in the same
-      // case as GameState::Running
-      // for DRAW.
-      game->draw();
-    }
-    break;
-
-  case GameState::GameOver:
+  case GameWorld::GameState::GameOver:
     break;
   }
 

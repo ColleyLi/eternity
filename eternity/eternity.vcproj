@@ -186,6 +186,14 @@
 				</File>
 			</Filter>
 			<Filter
+				Name="Aux_And_Util"
+				>
+				<File
+					RelativePath=".\GDIPlusTexture.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
 				Name="C-Style"
 				>
 				<File
@@ -197,20 +205,16 @@
 					>
 				</File>
 			</Filter>
-			<Filter
-				Name="GDI+"
-				>
-				<File
-					RelativePath=".\GDIPlusTexture.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\Callback.h"
+				>
+			</File>
 			<File
 				RelativePath=".\eternity.h"
 				>
@@ -224,26 +228,6 @@
 				</File>
 				<File
 					RelativePath=".\helperFunctions.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="draft_and_unused"
-				>
-				<File
-					RelativePath=".\D3DVertex.h"
-					>
-				</File>
-				<File
-					RelativePath=".\DrawSpriteCommand.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Text.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Tones.h"
 					>
 				</File>
 			</Filter>
@@ -280,18 +264,14 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="GDI+"
-				>
-				<File
-					RelativePath=".\GDIPlusTexture.h"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="Aux_And_Util"
 				>
 				<File
 					RelativePath=".\Gamepad.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GDIPlusTexture.h"
 					>
 				</File>
 				<File
@@ -308,6 +288,26 @@
 				</File>
 				<File
 					RelativePath=".\Timer.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="unused"
+				>
+				<File
+					RelativePath=".\D3DVertex.h"
+					>
+				</File>
+				<File
+					RelativePath=".\DrawSpriteCommand.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Text.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Tones.h"
 					>
 				</File>
 			</Filter>

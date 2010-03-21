@@ -14,6 +14,8 @@ class Timer
 public:
   double frames_per_second ;
   double time_since_last_frame ;
+  double game_time ; /*!< counter for total game time elapsed */
+
   Timer()
   {
     frames_per_second = time_since_last_frame = 0 ;
@@ -27,6 +29,8 @@ public:
     QueryPerformanceCounter( &lastTime ) ;
   
     info( "Program start @ time=%lld", thisTime.QuadPart ) ;
+
+    game_time = 0.0 ;  // start counter at 0 seconds
   }
 
 
@@ -56,6 +60,8 @@ public:
       frames_per_second = 1 / time_since_last_frame ;  // frames_per_second = ( 1 / time_since_last_frame )
     } while( frames_per_second > frameRateDesired ) ;  // stay in above loop so long as the game's fps is higher than frameRateDesired
 
+    // Add the time elapsed to the total sum.
+    game_time += time_since_last_frame ;
   }
 } ;
 

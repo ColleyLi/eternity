@@ -29,10 +29,10 @@ public:
 
   enum Button
   {
-    DPad_Up    = XINPUT_GAMEPAD_DPAD_UP,
-    DPad_Down  = XINPUT_GAMEPAD_DPAD_DOWN,
-    DPad_Left  = XINPUT_GAMEPAD_DPAD_LEFT,
-    DPad_Right = XINPUT_GAMEPAD_DPAD_RIGHT,
+    DPadUp    = XINPUT_GAMEPAD_DPAD_UP,
+    DPadDown  = XINPUT_GAMEPAD_DPAD_DOWN,
+    DPadLeft  = XINPUT_GAMEPAD_DPAD_LEFT,
+    DPadRight = XINPUT_GAMEPAD_DPAD_RIGHT,
     Start      = XINPUT_GAMEPAD_START,
     Back       = XINPUT_GAMEPAD_BACK,
     ThumbLeft  = XINPUT_GAMEPAD_LEFT_THUMB,
