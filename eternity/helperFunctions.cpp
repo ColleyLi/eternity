@@ -169,12 +169,47 @@ double lerp( double a, double b, double t )
   return a + ( b - a )*t ;
 }
 
+void clamp( int &num, int low, int high )
+{
+  if( num < low )
+    num = low ;
+  if( num > high )
+    num = high ;
+}
+
 void clamp( float &num, float low, float high )
 {
   if( num < low )
     num = low ;
   if( num > high )
     num = high ;
+}
+
+int clampCopy( const int num, int low, int high )
+{
+  // Follow same behavior as clamp(),
+  // so high first
+  if( num > high )
+    return high ;
+  else if( num < low )
+    return low ; // 
+  else           // otherwise if it falls between low and high
+    return num ; // you get the same number back
+}
+
+float clampCopy( const float num, float low, float high )
+{
+  if( num > high )
+    return high ;
+  else if( num < low )
+    return low ; // 
+  else           // otherwise if it falls between low and high
+    return num ; // you get the same number back
+}
+
+int round( double x )
+{
+  return (int)( 0.5 + x ) ;
 }
 
 void addSinewave( short *data, int durationInSamples,

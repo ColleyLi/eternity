@@ -35,7 +35,8 @@ enum Sounds
   PacmanGamePlayMusic,
   PacmanPellet1,
   PacmanPellet2,
-  PacmanPellet3
+  PacmanPellet3,
+  Intro
 } ;
 
 enum Fonts

@@ -139,6 +139,12 @@ void InputMan::inputManSetClipZone( RECT & clipZone )
   mouse.setClipZone( clipZone ) ;
 }
 
+bool InputMan::gamepadIsPresent( Gamepad::PlayerIndex playerIndex )
+{
+  return gamepad.isPresent( playerIndex ) ;
+}
+
+
 bool InputMan::gamepadJustPressed(
   Gamepad::PlayerIndex playerIndex, Gamepad::Button button )
 {
@@ -197,6 +203,13 @@ void InputMan::gamepadStopVibrate( Gamepad::PlayerIndex playerIndex )
   gamepad.stopVibrate( playerIndex ) ;
 }
 
+bool InputMan::anyKeyPushed()
+{
+  // just use memcmp to compare previous states
+  // of each mouse, keyboard, gamepad structs
+  // to see if state changed
+  return keyboard.anyKeyPushed() || gamepad.anyKeyPushed() ;
+}
 
 
 

@@ -345,7 +345,26 @@
         
         * Callbacks were implemented inside
           the GameWindow object.
-  
+      
+    - added GameWindow::drawTimer() to draw current game_time
+    
+    - added Gamepad::isPresent() to check if gamepad
+      connected or not
+      
+    - created and added gdw-week-10-xbox-controller-callbacks
+      example
+      
+    - added round() to helperFunctions.h
+    
+    - added InputMan::anyKeyPushed()
+      to see if any key was pushed at keyboard or any
+      of the gamepads
+    
+    - notice compilation time increased quite a bit
+      with introduction of templates
+      http://xkcd.com/303/.
+      - Consider using PCH to reduce compilation time
+    
   - plenty of updates to the pacman project
   
   - TODO:
@@ -354,5 +373,6 @@
       WindowClass.h with the .cpp file
     - Delete unused objects and classes
       - DO WE REALLY NEED D3DVertex
-
+    - thought about adding feature to cancel
+      a callback.  maybe later.
 

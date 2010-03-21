@@ -23,6 +23,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gdw-week-10-callbacks", "gd
 		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gdw-week-10-xbox-controller-callbacks", "gdw-week-10-xbox-controller-callbacks\gdw-week-10-xbox-controller-callbacks.vcproj", "{3A4B5A24-B7CB-4F20-B5DF-F2854BEA4614}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -49,6 +54,10 @@ Global
 		{0DE838E7-6E6E-421F-AC56-BB16CEAFA5D5}.Debug|Win32.Build.0 = Debug|Win32
 		{0DE838E7-6E6E-421F-AC56-BB16CEAFA5D5}.Release|Win32.ActiveCfg = Release|Win32
 		{0DE838E7-6E6E-421F-AC56-BB16CEAFA5D5}.Release|Win32.Build.0 = Release|Win32
+		{3A4B5A24-B7CB-4F20-B5DF-F2854BEA4614}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3A4B5A24-B7CB-4F20-B5DF-F2854BEA4614}.Debug|Win32.Build.0 = Debug|Win32
+		{3A4B5A24-B7CB-4F20-B5DF-F2854BEA4614}.Release|Win32.ActiveCfg = Release|Win32
+		{3A4B5A24-B7CB-4F20-B5DF-F2854BEA4614}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

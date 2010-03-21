@@ -9,7 +9,9 @@
 // one character per block.  See lvl1.txt.
 
 //////////////////////////////////////////
+//
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
 //(If there are enough exclamation marks,
 // students MIGHT read it)
 //
@@ -17,6 +19,7 @@
 // -----------------------------------
 // So, how's it going.  You decided
 // to read the comments.  smart++ to you.
+// respect++.  Disrespect--.
 // So, there are 2 main objects.
 //   - Window
 //   - GameWorld
@@ -91,10 +94,7 @@ void Init()
   window->loadSound( Sounds::PacmanPellet1, ASSET("sounds/pacman-pellet-1.wav" ) ) ;
   window->loadSound( Sounds::PacmanPellet2, ASSET("sounds/pacman-pellet-2.wav" ) ) ;
   window->loadSound( Sounds::PacmanPellet3, ASSET("sounds/pacman-pellet-3.wav" ) ) ;
-
-  window->loopSound( Sounds::PacmanTitleThemeLoop ) ; // Loop this sound forever,
-  // or until we stop it using window->stopSound()
-
+  window->loadSound( Sounds::Intro, ASSET("sounds/gypsy-jazz.mp3" ) ) ;
 
 
   // sprite loading
@@ -165,6 +165,19 @@ void Update()
   // into GameWorld.h
   switch( game->getState() )
   {
+  case GameWorld::GameState::Splash:
+
+    
+    if( //window->anyKeyPushed() || // If any key was pushed..
+        // bah.  key pushed is annoying.  using mouse instead.
+        window->mouseJustPressed( Mouse::Left )
+      )
+    {
+      // Jump to the menu
+      game->setState( GameWorld::GameState::Menu ) ;
+    }
+    break ;
+
   case GameWorld::GameState::Menu:
     // In the menu state, ALL we're doing
     // is listening for a click.  A click
@@ -219,7 +232,6 @@ void Update()
   }
 }
 
-
 // DO ALL DRAWING HERE.
 void Draw()
 {
@@ -233,6 +245,50 @@ void Draw()
   // this kind of makes sense
   switch( game->getState() )
   {
+  case GameWorld::GameState::Splash:
+    {
+      // This only happens right at
+      // game start, so we'll just use
+      // the game's global clock
+      // to determine amount of fade in
+
+      // WHEN:  0 < time < 5 :  Fade in
+      //        5 < time < 9 :  stay solid
+      //        9 < time < 14 : fade out
+      
+      int alpha = 0 ;
+      double time = window->getTimeElapsedSinceGameStart() ;
+      if( time < 5.0 )
+      {
+        // fade-in phase
+        float fadeInPercent = time / 5.0 ;
+       
+        // And alpha is a linear interpolation say
+        alpha = lerp( 0, 255, fadeInPercent ) ;
+      }
+      else if( 5.0 < time && time < 9.0 )
+      {
+        // stay solid
+        alpha = 255 ;
+      }
+      else
+      {
+        // fade out
+        float fadeOutPercent = ( 14.0 - time ) / 5.0 ;
+
+        alpha = lerp( 0, 255, fadeOutPercent ) ;
+      }
+
+      // Fade out the logo
+      window->drawSprite(
+        Sprites::Splash,
+        window->getWidth()/2,
+        window->getHeight()/2,
+        D3DCOLOR_ARGB( alpha, 255, 255, 255 )
+      ) ;
+    }
+    break;
+
   case GameWorld::GameState::Menu:
     // Draw the title
     window->drawSprite( Sprites::PacmanTitle, window->getWidth()/2, 150 ) ;
@@ -252,6 +308,7 @@ void Draw()
   case GameWorld::GameState::Running:
   case GameWorld::GameState::Paused:
     {
+
       // When the game is running,
       // ask the GameWorld object
       // to draw itself
@@ -269,10 +326,16 @@ void Draw()
 
 
   // Run these draw calls regardless of game state
-  window->drawMouseCursor( Mario ) ;
 
   window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
+
+  window->drawTimer() ;  // draw global sense of game_time
+
+  // remember to draw the mouse last so
+  // it always appears on TOP of everything.
+  window->drawMouseCursor( Sprites::Mario ) ;
+
 
 }
 

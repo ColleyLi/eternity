@@ -1,0 +1,21 @@
+This is eternity engine version 0.1.2
+
+change log
+==========
+v0.0.0
+  - initial version
+
+... a few more versions in here ...
+
+v0.0.11
+  - separation of concerns:  InputMan, SoundMan, SpriteMan
+
+v0.1.0
+  - added Xinput
+
+v0.1.1
+  - separation of concerns
+
+v0.1.2
+  - added event callbacks
+

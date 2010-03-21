@@ -175,7 +175,6 @@ void GameWindow::drawTimer()
 
 }
 
-
 void GameWindow::createFont( int fontId, char *fontName, float size, int boldness, bool italics )
 {
   ID3DXFont *font ;

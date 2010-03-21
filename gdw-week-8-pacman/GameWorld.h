@@ -18,10 +18,11 @@ using namespace std ;
 
 // The GameWorld contains Tiles and GameObjects and
 // stats, basically
+#include "EnumDefinitions.h"
 #include "Vector2.h"
 #include "Tile.h"
 #include "GameObject.h"
-#include "EnumDefinitions.h"
+#include "FourDirectionMovingObject.h"
 #include "Player.h"
 #include "Ghost.h"
 
@@ -152,6 +153,20 @@ public:
   /// order matters!  the last thing
   /// you draw shows up on top.
   void drawPeople() ;
+
+  /// Gets you a specific tile
+  /// at some location
+  Tile* getTileAt( Vector2 & pos ) ;
+
+  /// Gives you the X offset of the
+  /// board from the top
+  /// left corner of the screen
+  int getBoardOffsetX() ;
+
+  /// Gives you the Y offset of the
+  /// board from the top
+  /// left corner of the screen
+  int getBoardOffsetY() ;
 } ;
 
 extern GameWorld *game ; // an extern is

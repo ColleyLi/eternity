@@ -4,6 +4,8 @@
 #include "pacman-main.h"
 
 #include "GameObject.h"
+#include "Tile.h"
+
 //#include "GameWorld.h"
 
 /// This class defines an object
@@ -48,6 +50,11 @@ public:
   MotionState motionState ;
 
   FourDirectionMovingObject() ;
+
+  /// "Rounds off" object position
+  /// so that it is NEVER "infringing"
+  /// on an obstacle's block.
+  void squareOff() ;
 
   /// Moves the object a little.
   virtual void step( float time ) override ;

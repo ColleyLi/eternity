@@ -45,6 +45,18 @@ public:
     Y = XINPUT_GAMEPAD_Y             
   } ;
 
+  Gamepad()
+  {
+    for( int i = 0 ; i < XUSER_MAX_COUNT ; i++ )
+    {
+      memset( &gpPreviousState[ i ], 0, sizeof( XINPUT_STATE ) ) ;
+      memset( &gpCurrentState[ i ], 0, sizeof( XINPUT_STATE ) ) ;
+    }
+
+    // retrieve initial states on construction
+    step() ;
+  }
+
   PlayerIndex checkPlayerIndex( PlayerIndex playerIndex )
   {
     if( playerIndex < 0 || playerIndex > XUSER_MAX_COUNT )
@@ -54,6 +66,20 @@ public:
     }
 
     return playerIndex ;
+  }
+
+  bool isPresent( PlayerIndex playerIndex )
+  {
+    playerIndex = checkPlayerIndex( playerIndex ) ;
+
+    // Now check if this one is present
+    // by any simple query operation
+    XINPUT_CAPABILITIES xInputCaps ;
+    DWORD res = XInputGetCapabilities( playerIndex, XINPUT_FLAG_GAMEPAD,
+      &xInputCaps ) ;
+    
+
+    return res == ERROR_SUCCESS ;
   }
   
   // pressed now
@@ -162,7 +188,8 @@ public:
     int errCode = XINPUT_Check( XInputSetState( playerIndex, &vibration ) ) ;
     if( errCode == ERROR_NOT_CONNECTED )
     {
-      warning( "XBox360 gamepad controller %d not connected", playerIndex ) ;
+      warning( "XBox360 gamepad controller %d not connected, "
+        "its likely that no vibration can be felt!  Too bad.", playerIndex ) ;
     }
   }
 
@@ -176,7 +203,9 @@ public:
 
     if( errCode == ERROR_NOT_CONNECTED )
     {
-      warning( "XBox360 gamepad controller %d not connected", playerIndex ) ;
+      warning( "XBox360 gamepad controller %d not connected, "
+        "no stop in vibration can be detected!  Maybe you "
+        "can make the screen flash or something instead.", playerIndex ) ;
     }
   }
 
@@ -198,6 +227,23 @@ public:
   // There is a XInputGetKeystroke function 
   // that also gives you input events
   // but we haven't used it here
+
+
+  bool anyKeyPushed()
+  {
+    for( int i = 0 ; i < XUSER_MAX_COUNT ; i++ )
+    {
+      // Just compare wButtons
+      if( gpPreviousState[ i ].Gamepad.wButtons !=
+          gpCurrentState[ i ].Gamepad.wButtons )
+      {
+        // a state changed
+        return true ;
+      }
+    }
+
+    return false ;
+  }
 
 } ;
 #endif

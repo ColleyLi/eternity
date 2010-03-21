@@ -84,6 +84,12 @@ public:
       the mouse can go in pixels */
   void inputManSetClipZone( RECT & clipZone ) ;
 
+  /** Tells you if a player index is present or not.
+      A gamepad doesn't HAVE to be present for you
+      to query it, nothing bad will happen if the
+      controller is not connected. */
+  bool gamepadIsPresent( Gamepad::PlayerIndex playerIndex ) ;
+
   /** Gamepad button just pressed once */
   bool gamepadJustPressed( Gamepad::PlayerIndex playerIndex, Gamepad::Button button ) ;
   
@@ -143,6 +149,13 @@ public:
 
   /** Stops a gamepad from vibrating. */
   void gamepadStopVibrate( Gamepad::PlayerIndex playerIndex ) ;
+
+
+  /// Returns true when
+  /// ANY KEY on the keyboard,
+  /// mouse, or joypads have
+  /// been pushed.
+  bool anyKeyPushed() ;
 
 } ;
 

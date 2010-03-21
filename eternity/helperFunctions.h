@@ -60,7 +60,11 @@ bool FMOD_ErrorCheck( FMOD_RESULT result ) ;
 
 int XINPUT_Check( int errCode ) ;
 
-// numerical
+
+// numerical.  A few of these functions
+// can be templated.
+
+
 float randFloat( float a, float b ) ;
 float randFloat() ;
 
@@ -68,7 +72,19 @@ float lerp( float a, float b, float t ) ;
 
 double lerp( double a, double b, double t ) ;
 
+/// Clamps num between low and high
+/// modifies num
+void clamp( int &num, int low, int high ) ;
+
 void clamp( float &num, float low, float high ) ;
+
+/// Clamps num between low and high
+/// without modifying num
+int clampCopy( const int num, int low, int high ) ;
+
+float clampCopy( const float num, float low, float high ) ;
+
+int round( double x ) ;
 
 void addSinewave( short *data, int durationInSamples,
                   int offset, int frequency,

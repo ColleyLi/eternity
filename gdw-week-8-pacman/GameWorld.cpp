@@ -1,4 +1,5 @@
 #include "GameWorld.h"
+#include "CallbackFunctions.h"
 
 // Here is where we create our
 // single GameWorld instance.
@@ -17,7 +18,22 @@ GameWorld::GameWorld()
   xStatsOffset = 400 ;
   yStatsOffset = 20 ;
 
-  gameState = GameState::Menu ;
+  // Start at the splash screen
+  gameState = GameState::Splash ;
+
+  // Start the annoying intro music
+  window->playSound( Sounds::Intro ) ; // Loop this sound forever,
+  // or until we stop it using window->stopSound()
+
+  // Set up a callback to call
+  // the transitionToState callback
+  // after 14.0 seconds
+  window->addCallback(
+    new Callback1<GameState>(
+      14.0,
+      transitionToState,
+      GameState::Menu )
+  ) ;
 }
 
 GameWorld::GameState GameWorld::getState()
@@ -34,13 +50,27 @@ void GameWorld::setState( GameWorld::GameState newState )
   +-------------+-----------+------------+
   | FROM STATE  | TO STATE  |  ACTIONS   |
   +-------------+-----------+------------+
-  | 1.  Menu    -> Running   : Load level 1
-  | 2.  
+  | 1.  Splash  -> Menu
+  | 2.  Menu    -> Running  : Load level 1
+  | 3.  Running -> Paused
+  | 4.  Paused  -> Running
+  | 5.  Running -> GameOver
   */
 
-  // 1.  MENU -> RUNNING
-  if( gameState == GameState::Menu &&
-      newState == GameState::Running )
+  // 1.  Splash -> Menu
+  if( gameState == GameState::Splash &&
+      newState == GameState::Menu )
+  {
+    // Stop the intro music
+    window->stopSound( Sounds::Intro ) ;
+
+    // Start up the title theme music
+    window->loopSound( Sounds::PacmanTitleThemeLoop ) ;
+  }
+
+  // 2.  MENU -> RUNNING
+  else if( gameState == GameState::Menu &&
+           newState == GameState::Running )
   {
     // Here's the code we want to run
     // when it is time to start the game
@@ -58,7 +88,7 @@ void GameWorld::setState( GameWorld::GameState newState )
     // Change the background color to something else
     window->setBackgroundColor( D3DCOLOR_ARGB( 255, 0, 0, 64 ) ) ;
   }
-  // pause    RUNNING -> PAUSED
+  // 3. pause    RUNNING -> PAUSED
   else if( gameState == GameState::Running &&
            newState == GameState::Paused )
   {
@@ -67,14 +97,15 @@ void GameWorld::setState( GameWorld::GameState newState )
 
     info( "Paused..." ) ;
   }
-  // unpause  PAUSED -> RUNNING
+  // 4. unpause  PAUSED -> RUNNING
   else if( gameState == GameState::Paused &&
            newState == GameState::Running )
   {
     window->unpause() ;
+
     info( "unpaused" ) ;
   }
-  // user died.  RUNNING -> GAMEOVER
+  // 5. player died.  RUNNING -> GAMEOVER
   else if( gameState == GameState::Running &&
            newState == GameState::GameOver )
   {
@@ -114,6 +145,7 @@ void GameWorld::loadLevel( char *filename )
       // and _not_ in the Tile object.
       
       Tile *tile = new Tile();
+      tile->setTile( mapChar ) ;
       
       switch( mapChar )
       {
@@ -127,12 +159,13 @@ void GameWorld::loadLevel( char *filename )
         // The difference between
         // Tiles and GameObjects is Tiles don't move.
         tile->setSpriteId( Sprites::Empty ) ;
+        tile->setPassable( true ) ;
 
         pacman = new Player() ;
 
         // Create Pacman at this point.
-        pacman->pos.x = xBoardOffset + col * tileSize ;
-        pacman->pos.y = yBoardOffset + row * tileSize ;
+        pacman->pos.x = col * tileSize ;
+        pacman->pos.y = row * tileSize ;
 
         pacman->spriteId = Sprites::Pacman ;
         
@@ -141,26 +174,32 @@ void GameWorld::loadLevel( char *filename )
 
       case Tiles::Bonus:
         tile->setSpriteId( Sprites::Bonus ) ;
+        tile->setPassable( true ) ;
         break;
 
       case Tiles::Pellet:
         tile->setSpriteId( Sprites::Pellet ) ;
+        tile->setPassable( true ) ;
         break;
 
       case Tiles::PowerPellet:
         tile->setSpriteId( Sprites::Powerpellet ) ;
+        tile->setPassable( true ) ;
         break;
 
       case Tiles::Wall:
         tile->setSpriteId( Sprites::Wall ) ;
+        tile->setPassable( false ) ;
         break;
 
       case Tiles::Empty:
         tile->setSpriteId( Sprites::Empty ) ;
+        tile->setPassable( true ) ;
         break;
 
       case Tiles::Barrier:
         tile->setSpriteId( Sprites::Barrier ) ;
+        tile->setPassable( false ) ;
         break;
 
       case Tiles::Inky:
@@ -169,12 +208,13 @@ void GameWorld::loadLevel( char *filename )
       case Tiles::Sue:
         {
           tile->setSpriteId( Sprites::Empty ) ;
+          tile->setPassable( true ) ;
 
           Ghost * ghost = new Ghost() ;
           ghost->name = mapChar ;
 
-          ghost->pos.x = xBoardOffset + col * tileSize ;
-          ghost->pos.y = yBoardOffset + row * tileSize ;
+          ghost->pos.x = col * tileSize ;
+          ghost->pos.y = row * tileSize ;
 
           ghost->spriteId = Sprites::Inky ;
 
@@ -188,6 +228,7 @@ void GameWorld::loadLevel( char *filename )
         // for here yet.  Mario will remind us
         // to make a sprite for it
         tile->setSpriteId( Sprites::Mario ) ;
+        tile->setPassable( true ) ;
         break;
       }
       
@@ -279,5 +320,43 @@ void GameWorld::drawPeople()
 
 }
 
+Tile* GameWorld::getTileAt( Vector2 & pos )
+{
+  int col = round( pos.x/tileSize ) ; 
+  int row = round( pos.y/tileSize ) ;
 
+  //info( "col: %d row %d", col, row ) ;
 
+  if( col < 0 )
+  {
+    warning( "Column index was negative, reset to 0" ) ;
+    col = 0 ;
+  }
+  else if( col >= mapCols )
+  {
+    warning( "Column index out of bounds: x=%.2f too large!", pos.x ) ;
+    col = mapCols - 1 ;
+  }
+  if( row < 0 )
+  {
+    warning( "Row index was negative, reset to 0" ) ;
+    row = 0 ;
+  }
+  if( row >= mapRows )
+  {
+    warning( "Row index out of bounds: y=%.2f too large!", pos.y );
+    row = mapRows - 1 ;
+  }
+
+  return level[ row ][ col ] ;
+}
+
+int GameWorld::getBoardOffsetX()
+{
+  return xBoardOffset ;
+}
+
+int GameWorld::getBoardOffsetY()
+{
+  return yBoardOffset ;
+}

@@ -89,8 +89,6 @@ public:
   /// that the game keeps track of
   void drawTimer() ;
 
-  
-
   // The createFont function has to be HERE
   // so that it can call addFont() in spriteManager
   // and registerFont in D3DWindow.

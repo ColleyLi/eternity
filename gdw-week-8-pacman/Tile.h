@@ -37,15 +37,18 @@ struct Tiles
 
 class Tile
 {
-  int spriteId ;   // the sprite id to draw with
-  bool passable ;  // Whether or not this tile
-  // can be walked upon or not
+  int spriteId ;   /*!< the sprite id to draw with */
+  bool passable ;  /*!< Whether or not this tile
+  can be walked upon or not */
+
+  char tile ;      /*!< the original tile used in the level map */
 
 public:
   Tile()
   {
     spriteId = 0 ;
     passable = true ;
+    tile = 'x' ;
   }
 
   // Grumble grumble..
@@ -54,6 +57,9 @@ public:
 
   bool isPassable(){ return passable; }
   void setPassable( bool i_passable ){ passable = i_passable; }
+
+  char getTile(){ return tile; }
+  void setTile( char toTile ){ tile = toTile ; }
 
   ///!! A function you call when the player
   /// runs into this tile.
