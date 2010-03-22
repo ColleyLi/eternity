@@ -154,6 +154,18 @@ public:
   /// you draw shows up on top.
   void drawPeople() ;
 
+private:
+  void checkCoords( int & row, int & col ) ;
+
+public:
+  Tile* getTileNearestLeft( Vector2 & pos ) ;
+
+  Tile* getTileNearestRight( Vector2 & pos ) ;
+
+  Tile* getTileNearestUp( Vector2 & pos ) ;
+
+  Tile* getTileNearestDown( Vector2 & pos ) ;
+
   /// Gets you a specific tile
   /// at some location
   Tile* getTileAt( Vector2 & pos ) ;

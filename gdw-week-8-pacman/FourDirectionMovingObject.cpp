@@ -4,6 +4,7 @@
 FourDirectionMovingObject::FourDirectionMovingObject()
 {
   motionState = MotionState::MovingRight ;
+  requestedMotionState = motionState ;
   speed = 0 ;
 }
 
@@ -93,16 +94,176 @@ pixel 0   16  32  48  64  80
 
   At this point the math of it and the
   gameplay controls are closely intertwined..
+
+  */
+
+  /*
+        0   1   2   3   4
+      +---+---+---+---+---+
+      |   |   |   |###|   |
+    0 |   |   |   |###|   |
+      |   |   |   |###|   |
+      +---+---+---+---+---+
+      |   |   | P |###|   |
+    1 |   |   |PPP|###|   |
+      |   |   | P |###|   |
+      +---+---+---+---+---+
+
+  
+  Find if moving object "encroaches" on tile to right.
+  Looking at the diagram above, pacman's (x,y)
+  position is IDEALLY (2.0, 1.0).
+
+  However he starts to "encroach" on the tile
+  that has a ##WALL## basically when he has
+  an x value like 2.01, 2.1, 2.2, 2.3... etc.
+  once he reaches 2.5 he would be considered to be
+  in that next wall tile to the right.
+
+  If his X value is 1.87 however, he is still
+  in tile (2,1).  So in that case he's actually
+  encroaching on the tile to the LEFT.
+
+  Encroaching on tile to right:
+  --
+  So if the CEILING of the X value is
+  NOT equal to the TILE the GameWorld object
+  thinks he's in, then he is encroaching on
+  the tile to the right.
+
+  If he is encroaching on the tile to
+  the right AND that tile is a wall/impassible tile
+  THEN HE MUST BE PUSHED BACK OFF IT INTO
+  HIS ORIGINAL OWN ZONE.
+
   */
 
   
 
+  // sitTile is the tile that
+  // this object is truly considered
+  // to be sitting in.
+  float ts = game->tileSize ;
 
+  Tile *sitTile = game->getTileAt( pos ) ;
 
+  // This is where the pacman is SUPPOSED to be
+  // if he were actually sitting in the center
+  // of his tile..
+  float sitX = (round( pos.x / ts ))*ts ;
+  float sitY = (round( pos.y / ts ))*ts ;
+
+  //info( "(%.2f, %.2f) => (%.2f, %.2f)", pos.x, pos.y, sitX, sitY ) ;
+
+  Tile *nearestRight = game->getTileNearestRight( pos ) ;
+
+  if( sitTile != nearestRight )  // the player is encroaching on a tile to the RIGHT of him
+  {
+    if( !nearestRight->isPassable() )   // that tile the player is encroaching up on IS NOT passable
+    {
+      // Then LOCK HIM TO SIT IN HIS sitTile
+      // with respect to X
+      pos.x = sitX ;
+    }
+  }
+
+  Tile *nearestLeft = game->getTileNearestLeft( pos ) ;
+  if( sitTile != nearestLeft ) 
+    if( !nearestLeft->isPassable() )
+      pos.x = sitX ;
+      
+  Tile *nearestDown = game->getTileNearestDown( pos ) ;
+  if( sitTile != nearestDown )
+    if( !nearestDown->isPassable() )
+      pos.y = sitY ;
+
+  Tile *nearestUp = game->getTileNearestUp( pos ) ;
+  if( sitTile != nearestUp )  // encroaching upward
+    if( !nearestUp->isPassable() )
+      pos.y = sitY ;
+
+}
+
+void FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
+{
+  requestedMotionState = newMotionState ;
+
+  // first of all to make any direction change
+  // he must be already nicely aligned on a tile.
+  // if not, refuse the request now
+
+  // Nice tile alignment means
+  // that his coordinates are
+  // __nearly__ a multiple of 16.
+  #define NEARLY_DIVISIBLE 0.1f
+  if( (
+      fmodf( pos.x, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
+      fmodf( pos.x + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
+      )
+      &&
+      (
+      fmodf( pos.y, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
+      fmodf( pos.y + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
+      )
+    )
+  {
+  }
+  else
+  {
+    // NOT ALIGNED, so motion isn't allowed yet
+    return ;
+  }
+
+  
+  Tile *adjTile ;
+  float ts = game->tileSize;
+
+  // Check if its possible to go that way now.
+  switch( requestedMotionState )
+  {
+  case MotionState::MovingUp:
+    adjTile = game->getTileNearestUp( pos + Vector2(0,-ts) ) ;
+    break ;
+  case MotionState::MovingDown:
+    adjTile = game->getTileNearestDown( pos + Vector2(0,ts) ) ;
+    break;
+  case MotionState::MovingLeft:
+    adjTile = game->getTileNearestLeft( pos + Vector2(-ts,0) ) ;
+    break;
+  case MotionState::MovingRight:
+    adjTile = game->getTileNearestRight( pos + Vector2(ts,0) ) ;
+    break;
+
+  case MotionState::Stopped:
+    // Nothing to check here.
+    // you can always stop
+    motionState = newMotionState ;
+    return ;
+  default:
+    warning( "reqMotionState: You didn't specify a valid direction" ) ;
+    adjTile = game->getTileAt( pos ) ; // should not happen.. just get tile already on.
+    break;
+  }
+
+  if( adjTile->isPassable() )
+  {
+    // Just set the motion state then
+    motionState = newMotionState ;
+    //info( "Making the direction change" ) ;
+  }
+  else
+  {
+    //warning( "You can't go that way" ) ;
+  }
 }
 
 void FourDirectionMovingObject::step( float time ) // override
 {
+  // First re-request any pending change
+  // to motion state
+  if( requestedMotionState != motionState )
+    reqMotionState( requestedMotionState ) ;
+
   // "Stepping" for any FourDirectionMovingObject is
   // moving in the direction of
   // his velocity
@@ -215,5 +376,21 @@ void FourDirectionMovingObject::draw() // override
   }
 }
 
+void FourDirectionMovingObject::intersects( Tile *tile )
+{
+  
+}
+
+/// What to do when this FourDirectionMovingObject
+/// is intersected by another GameObject
+void FourDirectionMovingObject::intersects( GameObject *other )
+{
+}
+
+/// What to do when this FourDirectionMovingObject
+/// is intersected by another FourDirectionMovingObject
+void FourDirectionMovingObject::intersects( FourDirectionMovingObject *other )
+{
+}
 
 

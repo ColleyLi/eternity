@@ -37,23 +37,24 @@ void logStartup() ;
 
 tm* CurrentTime() ;
 
-void log( int logLevel, char *fmt, va_list args ) ;
+void log( int logLevel, const char *fmt, va_list args ) ;
 
-// Something went wrong in the program.
-void error( char *fmt, ... ) ;
+/// Something went wrong
+/// in the program.
+void error( const char *fmt, ... ) ;
 
-// Warnings are things that aren't really bad for the program,
-// but they are things to watch out for, things you might not expect.
-void warning( char *fmt, ... ) ;
+/// Warnings are things that aren't really bad for the program,
+/// but they are things to watch out for, things you might not expect.
+void warning( const char *fmt, ... ) ;
 
-// Just some information about things that are happening in the program.
-// Normal, expected behavior should come in info() messages.
-void info( char *fmt, ... ) ;
+/// Just some information about things that are happening in the program.
+/// Normal, expected behavior should come in info() messages.
+void info( const char *fmt, ... ) ;
 
 void logShutdown() ;
 
-// Print an error message and quit the program.
-// Calls logShutdown() before exiting.
+/// Print an error message and quit the program.
+/// Calls logShutdown() before exiting.
 void bail( char *msg, bool openLog=false ) ;
 
 bool FMOD_ErrorCheck( FMOD_RESULT result ) ;

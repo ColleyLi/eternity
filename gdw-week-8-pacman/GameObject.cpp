@@ -14,3 +14,13 @@ void GameObject::draw()
 {
   window->drawSprite( spriteId, pos.x, pos.y ) ;
 }
+
+void GameObject::intersects( Tile *tile ) 
+{
+  // default is to do nothing
+}
+
+void GameObject::intersects( GameObject *other ) 
+{
+  // default is to do nothing
+}

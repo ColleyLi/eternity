@@ -16,7 +16,9 @@ GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
   registerFont( id3dxDefaultFont ) ;
   registerSpriteRenderer( id3dxSpriteRenderer ) ;
 
-  initInputMan( hwnd, windowWidth, windowHeight );
+  initInputMan( hwnd, windowWidth, windowHeight ); // clip zone gets set here too
+  
+  spriteManSetWindowSize( windowWidth, windowHeight ) ;
   initSoundMan() ;
   paused = false ;
 }

@@ -4,6 +4,7 @@
 #include "pacman-main.h"
 
 #include "Vector2.h"
+#include "Tile.h"
 
 // A GameObject is a movable,
 // intersectable entity..
@@ -42,6 +43,13 @@ public:
   /// @ position with spriteId
   virtual void draw() ;
 
+  /// What to do when this GameObject
+  /// is intersected by a tile
+  virtual void intersects( Tile *tile ) ;
+
+  /// What to do when this GameObject
+  /// is intersected by another GameObject
+  virtual void intersects( GameObject *other ) ;
 } ;
 
 #endif

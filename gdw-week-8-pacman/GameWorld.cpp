@@ -27,10 +27,10 @@ GameWorld::GameWorld()
 
   // Set up a callback to call
   // the transitionToState callback
-  // after 14.0 seconds
+  // after 14.1 seconds
   window->addCallback(
     new Callback1<GameState>(
-      14.0,
+      14.1,
       transitionToState,
       GameState::Menu )
   ) ;
@@ -114,8 +114,12 @@ void GameWorld::setState( GameWorld::GameState newState )
   else
   {
     warning( "ILLEGAL STATE TRANSITION FROM %d TO %d.  "
-      "Transitioning anyway, but you should know that "
-      "was just illegal according to your own rules.", gameState, newState ) ;
+      "Not doing the transition, you should know that "
+      "an illegal transition was attempted according to your own rules. "
+      "Most likely it was a callback trying to transition "
+      "too late.", gameState, newState ) ;
+
+    return ;
   }
   gameState = newState ;
 }
@@ -262,6 +266,10 @@ void GameWorld::step( float time )
   {
     (*ghost)->step( time ) ;
   }
+
+
+  // Cause all object intersections to "happen"
+
 }
 
 void GameWorld::drawBoard()
@@ -303,6 +311,17 @@ void GameWorld::drawStats()
     window->drawSprite( Sprites::Pacman, startX, 60 ) ;
     startX += 20 ;
   }
+
+  char scoreBuf[ 60 ] ;
+  sprintf( scoreBuf, "%d", pacman->getScore() ) ;
+  window->drawString( Fonts::PacFont24, "Score", Color::Yellow,
+                      xStatsOffset, yStatsOffset + 60, 200, 200,
+                      DT_TOP | DT_LEFT ) ;
+
+  startX = xStatsOffset + 20 ;
+  window->drawString( Fonts::Arial24, scoreBuf, Color::White,
+                      startX, yStatsOffset + 80, 200, 200,
+                      DT_TOP | DT_LEFT ) ;
 }
 
 void GameWorld::drawPeople()
@@ -320,13 +339,9 @@ void GameWorld::drawPeople()
 
 }
 
-Tile* GameWorld::getTileAt( Vector2 & pos )
+// private
+void GameWorld::checkCoords( int & row, int & col )
 {
-  int col = round( pos.x/tileSize ) ; 
-  int row = round( pos.y/tileSize ) ;
-
-  //info( "col: %d row %d", col, row ) ;
-
   if( col < 0 )
   {
     warning( "Column index was negative, reset to 0" ) ;
@@ -334,7 +349,7 @@ Tile* GameWorld::getTileAt( Vector2 & pos )
   }
   else if( col >= mapCols )
   {
-    warning( "Column index out of bounds: x=%.2f too large!", pos.x ) ;
+    warning( "Column index out of bounds: %d too large!", col ) ;
     col = mapCols - 1 ;
   }
   if( row < 0 )
@@ -344,10 +359,55 @@ Tile* GameWorld::getTileAt( Vector2 & pos )
   }
   if( row >= mapRows )
   {
-    warning( "Row index out of bounds: y=%.2f too large!", pos.y );
+    warning( "Row index out of bounds: %d too large!", row );
     row = mapRows - 1 ;
   }
 
+}
+
+Tile* GameWorld::getTileNearestLeft( Vector2 & pos )
+{
+  int col = floor( pos.x/tileSize ) ;
+  int row = round( pos.y/tileSize ) ;
+
+  checkCoords( row, col ) ;
+  return level[ row ][ col ] ;
+}
+
+Tile* GameWorld::getTileNearestRight( Vector2 & pos )
+{
+  int col = ceil( pos.x/tileSize ) ;
+  int row = round( pos.y/tileSize ) ;
+
+  checkCoords( row, col ) ;
+  return level[ row ][ col ] ;
+}
+
+Tile* GameWorld::getTileNearestUp( Vector2 & pos )
+{
+  int col = round( pos.x/tileSize ) ;
+  int row = floor( pos.y/tileSize ) ;
+
+  checkCoords( row, col ) ;
+  return level[ row ][ col ] ;
+}
+
+Tile* GameWorld::getTileNearestDown( Vector2 & pos )
+{
+  int col = round( pos.x/tileSize ) ;
+  int row = ceil( pos.y/tileSize ) ;  // particularly unintuitive..
+  // but y _increases_ going down
+
+  checkCoords( row, col ) ;
+  return level[ row ][ col ] ;
+}
+
+Tile* GameWorld::getTileAt( Vector2 & pos )
+{
+  int col = round( pos.x/tileSize ) ; 
+  int row = round( pos.y/tileSize ) ;
+
+  checkCoords( row, col ) ;
   return level[ row ][ col ] ;
 }
 

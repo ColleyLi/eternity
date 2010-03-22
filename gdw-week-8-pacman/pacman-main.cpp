@@ -91,9 +91,9 @@ void Init()
   // make all filenames start with "../assets/"
   window->loadSound( Sounds::PacmanTitleThemeLoop, ASSET("sounds/pacman-theme-loop.mp3"), FMOD_CREATESTREAM ) ;
   window->loadSound( Sounds::PacmanGamePlayMusic, ASSET("sounds/powerpill.mp3"), FMOD_CREATESTREAM ) ;
-  window->loadSound( Sounds::PacmanPellet1, ASSET("sounds/pacman-pellet-1.wav" ) ) ;
-  window->loadSound( Sounds::PacmanPellet2, ASSET("sounds/pacman-pellet-2.wav" ) ) ;
-  window->loadSound( Sounds::PacmanPellet3, ASSET("sounds/pacman-pellet-3.wav" ) ) ;
+  window->loadSound( Sounds::PacmanPellet1, ASSET("sounds/pacman-pellet-1-l.wav" ) ) ;
+  window->loadSound( Sounds::PacmanPellet2, ASSET("sounds/pacman-pellet-2-l.wav" ) ) ;
+  window->loadSound( Sounds::PacmanPellet3, ASSET("sounds/pacman-pellet-3-l.wav" ) ) ;
   window->loadSound( Sounds::Intro, ASSET("sounds/gypsy-jazz.mp3" ) ) ;
 
 
@@ -103,7 +103,7 @@ void Init()
 
   window->loadSprite( Sprites::Splash, ASSET("sprites/gdw-splash.png") ) ;
 
-  window->loadSprite( Sprites::Pacman, ASSET("sprites/pacman-spritesheet.png"), 0, 16, 16, 4, 0.4f ) ;
+  window->loadSprite( Sprites::Pacman, ASSET("sprites/pacman-spritesheet.png"), 0, 16, 16, 4, 0.05f ) ;
   window->loadSprite( Sprites::PacmanTitle, ASSET("sprites/pacman-title.png") ) ;
 
   window->loadSprite( Sprites::Pellet, ASSET("sprites/normal-pellet-sheet.png"), 0, 16, 16, 4, 0.2f ) ;
@@ -265,6 +265,8 @@ void Draw()
        
         // And alpha is a linear interpolation say
         alpha = lerp( 0, 255, fadeInPercent ) ;
+
+        clamp( alpha, 0, 255 ) ;
       }
       else if( 5.0 < time && time < 9.0 )
       {
@@ -277,6 +279,8 @@ void Draw()
         float fadeOutPercent = ( 14.0 - time ) / 5.0 ;
 
         alpha = lerp( 0, 255, fadeOutPercent ) ;
+
+        clamp( alpha, 0, 255 ) ;
       }
 
       // Fade out the logo
@@ -294,7 +298,10 @@ void Draw()
     window->drawSprite( Sprites::PacmanTitle, window->getWidth()/2, 150 ) ;
 
     // Draw the start message
-    window->drawString( Fonts::Arial24, "Click the mouse to start", Color::White );
+    window->drawString(
+      Fonts::Arial24,
+      "Click the mouse to start",
+      Color::White );
     break;
 
   // When paused..

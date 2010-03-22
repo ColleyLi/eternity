@@ -34,7 +34,7 @@ tm* CurrentTime()
   return timeinfo ;
 }
 
-void log( int logLevel, char *fmt, va_list args )
+void log( int logLevel, const char *fmt, va_list args )
 {
   static char msgBuffer[ 512 ] ;
   vsprintf( msgBuffer, fmt, args ) ;
@@ -85,7 +85,7 @@ void log( int logLevel, char *fmt, va_list args )
   }
 }
 
-void error( char *fmt, ... )
+void error( const char *fmt, ... )
 {
   va_list lp ;
   va_start( lp, fmt ) ;
@@ -93,7 +93,7 @@ void error( char *fmt, ... )
   log( LOG_ERROR, fmt, lp ) ;
 }
 
-void warning( char *fmt, ... )
+void warning( const char *fmt, ... )
 {
   va_list lp ;
   va_start( lp, fmt ) ;
@@ -101,7 +101,7 @@ void warning( char *fmt, ... )
   log( LOG_WARNING, fmt, lp ) ;
 }
 
-void info( char *fmt, ... )
+void info( const char *fmt, ... )
 {
   va_list lp ;
   va_start( lp, fmt ) ;

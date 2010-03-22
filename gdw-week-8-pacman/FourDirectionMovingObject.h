@@ -49,12 +49,22 @@ public:
   // A member for Pacman's movement state
   MotionState motionState ;
 
+  // requested motion state
+  MotionState requestedMotionState ;
+
   FourDirectionMovingObject() ;
 
   /// "Rounds off" object position
   /// so that it is NEVER "infringing"
   /// on an obstacle's block.
   void squareOff() ;
+
+  /// Request a change in direction
+  /// If possible to go that direction then
+  /// this immediately does it, but if not
+  /// possible then the request is queued
+  /// and tried every "step()"
+  void reqMotionState( MotionState newMotionState ) ;
 
   /// Moves the object a little.
   virtual void step( float time ) override ;
@@ -75,6 +85,18 @@ public:
   ///  Also the items use the same sprite
   ///  regardless of direction of motion!)
   virtual void draw() override ;
+  
+  /// What to do when this FourDirectionMovingObject
+  /// is intersected by a tile
+  virtual void intersects( Tile *tile ) override ;
+
+  /// What to do when this FourDirectionMovingObject
+  /// is intersected by another GameObject
+  virtual void intersects( GameObject *other ) override ;
+
+  /// What to do when this FourDirectionMovingObject
+  /// is intersected by another FourDirectionMovingObject
+  virtual void intersects( FourDirectionMovingObject *other ) ;
 
 } ;
 
