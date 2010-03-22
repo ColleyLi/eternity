@@ -15,11 +15,10 @@
 //(If there are enough exclamation marks,
 // students MIGHT read it)
 //
-// THE WAY THIS PROGRAM IS STRUCTURED.
+// THE WAY THIS PROGRAM IS STRUCTURED. 
 // -----------------------------------
 // So, how's it going.  You decided
-// to read the comments.  smart++ to you.
-// respect++.  Disrespect--.
+// to read the comments.  Good for you!
 // So, there are 2 main objects.
 //   - Window
 //   - GameWorld

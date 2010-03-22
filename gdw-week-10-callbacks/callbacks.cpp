@@ -3,17 +3,21 @@
 // VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
 // Your code starts below this line.
 
-  ///////////////////////////////////////
-  // SETTING UP CALLBACKS EXAMPLE CODE //
-  ///////////////////////////////////////
-  // Callbacks are how you can set code up
-  // to execute some time in the future.
-  ///////////////////////////////////////
+///////////////////////////////////////
+// SETTING UP CALLBACKS EXAMPLE CODE //
+///////////////////////////////////////
+// Callbacks are how you can set code up
+// to execute some time in the future.
+//
+// SCROLL DOWN UNTIL YOU SEE THE LINE THAT
+// SAYS: "START HERE"!!
+///////////////////////////////
 
 #define ASSET(x) ("../assets/"##x)
 
 GameWindow *window ;  // the main window object
 
+#pragma region some enums and globals
 enum Sprites
 {
   Mario = 1,
@@ -31,14 +35,13 @@ enum Fonts
   TimesNewRoman24
 } ;
 
-
 ////
 // A couple of globals for this example
 float counterX, counterY ;
 bool counterShows = false ;
+#pragma endregion
 
-
-#pragma region the sample-callback-functions
+#pragma region the sample-callback-functions - skip on first reading
 // This is a simple "zero-argument"
 // function (it takes nothing between
 // its brackets when you call it.)
@@ -99,9 +102,6 @@ void showCounter( float x, float y )
 }
 #pragma endregion
 
-
-
-
 void Init()
 {
   #pragma region load assets
@@ -122,8 +122,6 @@ void Init()
   window->createFont( Fonts::TimesNewRoman24, "Times New Roman", 24, FW_BOLD, false ) ;
   #pragma endregion
 
-
-
   warning( "If this is your first time running this program,\n"
     "just watch it until the 16-counter appears then disappears,\n"
     "then start clicking the left-mouse button!" ) ;
@@ -131,7 +129,9 @@ void Init()
   ///////////////////////////////////////
   // SETTING UP CALLBACKS EXAMPLE CODE //
   ///////////////////////////////////////
-  
+  //
+  //          "START HERE"!!
+  //
   // SOMETIMES you want to set up code
   // to execute after a certain number
   // of seconds in the future.
@@ -177,7 +177,7 @@ void Init()
   // Do you like <angle brackets>??  GOOD!!!
   // We're going to SET UP "showCounter" to
   // run after 20.0 seconds after this bit
-  // of code runs (WHICH IS RIGHT AFTER PROGRAM START!)
+  // of code runs
 
   // Hmm. Ok.
   
@@ -275,28 +275,28 @@ void Init()
 // there's a hidden "this" pointer passed every time
 // you invoke a member function of an object
 // (See http://www.learncpp.com/cpp-tutorial/87-the-hidden-this-pointer/)
-struct SampleObject
+struct SecretNumberPrinter
 {
-  void go( int number )
+  void printNumber( int number )
   {
     info( "Uh, the secret number is '%d'", number ) ;
   }
 } ;
 
 
-// This CALLBACK function calls the "print" function
-// of "NumberObject" when it ends up running..
+// This CALLBACK function calls the "printNumber()" function
+// of "SecretNumberPrinter" when it ends up running..
 // the trampoline function is how you can have
 // a member function of an object execute
 // when the callback occurs.
-void TrampolineFunction( SampleObject * object, int arg1 )
+void TrampolineFunction( SecretNumberPrinter * snp, int arg1 )
 {
-  object->go( arg1 ) ;
+  snp->printNumber( arg1 ) ;
 
   // Clean up after.. there's no way to reach
   // "object" now, after this function terminates!
 
-  delete object ;
+  delete snp ;
 }
 #pragma endregion
 
@@ -325,11 +325,11 @@ void Update()
 
     info( "REGISTERING CALLBACK... The secret number is %d,\n"
       "This callback will execute in %d seconds", secretNum, delay ) ;
-    Callback2<SampleObject*, int> *callback ;
+    Callback2<SecretNumberPrinter*, int> *callback ;
 
-    SampleObject *so = new SampleObject() ;
+    SecretNumberPrinter *so = new SecretNumberPrinter() ;
 
-    callback = new Callback2<SampleObject*, int>(
+    callback = new Callback2<SecretNumberPrinter*, int>(
       delay, // wait 'delay' full seconds..
       TrampolineFunction, //.. before calling TrampolineFunction..
       so, //.. with so as its first argument..
