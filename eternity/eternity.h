@@ -5,5 +5,7 @@
 #include "GameWindow.h"
 #include "ConsoleColors.h"
 #include "boost/function.hpp"
+#include "Path.h"
+#include "perlin.h"
 
 #endif

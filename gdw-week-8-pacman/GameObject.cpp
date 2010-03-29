@@ -2,7 +2,17 @@
 
 GameObject::GameObject()
 {
+  
+}
 
+void GameObject::setTimePerFrame( float time )
+{
+  window->getSprite( this->spriteId )->setTimePerFrame( time ) ;
+}
+
+float GameObject::getTimePerFrame()
+{
+  return window->getSprite( this->spriteId )->getTimePerFrame() ;
 }
 
 void GameObject::step( float time )

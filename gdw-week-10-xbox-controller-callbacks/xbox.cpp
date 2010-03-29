@@ -78,6 +78,7 @@ void startVibrate()
   callbackRAN = true ;
 
   window->gamepadVibrate( Gamepad::One, 1.0f, 1.0f ) ;
+  window->gamepadStopVibrate( Gamepad::One ) ;
 }
 
 #pragma endregion
@@ -167,6 +168,16 @@ void Draw()
       Color::Red,
       440, 240, 120, 200, DT_LEFT | DT_TOP | DT_WORDBREAK ) ;
   }
+
+
+
+  if( window->gamepadIsPressed(
+       Gamepad::One, Gamepad::A ) )
+  {
+    // do something
+  }
+
+
 
 
   // draw the mouse cursor with this sprite.

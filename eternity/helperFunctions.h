@@ -25,6 +25,8 @@
 #define LOG_WARNING ( 1 << 1 )
 #define LOG_INFO    ( 1 << 2 )
 
+extern FILE *logFile ;
+
 // Variables that make it so we can
 // only output ERROR and WARNING messages
 // to the file, but output ALL types of
@@ -51,6 +53,10 @@ void warning( const char *fmt, ... ) ;
 /// Normal, expected behavior should come in info() messages.
 void info( const char *fmt, ... ) ;
 
+/// Logs a debug message but with no
+/// timestamp
+void plain( const char *fmt, ... ) ;
+
 void logShutdown() ;
 
 /// Print an error message and quit the program.
@@ -65,26 +71,64 @@ int XINPUT_Check( int errCode ) ;
 // numerical.  A few of these functions
 // can be templated.
 
-
+/// Gets you a random float between
+/// 'a' and 'b'
 float randFloat( float a, float b ) ;
+
+/// Gets you a random float
+/// between 0.0 and 1.0
 float randFloat() ;
 
+/// Gets you a random int
+/// on [low,high)
+int randInt( int low, int high ) ;
+
+/// Linearly interpolates between
+/// a and b by 't'.
 float lerp( float a, float b, float t ) ;
 
+/// Linearly interpolates between
+/// a and b by 't'.
 double lerp( double a, double b, double t ) ;
 
 /// Clamps num between low and high
 /// modifies num
 void clamp( int &num, int low, int high ) ;
 
+/// Clamps num between low and high
+/// modifies num
 void clamp( float &num, float low, float high ) ;
 
-/// Clamps num between low and high
+/// Clamps an integer value
+/// num between low and high
 /// without modifying num
 int clampCopy( const int num, int low, int high ) ;
 
+/// Clamps a floating point value
+/// num between low and high
+/// without modifying num
 float clampCopy( const float num, float low, float high ) ;
 
+/// Templated versions of lerp and clamp
+/*
+template<typename T>
+T lerp( T a, T b, T t )
+{
+  return a + ( b - a )*t ;
+}
+
+template<typename T>
+void clamp( T &num, T low, T high )
+{
+  if( num < low )
+    num = low ;
+  if( num > high )
+    num = high ;
+}
+*/
+
+/// Rounds x to
+/// nearest integer
 int round( double x ) ;
 
 void addSinewave( short *data, int durationInSamples,
@@ -104,8 +148,8 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
                            int fundamentalFrequency1, int fundamentalFrequency2,
                            short amplitude1, short amplitude2 ) ;
 
-// Gets you a unicode copy of the string you pass it.
-// YOU ARE RESPONSIBLE FOR CALLING delete[] on the string returned!
+/// Gets you a unicode copy of the string you pass it.
+/// YOU ARE RESPONSIBLE FOR CALLING delete[] on the string returned!
 wchar_t* getUnicode( char* ascii ) ;
 
 void printRawKeyboard( RAWINPUT * raw ) ;
@@ -135,5 +179,7 @@ bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed
 
 #define containsFlag( val, flag ) ( val & flag )
 #define notContainsFlag( val, flag ) ( !(val & flag) )
+
+#define DESTROY(OBJ) if(OBJ){delete OBJ; OBJ=0;}
 
 #endif // HELPER_FUNCTIONS_H

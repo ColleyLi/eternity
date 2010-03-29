@@ -121,10 +121,13 @@ void Init()
   window->loadSprite( Sprites::Flamethrower, ASSET( "sprites/flamethrower.png" ) ) ;
   window->loadSprite( Sprites::Uzi, ASSET( "sprites/uzi.png" ) ) ;
 
-  window->loadSprite( Sprites::Inky, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
-  window->loadSprite( Sprites::Blinky, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
-  window->loadSprite( Sprites::Pinky, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
-  window->loadSprite( Sprites::Sue, ASSET( "sprites/inky.png" ), 0, 16, 16, 2, 0.2f ) ;
+  // Load ghost body and eyes
+  window->loadSprite( Sprites::GhostBody, ASSET( "sprites/ghost-body-white.png" ), 0, 16, 16, 2, 0.2f ) ;
+  window->loadSprite( Sprites::EyesRight, ASSET( "sprites/eyes-right.png" ) ) ;
+  window->loadSprite( Sprites::EyesUp, ASSET( "sprites/eyes-up.png" ) ) ;
+  window->loadSprite( Sprites::EyesDown, ASSET( "sprites/eyes-down.png" ) ) ;
+  window->loadSprite( Sprites::EyesDead, ASSET( "sprites/eyes-dead.png" ) ) ;
+
 
   // Create a few fonts
   window->createFont( Fonts::Arial24, "Arial", 24, FW_NORMAL, false ) ;

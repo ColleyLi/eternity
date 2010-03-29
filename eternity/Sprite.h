@@ -311,6 +311,11 @@ private:
 
   public:
 
+  float getTimePerFrame()
+  {
+    return secondsPerFrame ;
+  }
+
   /// How long to stay at frame before advancing to the next frame.
   /// Set to any negative value (e.g. SPRITE_INFINITY_LONG)
   /// to prevent the sprite from animating

@@ -152,6 +152,10 @@ void GameWindow::drawFrameCounter()
   int left = getWidth() - 10 - 100 ;
   drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 10, 100, 30 ) ;
   drawString( DEFAULT_FONT, buf, Color::White, left, 10, 100, 30 ) ;
+
+  sprintf( buf, "+ %.3f ms", timer.extra_time*1000 ) ;
+  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 40, 100, 30 ) ;
+  drawString( DEFAULT_FONT, buf, Color::White, left, 40, 100, 30 ) ;
 }
 
 
@@ -172,8 +176,8 @@ void GameWindow::drawTimer()
   */
   
   int left = getWidth() - 10 - 100 ;
-  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 40, 100, 30 ) ;
-  drawString( DEFAULT_FONT, buf, Color::White, left, 40, 100, 30 ) ;
+  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 70, 100, 30 ) ;
+  drawString( DEFAULT_FONT, buf, Color::White, left, 70, 100, 30 ) ;
 
 }
 

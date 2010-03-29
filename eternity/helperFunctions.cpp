@@ -66,7 +66,9 @@ void log( int logLevel, const char *fmt, va_list args )
   static char buf[ 768 ] ;
   sprintf( buf, "[ %s ][ %s ]:  %s\n", errLevel, timeBuf, msgBuffer ) ;
 
-  // If the error's log level qualifies it to be output to the console based on current console flags..
+  // If the error's log level qualifies it
+  // to be output to the console based on
+  // current console flags..
   if( logOutputsForConsole & logLevel )
     printf( buf ) ;
   if( logOutputsForFile & logLevel )
@@ -107,6 +109,19 @@ void info( const char *fmt, ... )
   va_start( lp, fmt ) ;
   
   log( LOG_INFO, fmt, lp ) ;
+}
+
+void plain( const char *fmt, ... )
+{
+  va_list args ;
+  va_start( args, fmt ) ;
+
+  static char msgBuffer[ 512 ] ;
+  vsprintf( msgBuffer, fmt, args ) ;
+
+  // put out to file and console only
+  printf( "%s\n", msgBuffer ) ;
+  fprintf( logFile, "%s\n", msgBuffer ) ;
 }
 
 void logShutdown()
@@ -157,6 +172,11 @@ float randFloat( float a, float b )
 float randFloat()
 {
   return (float)rand() / RAND_MAX ;
+}
+
+int randInt( int low, int high ) 
+{
+  return low + rand() % ( high-low ) ;
 }
 
 float lerp( float a, float b, float t )

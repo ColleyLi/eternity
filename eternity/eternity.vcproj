@@ -204,6 +204,38 @@
 					RelativePath=".\helperFunctions.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\perlin.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Pathfinding"
+				>
+				<File
+					RelativePath=".\path\AsciiMap.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\path\AStar.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\path\Coord.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\path\Edge.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\path\Graph.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\path\GraphNode.cpp"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -219,6 +251,10 @@
 				RelativePath=".\eternity.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Path.h"
+				>
+			</File>
 			<Filter
 				Name="C-Style"
 				>
@@ -228,6 +264,10 @@
 				</File>
 				<File
 					RelativePath=".\helperFunctions.h"
+					>
+				</File>
+				<File
+					RelativePath=".\perlin.h"
 					>
 				</File>
 			</Filter>
@@ -308,6 +348,42 @@
 				</File>
 				<File
 					RelativePath=".\Tones.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Pathfinding"
+				>
+				<File
+					RelativePath=".\path\AsciiMap.h"
+					>
+				</File>
+				<File
+					RelativePath=".\path\AStar.h"
+					>
+				</File>
+				<File
+					RelativePath=".\path\Coord.h"
+					>
+				</File>
+				<File
+					RelativePath=".\path\Edge.h"
+					>
+				</File>
+				<File
+					RelativePath=".\path\Graph.h"
+					>
+				</File>
+				<File
+					RelativePath=".\path\GraphNode.h"
+					>
+				</File>
+				<File
+					RelativePath=".\path\GridConnection.h"
+					>
+				</File>
+				<File
+					RelativePath=".\path\HighPerformanceTimer.h"
 					>
 				</File>
 			</Filter>

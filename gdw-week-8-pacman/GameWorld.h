@@ -179,6 +179,8 @@ public:
   /// board from the top
   /// left corner of the screen
   int getBoardOffsetY() ;
+
+  Player *getPlayer() ;
 } ;
 
 extern GameWorld *game ; // an extern is

@@ -203,7 +203,7 @@ void GameWorld::loadLevel( char *filename )
 
       case Tiles::Barrier:
         tile->setSpriteId( Sprites::Barrier ) ;
-        tile->setPassable( false ) ;
+        tile->setPassable( true ) ;
         break;
 
       case Tiles::Inky:
@@ -211,16 +211,22 @@ void GameWorld::loadLevel( char *filename )
       case Tiles::Pinky:
       case Tiles::Sue:
         {
+          // ghosts aren't tiles either
+          // so set these tiles to empty tiles... THEN...
           tile->setSpriteId( Sprites::Empty ) ;
           tile->setPassable( true ) ;
 
+          // ...THEN create a ghost object
+          // in the place where this tile was
           Ghost * ghost = new Ghost() ;
           ghost->name = mapChar ;
 
           ghost->pos.x = col * tileSize ;
           ghost->pos.y = row * tileSize ;
 
-          ghost->spriteId = Sprites::Inky ;
+          // (( eyes are overlaid on top of
+          //    the GhostBody sprites ))
+          ghost->spriteId = Sprites::GhostBody ;
 
           ghosts.push_back( ghost ) ;
         }
@@ -237,10 +243,6 @@ void GameWorld::loadLevel( char *filename )
       }
       
       level[ row ][ col ] = tile ;
-
-      // Now if the mapChar was one of
-      // the NPC ones, we need to add
-      // a GameObject to the OBJECTS array
 
     }
 
@@ -419,4 +421,9 @@ int GameWorld::getBoardOffsetX()
 int GameWorld::getBoardOffsetY()
 {
   return yBoardOffset ;
+}
+
+Player* GameWorld::getPlayer()
+{
+  return pacman ;
 }

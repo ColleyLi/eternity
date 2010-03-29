@@ -21,11 +21,22 @@ enum Sprites
   Gun,
   Flamethrower,
   Uzi,
+  
+  // Instead of loading
+  // 1,000,000 sprites for
+  // each of Inky, Pinky, Blinky and Sue
+  // (which you COULD DO!!) I instead
+  // load the "Ghost body" ONCE, and
+  // the EYES separately.  Then when
+  // the ghosts get drawn, the BODY
+  // gets drawn in a shade of color
+  // and the eyes get drawn on top.
 
-  Inky,
-  Blinky,
-  Pinky,
-  Sue
+  GhostBody,
+  EyesRight,
+  EyesUp,
+  EyesDown,
+  EyesDead
 
 } ;
 

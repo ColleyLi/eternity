@@ -30,6 +30,15 @@ public:
 
   GameObject() ;
 
+  /// Set amount of time to wait between frames for
+  /// sprite animation.  If animation is to STOP,
+  /// then set this to SPRITE_INFINITY_LONG (which is just -1)
+  void setTimePerFrame( float time ) ; 
+
+  /// Gets the time between frames for the
+  /// sprite selected.
+  float getTimePerFrame() ; 
+
   /// Overrideable function that
   /// you can use to move an object
   /// according to game rules.

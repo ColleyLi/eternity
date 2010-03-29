@@ -184,7 +184,7 @@ pixel 0   16  32  48  64  80
 
 }
 
-void FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
+bool FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
 {
   requestedMotionState = newMotionState ;
 
@@ -196,24 +196,30 @@ void FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
   // that his coordinates are
   // __nearly__ a multiple of 16.
   #define NEARLY_DIVISIBLE 0.1f
-  if( (
-      fmodf( pos.x, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
-      fmodf( pos.x + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
-      )
-      &&
+  // Sorry for the awkward alignment here,
+  // We are checking to see if the player
+  // is "NEARLY" aligned up to a square of the board.
+  // If he is NOT ALIGNED to a square on the board,
+  // he is NOT allowed to change his direction yet!
+  if( !
       (
-      fmodf( pos.y, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
-      fmodf( pos.y + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
+       (
+        // Check if pos.x is NEARLY DIVISIBLE BY 16
+        fmodf( pos.x, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
+        fmodf( pos.x + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
+       )
+       &&
+       (
+        // Check if pos.y is NEARLY DIVISIBLE BY 16
+        fmodf( pos.y, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
+        fmodf( pos.y + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
+       )
       )
     )
   {
-  }
-  else
-  {
     // NOT ALIGNED, so motion isn't allowed yet
-    return ;
+    return false ;
   }
-
   
   Tile *adjTile ;
   float ts = game->tileSize;
@@ -238,7 +244,7 @@ void FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
     // Nothing to check here.
     // you can always stop
     motionState = newMotionState ;
-    return ;
+    return true ;
   default:
     warning( "reqMotionState: You didn't specify a valid direction" ) ;
     adjTile = game->getTileAt( pos ) ; // should not happen.. just get tile already on.
@@ -250,10 +256,15 @@ void FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
     // Just set the motion state then
     motionState = newMotionState ;
     //info( "Making the direction change" ) ;
+    return true ;
   }
   else
   {
     //warning( "You can't go that way" ) ;
+    // The object cannot move this way 
+    // yet because there's an impassible
+    // wall tile in the way
+    return false ;
   }
 }
 
@@ -300,7 +311,7 @@ void FourDirectionMovingObject::step( float time ) // override
 
     // We can also stop his sprite here
     // from animating, if we want
-    window->getSprite( spriteId )->setTimePerFrame( SPRITE_INFINITY_LONG ) ;
+    setTimePerFrame( SPRITE_INFINITY_LONG ) ;
     break ;
   }
 
@@ -350,7 +361,6 @@ void FourDirectionMovingObject::draw() // override
   {
   case MotionState::MovingRight:
     // The sprite is assumed to be facing right
-    //window->drawSprite( spriteId, 
     window->drawSprite( spriteId,
       x,y,
       ts, ts ) ;

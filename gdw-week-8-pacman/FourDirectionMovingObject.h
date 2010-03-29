@@ -54,6 +54,37 @@ public:
 
   FourDirectionMovingObject() ;
 
+  /// A static function because logically
+  /// this function isn't tied to any instance
+  /// variables.  Its a C-style function
+  /// in the middle of the object, because
+  /// it takes any old vector, determines the dominant
+  /// direction (-x, +x, -y or +y) and returns
+  /// the "MotionState" that approximates that
+  static MotionState getNearestDirection( Vector2 & vec )
+  {
+    // Determine the largest magnitude
+    // direction
+    if( fabs( vec.x ) > fabs( vec.y ) )
+    {
+      // Magnitude's bigger in x,
+      // dominant direction will be in x
+      if( vec.x > 0 )
+        return MotionState::MovingRight ;  // +x is ->
+      else
+        return MotionState::MovingLeft ;   // -x is <-
+    }
+    else
+    {
+      // magnitude's bigger in y,
+      // dominant direction will be in y
+      if( vec.y > 0 )
+        return MotionState::MovingDown ;   // +y is v
+      else
+        return MotionState::MovingUp ;     // -y is ^^
+    }
+  }
+
   /// "Rounds off" object position
   /// so that it is NEVER "infringing"
   /// on an obstacle's block.
@@ -64,7 +95,10 @@ public:
   /// this immediately does it, but if not
   /// possible then the request is queued
   /// and tried every "step()"
-  void reqMotionState( MotionState newMotionState ) ;
+  /// This function returns true when the
+  /// move is allowed, returns false when
+  /// the move is disallowed
+  bool reqMotionState( MotionState newMotionState ) ;
 
   /// Moves the object a little.
   virtual void step( float time ) override ;

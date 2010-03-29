@@ -1,5 +1,7 @@
 #include "../eternity/eternity.h"
 
+#include <iostream>
+using namespace std ;
 // VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
 // Your code starts below this line.
 
@@ -45,11 +47,21 @@ bool counterShows = false ;
 // This is a simple "zero-argument"
 // function (it takes nothing between
 // its brackets when you call it.)
+
+
+
+
 void SayHello()
 {
   info( "HI!!  I am the callback with no arguments.. that's me.\n"
     "I'm done executing now" ) ;
 }
+
+
+
+
+
+
 
 void setCounterVisibility( bool visible )
 {
@@ -101,6 +113,8 @@ void showCounter( float x, float y )
   window->addCallback( callback ) ;
 }
 #pragma endregion
+
+
 
 void Init()
 {
@@ -158,18 +172,25 @@ void Init()
   // after 15 seconds.  WATCH THE TIMER!!
   Callback0 *c0 = new Callback0(
 
-    5.0,
-    SayHello
+    5.0,     // how far in future to run
+    SayHello // name of function to run.  Notice
+    // you don't normally see a function like this!
+    // normally you'd see SayHello().
     
   ) ;
 
-  info( "REGISTERING First callback to SAYHELLO(), runs after 5.0 s.." ) ;
-  window->addCallback( c0 ) ;
+  window->addCallback( c0 ) ;  // tell eternity to keep track of it
+
+  info( "REGISTERED First callback to SAYHELLO(), runs after 5.0 s.." ) ;
+
+  // AFTER 5 seconds, EFFECTIVELY what will execute is:
+  //SayHello() ;
+
+
 
   Callback0 *c1 = new Callback0( 15.0, SayHello ) ;
-
-  info( "REGISTERING Second callback to SAYHELLO(), runs after 15.0 s.." ) ;
   window->addCallback( c1 ) ;
+  info( "REGISTERED Second callback to SAYHELLO(), runs after 15.0 s.." ) ;
 
   
 
@@ -218,16 +239,14 @@ void Init()
 
   // FINALLY, DON'T FORGET TO REGISTER YOUR CALLBACK
   // TO THE window object!!
-  info( "REGISTERING Third callback to SHOWCOUNTER().. runs after 20.0s" ) ;
   window->addCallback( c2 ) ;
+  info( "REGISTERED Third callback to SHOWCOUNTER().. runs after 20.0s" ) ;
 
   warning( "WATCH THE CLOCK!!" ) ;
-  
-
 
   // FINALLY, A COUPLE OF NOTES YOU MUST
   // PAY ATTENTION TO!!
-  // 1 -> CALLBACKS __MUST HAVE RETURN TYPE VOID__
+  // 1 -> THESE CALLBACKS __MUST HAVE RETURN TYPE VOID__
   //
   // 2 -> CALLBACKS CAN TAKE ARGUMENTS OF ANY TYPE
   //      BUT IF YOU PASS A CALLBACK A POINTER,
@@ -251,6 +270,7 @@ void Init()
   // can be setup whenever,
   // to do whatever time-sensitive
   // task you wish!
+
 }
 
 

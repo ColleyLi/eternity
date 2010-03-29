@@ -366,7 +366,15 @@
       - Consider using PCH to reduce compilation time
     
   - plenty of updates to the pacman project
-  
+
++ Mar 27 / 2010 v0.1.3-pacman
+  - Updates to Pacman
+
++ Mar 29 / 2010 v0.1.3-pacman
+  - Created gdw-week-11-pathfinding example project
+  - Brought in Perlin noise from http://local.wasp.uwa.edu.au/~pbourke/texture_colour/perlin/
+    for smooth random map generation
+
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in
@@ -376,4 +384,9 @@
     - thought about adding feature to cancel
       a callback.  maybe later.
     - pch
-
+    - Its currently not easily possible to set up different
+      rates of animation / frames for different GameObjects
+      that use the same Sprite*..
+      - It should be possible through the engine
+        to "clone" a Sprite* object without necessarily
+        cloning the underlying texture for efficiency

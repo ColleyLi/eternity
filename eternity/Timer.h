@@ -15,6 +15,7 @@ public:
   double frames_per_second ;
   double time_since_last_frame ;
   double game_time ; /*!< counter for total game time elapsed */
+  double extra_time ;
 
   Timer()
   {
@@ -40,6 +41,8 @@ public:
     QueryPerformanceCounter( &thisTime ) ;
     time_since_last_frame = ( thisTime.QuadPart - lastTime.QuadPart ) / fFreq ;
     frames_per_second = 1 / time_since_last_frame ;
+
+    game_time += time_since_last_frame ;
   }
 
   // Locks framerate at (frameRateDesired) frames per second.
@@ -53,11 +56,20 @@ public:
     // below until ENOUGH TIME has passed since the last frame
     // for the game to be running at exactly 'frameRateDesired'
     // frames per second.
+
+    bool first = true ;
     do
     {
       QueryPerformanceCounter( &thisTime ) ; // update what time it is NOW
       time_since_last_frame = ( thisTime.QuadPart - lastTime.QuadPart ) / fFreq ; // get time difference between NOW and last frame
       frames_per_second = 1 / time_since_last_frame ;  // frames_per_second = ( 1 / time_since_last_frame )
+
+      if( first )
+      {
+        // Compute the surplus time this frame
+        extra_time = 1/frameRateDesired - time_since_last_frame ;
+        first = false ;
+      }
     } while( frames_per_second > frameRateDesired ) ;  // stay in above loop so long as the game's fps is higher than frameRateDesired
 
     // Add the time elapsed to the total sum.
