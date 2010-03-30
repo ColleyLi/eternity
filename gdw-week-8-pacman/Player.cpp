@@ -42,6 +42,23 @@ int Player::getScore()
   return score ;
 }
 
+void Player::die()
+{
+  lives--;
+
+  
+  if( lives >= 0 )
+  {
+    // don't respawn if less than 0 lives left
+    pos.x = game->pacmanStartPosition.col * game->tileSize ;
+    pos.y = game->pacmanStartPosition.row * game->tileSize ;
+
+    health = 100 ;
+
+    requestedMotionState = motionState = MotionState::MovingRight;
+  }
+}
+
 void Player::step( float time ) // override
 {
   // Update the direction he's facing
@@ -109,6 +126,9 @@ void Player::doIntersect( Tile *tile )
 
     // increase player score
     score += 30 ;
+
+    // refill health
+    health = 100 ;
     break ;
 
   case Tiles::Bonus:

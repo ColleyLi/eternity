@@ -314,6 +314,9 @@ void GameWorld::loadLevel( char *filename )
         //tile->setSpriteId( Sprites::Pacman ) ;
         // put nothing in the tiles map..
 
+        pacmanStartPosition.row = row ;
+        pacmanStartPosition.col = col ;
+
         // He's a GameObject!
         // The difference between
         // Tiles and GameObjects is Tiles don't move.
@@ -430,6 +433,14 @@ bool GameWorld::levelDone()
   // Walk through level
   // if there are any normal pellet tiles
   // remaining then you're not done yet
+
+  //!! a more efficient way to do this
+  // is to count up the number of pellets
+  // at level load and then to simply count
+  // the number of pellets eaten.  When
+  // #pellets eaten == #pellets in level counted at level load
+  // then levelDone is true.  This would
+  // eliminate the double nested for loop hit
   for( int row = 0 ; row < mapRows ; row++ )
   {
     for( int col = 0 ; col < mapCols ; col++ )
@@ -490,16 +501,21 @@ void GameWorld::step( float time )
   // end the game
   if( pacman->getHealth() <= 0 )
   {
-    setState( GameState::GameOver ) ;
+    pacman->die() ;
 
-    // Go back to the menu 5 seconds after THAT
-    Callback1<GameState> * cb1 = new Callback1<GameState>(
-      4.0f,
-      transitionToState,
-      GameState::Menu
-    ) ;
+    if( pacman->getLives() < 0 )
+    {
+      setState( GameState::GameOver ) ;
 
-    window->addCallback( cb1 ) ;
+      // Go back to the menu 5 seconds after THAT
+      Callback1<GameState> * cb1 = new Callback1<GameState>(
+        4.0f,
+        transitionToState,
+        GameState::Menu
+      ) ;
+
+      window->addCallback( cb1 ) ;
+    }
   }
 
 
@@ -602,22 +618,22 @@ void GameWorld::checkCoords( int & row, int & col )
 {
   if( col < 0 )
   {
-    warning( "Column index was negative, reset to 0" ) ;
+    //warning( "Column index was negative, reset to 0" ) ;
     col = 0 ;
   }
   else if( col >= mapCols )
   {
-    warning( "Column index out of bounds: %d too large!", col ) ;
+    //warning( "Column index out of bounds: %d too large!", col ) ;
     col = mapCols - 1 ;
   }
   if( row < 0 )
   {
-    warning( "Row index was negative, reset to 0" ) ;
+    //warning( "Row index was negative, reset to 0" ) ;
     row = 0 ;
   }
   if( row >= mapRows )
   {
-    warning( "Row index out of bounds: %d too large!", row );
+    //warning( "Row index out of bounds: %d too large!", row );
     row = mapRows - 1 ;
   }
 

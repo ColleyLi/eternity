@@ -39,6 +39,8 @@ public:
   int getHealth() ;
   int getScore() ;
 
+  void die() ;
+
   /// "Override" the step function in GameObject
   virtual void step( float time ) override ;
 

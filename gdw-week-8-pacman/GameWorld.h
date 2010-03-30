@@ -47,6 +47,9 @@ public:
 
   int levelNumber ; // what level number you're on
 
+  // For re-use when pacman dies
+  Coord pacmanStartPosition ;
+
   // This game has a couple of states.
   // I number them explicitly for easy reference
   enum GameState

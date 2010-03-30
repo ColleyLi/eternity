@@ -374,6 +374,7 @@
   - Created gdw-week-11-pathfinding example project
   - Brought in Perlin noise from http://local.wasp.uwa.edu.au/~pbourke/texture_colour/perlin/
     for smooth random map generation
+  - Updates to Pacman
 
   - TODO:
     - DOXYGEN-ATE all files

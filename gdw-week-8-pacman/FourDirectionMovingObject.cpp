@@ -350,6 +350,16 @@ void FourDirectionMovingObject::step( float time ) // override
     // Disallow the move
   }
 
+  // Check if he should wrap
+  int rightX = game->mapCols*game->tileSize ;
+  int leftX = 0 ;
+
+  if( pos.x < leftX )
+    pos.x = rightX ;
+  if( pos.x > rightX )
+    pos.x = leftX ;
+    
+
   // snap him to his tile space.
   squareOff( game->tileSize ) ;
 
