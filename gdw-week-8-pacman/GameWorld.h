@@ -45,6 +45,8 @@ public:
   const static int tileSize  = 16 ;  // Tile size, in pixels.
   // Each tile is 16x16 pixels.
 
+  int levelNumber ; // what level number you're on
+
   // This game has a couple of states.
   // I number them explicitly for easy reference
   enum GameState
@@ -138,6 +140,9 @@ private:
 
 public:
   GameWorld() ;
+  ~GameWorld() ;
+
+  void destroyGameWorld() ;
 
   /// Gets the current gamestate
   GameState getState() ;
@@ -145,8 +150,14 @@ public:
   /// Sets the gamestate to some new state
   void setState( GameState newState ) ;
 
+  char* getLevelFilename( int levelNum ) ;
+
   /// Loads a level
   void loadLevel( char *filename ) ;
+
+  /// Returns true if a level
+  /// has been completed (all normal pellets eaten)
+  bool levelDone() ;
 
   /// update the game just a fraction
   void step( float time ) ;

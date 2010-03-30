@@ -22,8 +22,7 @@ GameWorld::GameWorld()
   gameState = GameState::Splash ;
 
   // Start the annoying intro music
-  window->playSound( Sounds::Intro ) ; // Loop this sound forever,
-  // or until we stop it using window->stopSound()
+  window->playSound( Sounds::Intro ) ;
 
   // Set up a callback to call
   // the transitionToState callback
@@ -36,10 +35,43 @@ GameWorld::GameWorld()
   ) ;
 }
 
+GameWorld::~GameWorld()
+{
+  destroyGameWorld() ;
+}
+
+void GameWorld::destroyGameWorld()
+{
+  info( "Destroying game world..." ) ;
+
+  // Delete the level
+  for( int row = 0 ; row < mapRows ; row++ )
+    for( int col = 0 ; col < mapCols ; col++ )
+      delete level[row][col];
+  
+  // Delete the AStar pathfinding object
+  DESTROY( asciiMap );
+
+  // Delete the player
+  DESTROY( pacman ); 
+
+  // Delete the ghosts
+  foreach( vector<Ghost*>::iterator, ghost, ghosts )
+  {
+    DESTROY (*ghost) ;
+  }
+
+  // Clear this ghosts vector now
+  ghosts.clear() ;
+}
+
+
+
 GameWorld::GameState GameWorld::getState()
 {
   return gameState ;
 }
+
 void GameWorld::setState( GameWorld::GameState newState )
 {
   // Now when the state transitions
@@ -86,7 +118,8 @@ void GameWorld::setState( GameWorld::GameState newState )
     window->playSound( Sounds::PacmanGamePlayMusic ) ;
 
     // Load "lvl1.txt"
-    loadLevel( "lvl1.txt" ) ;
+    levelNumber = 1;
+    loadLevel( getLevelFilename( levelNumber ) ) ;
 
     // Change the background color to something else
     window->setBackgroundColor( D3DCOLOR_ARGB( 255, 0, 0, 64 ) ) ;
@@ -119,6 +152,11 @@ void GameWorld::setState( GameWorld::GameState newState )
     window->stopSound( Sounds::PacmanGamePlayMusic ) ;
     window->playSound( Sounds::GameOverRiff ) ;
     window->setBackgroundColor( Color::White ) ;
+
+
+    // DESTROY THE GAME WORLD
+    
+    game->destroyGameWorld() ;
   }
   else if( gameState == GameState::GameOver &&
            newState == GameState::Menu )
@@ -140,6 +178,27 @@ void GameWorld::setState( GameWorld::GameState newState )
   gameState = newState ;
 }
 
+char* GameWorld::getLevelFilename( int levelNum )
+{
+  static char filename[ 80 ];
+  switch( levelNum )
+  {
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+    sprintf( filename, "lvl%d.txt", levelNum );
+    break;
+
+  default:
+    sprintf( filename, "lvl6.txt" );
+    break;
+  }
+
+  return filename ;
+}
 
 void GameWorld::loadLevel( char *filename )
 {
@@ -334,6 +393,15 @@ void GameWorld::loadLevel( char *filename )
         }
         break;
 
+      case Tiles::Gun:
+        tile->setSpriteId( Sprites::Gun ) ;
+        tile->setPassable( true ) ;
+        break;
+
+      case Tiles::FlameThrower:
+        tile->setSpriteId( Sprites::Flamethrower ) ;
+        tile->setPassable( true ) ;
+        break;
       default:
         // Just make it mario if there's
         // some sprite that isn't accounted
@@ -355,9 +423,25 @@ void GameWorld::loadLevel( char *filename )
   for( int row = 0 ; row < mapRows; row++ )
     delete[] tileMap[row];
   delete[] tileMap;
+}
 
-  
+bool GameWorld::levelDone()
+{
+  // Walk through level
+  // if there are any normal pellet tiles
+  // remaining then you're not done yet
+  for( int row = 0 ; row < mapRows ; row++ )
+  {
+    for( int col = 0 ; col < mapCols ; col++ )
+    {
+      if( level[row][col]->getTile() == Tiles::Pellet )
+        return false ;
+    }
+  }
 
+  // So there WERE none left!
+  // Wow!  The player won the level!
+  return true ;
 }
 
 void GameWorld::step( float time )
@@ -368,6 +452,20 @@ void GameWorld::step( float time )
   {
     (*ghost)->step( time ) ;
   }
+
+
+
+  // CHECK PLAYER WON
+  // If the player won then load
+  // the next level
+  if( levelDone() )
+  {
+    info( "YOU BEAT A LEVEL" ) ;
+    destroyGameWorld() ;
+    levelNumber++ ;
+    loadLevel( getLevelFilename( levelNumber ) ) ;
+  }
+
 
 
   // Cause all object intersections to "happen"
@@ -384,6 +482,9 @@ void GameWorld::step( float time )
   }
 
 
+
+
+  // CHECK PLAYER DIED
   // Now after this intersection,
   // the player may be dead.  If he is,
   // end the game
@@ -400,7 +501,9 @@ void GameWorld::step( float time )
 
     window->addCallback( cb1 ) ;
   }
-  
+
+
+
 }
 
 void GameWorld::drawBoard()
@@ -473,13 +576,10 @@ void GameWorld::drawStats()
   ) ;
 
   // draw green box on top of red box
-  window->drawBox( Color::Gainsboro,
+  window->drawBox( Color::LightGreen,
     xStatsOffset + 20, yStatsOffset + 145,
     120 * percentFull, 10
   ) ;
-
-
-
 }
 
 void GameWorld::drawPeople()

@@ -33,6 +33,7 @@ class Player : public FourDirectionMovingObject
 
 public:
   Player() ;
+  ~Player() ;
 
   int getLives() ;
   int getHealth() ;

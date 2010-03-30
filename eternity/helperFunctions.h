@@ -180,6 +180,6 @@ bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed
 #define containsFlag( val, flag ) ( val & flag )
 #define notContainsFlag( val, flag ) ( !(val & flag) )
 
-#define DESTROY(OBJ) if(OBJ){delete OBJ; OBJ=0;}
+#define DESTROY(OBJ) if(OBJ){delete (OBJ); (OBJ)=0;}
 
 #endif // HELPER_FUNCTIONS_H

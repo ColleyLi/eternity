@@ -127,6 +127,10 @@ void AsciiMap::deleteMaps()
     delete[] asciiMapSolved ;
     asciiMapSolved = NULL ;
   }
+
+  // Well, not having a map to relate to
+  // makes the graph invalid
+  DESTROY( graph ) ;
 }
 
 void AsciiMap::setTileCost( char tile, float cost )
@@ -368,10 +372,10 @@ DequeCoord AsciiMap::solve()
     return coordSolution ; // empty 
   }
 
-  DequeGraphNode *graphSolution = astarSolver->solve( startNode, endNode ) ;
+  DequeGraphNode *graphNodesSolution = astarSolver->solve( startNode, endNode ) ;
 
   // relate the DequeGraphNode to a DequeCoord
-  foreach( DequeGraphNodeIter, gn, (*graphSolution) )
+  foreach( DequeGraphNodeIter, gn, (*graphNodesSolution) )
   {
     coordSolution.push_back( (*gn)->coord ) ;
 

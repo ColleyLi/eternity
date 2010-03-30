@@ -12,9 +12,7 @@ Ghost::Ghost()
 
 Ghost::~Ghost()
 {
-  // We don't delete this->nextMoves, 
-  // since it actually belongs to the
-  // pathfinder
+  // Nothing dynamically allocated to delete or free
 }
 
 void Ghost::setName( char newName )

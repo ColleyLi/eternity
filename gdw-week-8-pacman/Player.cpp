@@ -22,6 +22,11 @@ Player::Player()
   // is the placement of the 'P' in lvl1.txt)
 }
 
+Player::~Player()
+{
+
+}
+
 int Player::getLives()
 {
   return lives ;
@@ -137,7 +142,7 @@ void Player::doIntersect( Ghost *ghost )
 {
   window->playSound( Sounds::PacmanHurt ) ;
 
-  health-=5 ;
+  health--;
   clamp( health, 0, 100 ) ;
 }
 
