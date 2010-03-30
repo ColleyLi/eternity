@@ -107,6 +107,18 @@ void Graph::connectGraph( AsciiMap *asciiMap, GridConnection gridConnection )
   }
 }
 
+GraphNode* Graph::getRandomNode()
+{
+  if( nodes.size() == 0 )
+  {
+    warning( "Graph::getRandomNode:  graph is empty, you get NULL" ) ;
+    return NULL ;
+  }
+
+  int pos = rand() % nodes.size() ;
+  return nodes[ pos ] ;
+}
+
 /// For getting the START node or END node
 /// when all you know is the COORDINATE
 /// of the start/end position.

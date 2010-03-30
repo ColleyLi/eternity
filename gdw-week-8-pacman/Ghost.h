@@ -6,25 +6,40 @@
 #include "FourDirectionMovingObject.h"
 
 #include <queue>
+#include <deque>
 using namespace std ;
 
 class Ghost : public FourDirectionMovingObject
 {
-  // Retain a stack of "next moves" to use
-  queue<MotionState> nextMoves ;
+  const static int FramesToWaitBetweenPathComputes = 250 ;
+  /// (i)nky, (b)linky, (p)inky, (s)ue,
+  /// as named in lvl1.txt
+  char name ;
+
+  /// Retain a deque of "next moves" to use.
+  /// This is updated every second or so
+  /// with a new series of paths to follow
+  deque<Coord> nextMoves ;
+
+  /// Keep track of the number of frames that passed
+  /// since you last did a pathfind
+  int framesSinceLastRecomputeMoves ;
+
+  /// Where does this ghost
+  /// want to go to now?
+  Coord goalNode ;
+
 
 public:
   Ghost() ;
   ~Ghost() ;
 
-  // (i)nky, (b)linky, (p)inky, (s)ue,
-  // as named in lvl1.txt
-  char name ;
+  /// Name has an effect on
+  /// shadingColor and ghost
+  /// movement behavior
+  void setName( char newName ) ;
 
-  /// Ghost selects and enqueues a next move.
-  /// Intelligence depending on which ghost
-  /// he is.  Sue is supposed to be the meanest.
-  void enqueueNextMove() ;
+  void pathfindTowardsRandomPosition() ;
 
   /// When a Ghost gets its "step" event,
   /// I want to "update" the "reqDir" (next move direction).

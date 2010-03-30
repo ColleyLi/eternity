@@ -36,7 +36,13 @@ enum Sprites
   EyesRight,
   EyesUp,
   EyesDown,
-  EyesDead
+  EyesDead,
+
+  /// A marker for the goal node, used
+  /// to debug pathfinding
+  GoalNode,
+
+  GameOverTitle
 
 } ;
 
@@ -47,7 +53,9 @@ enum Sounds
   PacmanPellet1,
   PacmanPellet2,
   PacmanPellet3,
-  Intro
+  Intro,
+  PacmanHurt,
+  GameOverRiff
 } ;
 
 enum Fonts

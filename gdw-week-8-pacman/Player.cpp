@@ -9,6 +9,9 @@ Player::Player()
   score = 0 ;
 
   speed = 2.0f ;
+  
+  // start him going right
+  requestedMotionState = motionState = MotionState::MovingRight ;
 
   // init with no weapons
   hasHandgun = hasFlamethrower = hasUzi = false ;
@@ -22,6 +25,11 @@ Player::Player()
 int Player::getLives()
 {
   return lives ;
+}
+
+int Player::getHealth()
+{
+  return health ;
 }
 
 int Player::getScore()
@@ -56,7 +64,7 @@ void Player::step( float time ) // override
 
 
   // Intersect Pacman with the tile he's on
-  intersects( game->getTileAt( pos ) ) ;
+  doIntersect( game->getTileAt( pos ) ) ;
 
   // Call the FourDirectionMovingObject
   // base class function to ACTUALLY MOVE
@@ -67,9 +75,8 @@ void Player::step( float time ) // override
   
 }
 
-
 /// Pacman is intersected by a tile
-void Player::intersects( Tile *tile )
+void Player::doIntersect( Tile *tile )
 {
   switch( tile->getTile() ) 
   {
@@ -87,6 +94,18 @@ void Player::intersects( Tile *tile )
     score += 10 ;
     break ;
 
+  case Tiles::PowerPellet:
+    // reset tile to being a
+    // blank tile now
+    tile->setTile( ' ' ) ;
+    tile->setSpriteId( Sprites::Empty ) ;
+
+    window->playSound( Sounds::PacmanPellet2 ) ;
+
+    // increase player score
+    score += 30 ;
+    break ;
+
   case Tiles::Bonus:
     // give pacman a score and speed boost
     speed = 4.0f ;
@@ -101,19 +120,24 @@ void Player::intersects( Tile *tile )
 
 /// What to do when Pacman
 /// is intersected by another GameObject
-void Player::intersects( GameObject *other )
+void Player::doIntersect( GameObject *other )
 {
+  
 }
 
 /// What to do when Pacman
 /// is intersected by another FourDirectionMovingObject
-void Player::intersects( FourDirectionMovingObject *other )
+void Player::doIntersect( FourDirectionMovingObject *other )
 {
 }
 
 /// What to do when Pacman
 /// is intersected by a Ghost
-void Player::intersects( Ghost *ghost )
+void Player::doIntersect( Ghost *ghost )
 {
+  window->playSound( Sounds::PacmanHurt ) ;
+
+  health-=5 ;
+  clamp( health, 0, 100 ) ;
 }
 

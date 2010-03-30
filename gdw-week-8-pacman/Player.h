@@ -35,25 +35,26 @@ public:
   Player() ;
 
   int getLives() ;
+  int getHealth() ;
   int getScore() ;
 
   /// "Override" the step function in GameObject
   virtual void step( float time ) override ;
 
   /// Pacman is intersected by a tile
-  virtual void intersects( Tile *tile ) override ;
+  virtual void doIntersect( Tile *tile ) override ;
 
   /// What to do when Pacman
   /// is intersected by another GameObject
-  virtual void intersects( GameObject *other ) override ;
+  virtual void doIntersect( GameObject *other ) override ;
 
   /// What to do when Pacman
   /// is intersected by another FourDirectionMovingObject
-  virtual void intersects( FourDirectionMovingObject *other ) override ;
+  virtual void doIntersect( FourDirectionMovingObject *other ) override ;
 
   /// What to do when Pacman
   /// is intersected by a Ghost
-  virtual void intersects( Ghost *ghost ) ;
+  virtual void doIntersect( Ghost *ghost ) ;
 
 } ;
 

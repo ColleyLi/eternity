@@ -3,15 +3,16 @@
 
 FourDirectionMovingObject::FourDirectionMovingObject()
 {
-  motionState = MotionState::MovingRight ;
-  requestedMotionState = motionState ;
+  requestedMotionState = motionState = MotionState::MovingUp ;
   speed = 0 ;
+  radiusBounding = game->tileSize / 2 ;
 }
 
-void FourDirectionMovingObject::squareOff()
+void FourDirectionMovingObject::squareOff( float ts )
 {
   // Ok, we have this situation:
 
+  #pragma region illustration
   /*
         0   1   2   3   4  
       +---+---+---+---+---+ 0   <- pixel
@@ -138,13 +139,11 @@ pixel 0   16  32  48  64  80
 
   */
 
-  
+  #pragma endregion
 
   // sitTile is the tile that
   // this object is truly considered
   // to be sitting in.
-  float ts = game->tileSize ;
-
   Tile *sitTile = game->getTileAt( pos ) ;
 
   // This is where the pacman is SUPPOSED to be
@@ -184,6 +183,28 @@ pixel 0   16  32  48  64  80
 
 }
 
+bool FourDirectionMovingObject::isSquare( float tileSize )
+{
+  // Error tolerance.  If closer than
+  // "tolerance" to a tile's center,
+  // then we'll say he isSquare().
+  const static float tolerance = 0.1f ;
+
+  // Check if pos.x is NEARLY DIVISIBLE BY tileSize
+  bool alignedX =
+    fmodf( pos.x, tileSize ) < tolerance || // its near from above
+    fmodf( pos.x + 2*tolerance, tileSize ) < tolerance ; // its near from below
+
+  // Check if pos.y is NEARLY DIVISIBLE BY 16
+  bool alignedY =
+    fmodf( pos.y, tileSize ) < tolerance || // its near from above
+    fmodf( pos.y + 2*tolerance, tileSize ) < tolerance ; // its near from below
+
+  // Require both alignment in X and in Y
+  // for you to be square
+  return alignedX && alignedY ;
+}
+
 bool FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
 {
   requestedMotionState = newMotionState ;
@@ -194,28 +215,13 @@ bool FourDirectionMovingObject::reqMotionState( MotionState newMotionState )
 
   // Nice tile alignment means
   // that his coordinates are
-  // __nearly__ a multiple of 16.
-  #define NEARLY_DIVISIBLE 0.1f
-  // Sorry for the awkward alignment here,
+  // __nearly__ a multiple of TILESIZE (16 for Pacman).
+
   // We are checking to see if the player
   // is "NEARLY" aligned up to a square of the board.
   // If he is NOT ALIGNED to a square on the board,
   // he is NOT allowed to change his direction yet!
-  if( !
-      (
-       (
-        // Check if pos.x is NEARLY DIVISIBLE BY 16
-        fmodf( pos.x, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
-        fmodf( pos.x + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
-       )
-       &&
-       (
-        // Check if pos.y is NEARLY DIVISIBLE BY 16
-        fmodf( pos.y, 16.0f ) < NEARLY_DIVISIBLE || // its near from above
-        fmodf( pos.y + 2*NEARLY_DIVISIBLE, 16.0f ) < NEARLY_DIVISIBLE // its near from below
-       )
-      )
-    )
+  if( !isSquare( game->tileSize ) )
   {
     // NOT ALIGNED, so motion isn't allowed yet
     return false ;
@@ -345,16 +351,18 @@ void FourDirectionMovingObject::step( float time ) // override
   }
 
   // snap him to his tile space.
-  squareOff() ;
+  squareOff( game->tileSize ) ;
 
+  
+  
   
 }
 
 
 void FourDirectionMovingObject::draw() // override
 {
-  float x = pos.x + game->getBoardOffsetX() ;
-  float y = pos.y + game->getBoardOffsetY() ;
+  Vector2 drawVec = game->getDrawingVectorAt( pos ) ;
+
   int ts = game->tileSize ;
 
   switch( motionState )
@@ -362,44 +370,44 @@ void FourDirectionMovingObject::draw() // override
   case MotionState::MovingRight:
     // The sprite is assumed to be facing right
     window->drawSprite( spriteId,
-      x,y,
+      drawVec.x, drawVec.y,
       ts, ts ) ;
     break ;
 
   case MotionState::MovingLeft:
     // Flip left.  Not a rotation of 180 degrees
     // because that would make pacman upside down.
-    window->drawSprite( spriteId, x,y, -ts, ts ) ;
+    window->drawSprite( spriteId, drawVec.x, drawVec.y, -ts, ts ) ;
     break ;
 
   case MotionState::MovingUp:
     // Rotate 90 degrees CCW
-    window->drawSprite( spriteId, x,y,
+    window->drawSprite( spriteId, drawVec.x, drawVec.y,
       ts, ts, -90 ) ;
     break ;
 
   case MotionState::MovingDown:
     // rotate 90 degrees CW
-    window->drawSprite( spriteId, x,y,
+    window->drawSprite( spriteId, drawVec.x, drawVec.y,
       ts, ts, 90 ) ;
     break ;
   }
 }
 
-void FourDirectionMovingObject::intersects( Tile *tile )
+void FourDirectionMovingObject::doIntersect( Tile *tile )
 {
   
 }
 
 /// What to do when this FourDirectionMovingObject
 /// is intersected by another GameObject
-void FourDirectionMovingObject::intersects( GameObject *other )
+void FourDirectionMovingObject::doIntersect( GameObject *other )
 {
 }
 
 /// What to do when this FourDirectionMovingObject
 /// is intersected by another FourDirectionMovingObject
-void FourDirectionMovingObject::intersects( FourDirectionMovingObject *other )
+void FourDirectionMovingObject::doIntersect( FourDirectionMovingObject *other )
 {
 }
 

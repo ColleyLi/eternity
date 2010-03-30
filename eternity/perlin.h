@@ -13,7 +13,7 @@ extern int perlin_noise_reboot ;
 #define NM 0xfff
 
 #define s_curve(t) ( t * t * (3. - 2. * t) )
-#define lerp(t, a, b) ( a + t * (b - a) )
+#define perlin_lerp(t, a, b) ( a + t * (b - a) )
 #define setup(i,b0,b1,r0,r1)\
         t = vec[i] + N;\
         b0 = ((int)t) & BM;\

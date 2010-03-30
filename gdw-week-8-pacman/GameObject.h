@@ -25,6 +25,10 @@ public:
   // no acceleration.  Just constant velocity.
   // When you hit a wall you're stopped.
 
+  /// The "radius" of the bounding sphere
+  /// used in collision detection
+  float radiusBounding ;
+
   // The sprite used to draw this object
   int spriteId ;
 
@@ -52,13 +56,18 @@ public:
   /// @ position with spriteId
   virtual void draw() ;
 
+  /// Use sphere-sphere collision
+  /// to determine if two GameObjects
+  /// intersect or not.
+  bool isIntersectingWith( GameObject *other ) ;
+
   /// What to do when this GameObject
   /// is intersected by a tile
-  virtual void intersects( Tile *tile ) ;
+  virtual void doIntersect( Tile *tile ) ;
 
   /// What to do when this GameObject
   /// is intersected by another GameObject
-  virtual void intersects( GameObject *other ) ;
+  virtual void doIntersect( GameObject *other ) ;
 } ;
 
 #endif

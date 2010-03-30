@@ -390,3 +390,5 @@
       - It should be possible through the engine
         to "clone" a Sprite* object without necessarily
         cloning the underlying texture for efficiency
+    - BOOST can be removed from the /eternity folder,
+      since its installation is required anyways

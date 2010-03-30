@@ -23,6 +23,10 @@ protected:
   /// "pixels per frame".
   float speed ; 
 
+  /// Shading color to use
+  /// when drawing this FourDirectionMovingObject
+  D3DCOLOR shadingColor ;
+
 public:
   // We'll use a "FINITE STATE MACHINE"
   // (AAAAAAAHH!!!) to keep track of what
@@ -88,7 +92,15 @@ public:
   /// "Rounds off" object position
   /// so that it is NEVER "infringing"
   /// on an obstacle's block.
-  void squareOff() ;
+  void squareOff( float ts ) ;
+
+  /// Returns TRUE when you are
+  /// aligned to a square.  This is
+  /// usually used to check to see
+  /// if you are allowed to move in
+  /// another direction (can only do
+  /// so when you ARE square).
+  bool isSquare( float tileSize ) ;
 
   /// Request a change in direction
   /// If possible to go that direction then
@@ -122,15 +134,15 @@ public:
   
   /// What to do when this FourDirectionMovingObject
   /// is intersected by a tile
-  virtual void intersects( Tile *tile ) override ;
+  virtual void doIntersect( Tile *tile ) override ;
 
   /// What to do when this FourDirectionMovingObject
   /// is intersected by another GameObject
-  virtual void intersects( GameObject *other ) override ;
+  virtual void doIntersect( GameObject *other ) override ;
 
   /// What to do when this FourDirectionMovingObject
   /// is intersected by another FourDirectionMovingObject
-  virtual void intersects( FourDirectionMovingObject *other ) ;
+  virtual void doIntersect( FourDirectionMovingObject *other ) ;
 
 } ;
 

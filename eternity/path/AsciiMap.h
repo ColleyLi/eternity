@@ -24,9 +24,8 @@ class AStar ;
 
 #define foreachTo(x,y) for( int x = 0 ; x < y ; x++ )
 
-/// Not using -1 for the "IMPASSIBLE" value
-/// because you may want to
-/// use negative edge weights
+/// Set the "IMPASSIBLE" value
+/// to a value no one would ever use
 #define IMPASSIBLE -1e9
 
 typedef map<char, float> /* as simply */ CostMap ;
@@ -49,7 +48,7 @@ private:
 
   int mapRows, mapCols ;
   Coord startPos, endPos ;
-  DequeCoord* coordSolution ;
+  
   GridConnection gridConn ; // connectivity
   // style of the graph
 
@@ -96,6 +95,11 @@ public:
   /// will be recomputed from scratch)
   char **getAsciiMap() ;
 
+  /// Saves a local copy of the
+  /// map, so you can delete yours
+  /// if you use this.
+  void setAsciiMap( char ** inputMap, int rows, int cols ) ;
+
   /// Gets you the solved ascii map.
   /// can edit this to your hearts delight..
   char **getAsciiMapSolved() ;
@@ -131,14 +135,16 @@ private:
   /// so be careful.
   void copyMap( char **dst, char **src ) ;
 
-public:
   /// Deletes maps
   /// completely
   void deleteMaps() ;
 
+public:
   /// Add a tile-type to the map,
   /// giving it a cost as well.
-  void addTile( char tile, float cost ) ;
+  /// Also use it in case you want to change
+  /// the cost of a map character
+  void setTileCost( char tile, float cost ) ;
 
   /// Gives you the cost to traverse
   /// a specific map character
@@ -159,9 +165,14 @@ public:
   /// on every frame of your game loop
   CostMap getCostMapCopy() ;
 
-  /// In case you want to change
-  /// the cost of a map character
-  void setCost( char mapChar, float newCost ) ;
+  /// Gets you a random walkable tile
+  /// from the underlying graph, really.
+  /// Before calling this function you should
+  /// have already set the MAP , costMap (setTileCost()) and
+  /// also set connectivity (setGridConnection()),
+  /// because they'll both influence
+  /// what tiles are reachable.
+  Coord getRandomWalkableTile() ;
 
 private:
   /// An internal function to retrieve
@@ -180,12 +191,11 @@ public:
   /// with before pulling random values.
   void fillRandom( int setNumber ) ;
 
-private:
+public:
   /// Constructs a graph out of your AsciiMap
   /// object.
-  void constructGraph( GridConnection gridConnection ) ;
+  void constructGraph() ;
 
-public:
   void setStartPos( const Coord &start ) ;
   Coord getStartPos() ;
   void setEndPos( const Coord &end ) ;
@@ -194,8 +204,8 @@ public:
   GridConnection getGridConnection() ;
   void setGridConnection( GridConnection gridConnection ) ;
 
-  DequeCoord* solve() ;
-  DequeCoord* solve( const Coord & start, const Coord & end ) ;
+  DequeCoord solve() ;
+  DequeCoord solve( const Coord & start, const Coord & end ) ;
 
   double getLastSolutionTime() ;
 } ;

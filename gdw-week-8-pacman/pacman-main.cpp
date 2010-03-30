@@ -84,50 +84,56 @@ GameWindow *window ;  // the main window object, which
 
 void Init()
 {
+  // randomize
+  srand( time(0) ) ;
+
   #pragma region asset load and font create
   // Load sounds.  Notice how
   // we use the ASSET() macro to
   // make all filenames start with "../assets/"
-  window->loadSound( Sounds::PacmanTitleThemeLoop, ASSET("sounds/pacman-theme-loop.mp3"), FMOD_CREATESTREAM ) ;
-  window->loadSound( Sounds::PacmanGamePlayMusic, ASSET("sounds/powerpill.mp3"), FMOD_CREATESTREAM ) ;
-  window->loadSound( Sounds::PacmanPellet1, ASSET("sounds/pacman-pellet-1-l.wav" ) ) ;
-  window->loadSound( Sounds::PacmanPellet2, ASSET("sounds/pacman-pellet-2-l.wav" ) ) ;
-  window->loadSound( Sounds::PacmanPellet3, ASSET("sounds/pacman-pellet-3-l.wav" ) ) ;
-  window->loadSound( Sounds::Intro, ASSET("sounds/gypsy-jazz.mp3" ) ) ;
-
+  window->loadSound( Sounds::PacmanTitleThemeLoop, ASSET("sounds/pacman/pacman-theme-loop.mp3"), FMOD_CREATESTREAM ) ;
+  window->loadSound( Sounds::PacmanGamePlayMusic, ASSET("sounds/pacman/powerpill.mp3"), FMOD_CREATESTREAM ) ;
+  window->loadSound( Sounds::PacmanPellet1, ASSET("sounds/pacman/pacman-pellet-1-l.wav" ) ) ;
+  window->loadSound( Sounds::PacmanPellet2, ASSET("sounds/pacman/pacman-pellet-2-l.wav" ) ) ;
+  window->loadSound( Sounds::PacmanPellet3, ASSET("sounds/pacman/pacman-pellet-3-l.wav" ) ) ;
+  window->loadSound( Sounds::Intro, ASSET("sounds/pacman/gypsy-jazz.mp3" ) ) ;
+  window->loadSound( Sounds::PacmanHurt, ASSET( "sounds/pacman/efire.wav" ) ) ;
+  window->loadSound( Sounds::GameOverRiff, ASSET( "sounds/pacman/gameover.wav" ) ) ;
 
   // sprite loading
-  window->loadSprite( Sprites::Bonus, ASSET("sprites/cherries.png"), 0, 16, 16, 4, 0.5f ) ;
+  window->loadSprite( Sprites::Bonus, ASSET("sprites/pacman/cherries.png"), 0, 16, 16, 4, 0.5f ) ;
   window->loadSprite( Sprites::Mario, ASSET("sprites/mario.png") ) ;
 
   window->loadSprite( Sprites::Splash, ASSET("sprites/gdw-splash.png") ) ;
 
-  window->loadSprite( Sprites::Pacman, ASSET("sprites/pacman-spritesheet.png"), 0, 16, 16, 4, 0.05f ) ;
-  window->loadSprite( Sprites::PacmanTitle, ASSET("sprites/pacman-title.png") ) ;
+  window->loadSprite( Sprites::Pacman, ASSET("sprites/pacman/pacman-spritesheet.png"), 0, 16, 16, 4, 0.05f ) ;
+  window->loadSprite( Sprites::PacmanTitle, ASSET("sprites/pacman/pacman-title.png") ) ;
 
-  window->loadSprite( Sprites::Pellet, ASSET("sprites/normal-pellet-sheet.png"), 0, 16, 16, 4, 0.2f ) ;
-  window->loadSprite( Sprites::Powerpellet, ASSET("sprites/powerpellet-sheet.png"), 0, 16, 16, 4, 0.2f ) ;
-  window->loadSprite( Sprites::Wall, ASSET( "sprites/wall.png" ) ) ;
-  window->loadSprite( Sprites::Barrier, ASSET( "sprites/ghost-door-barrier.png" ) ) ;
+  window->loadSprite( Sprites::Pellet, ASSET("sprites/pacman/normal-pellet-sheet.png"), 0, 16, 16, 4, 0.2f ) ;
+  window->loadSprite( Sprites::Powerpellet, ASSET("sprites/pacman/powerpellet-sheet.png"), 0, 16, 16, 4, 0.2f ) ;
+  window->loadSprite( Sprites::Wall, ASSET( "sprites/pacman/wall.png" ) ) ;
+  window->loadSprite( Sprites::Barrier, ASSET( "sprites/pacman/ghost-door-barrier.png" ) ) ;
 
 
 
   // It may seem silly to load and draw an empty sprite,
   // but it makes programming the game logic easier for a tile
   // with "nothing in it"
-  window->loadSprite( Sprites::Empty, ASSET( "sprites/empty.png" ) ) ;
+  window->loadSprite( Sprites::Empty, ASSET( "sprites/pacman/empty.png" ) ) ;
 
-  window->loadSprite( Sprites::Gun, ASSET( "sprites/gun.png" ) ) ;
-  window->loadSprite( Sprites::Flamethrower, ASSET( "sprites/flamethrower.png" ) ) ;
-  window->loadSprite( Sprites::Uzi, ASSET( "sprites/uzi.png" ) ) ;
+  window->loadSprite( Sprites::Gun, ASSET( "sprites/pacman/gun.png" ) ) ;
+  window->loadSprite( Sprites::Flamethrower, ASSET( "sprites/pacman/flamethrower.png" ) ) ;
+  window->loadSprite( Sprites::Uzi, ASSET( "sprites/pacman/uzi.png" ) ) ;
 
   // Load ghost body and eyes
-  window->loadSprite( Sprites::GhostBody, ASSET( "sprites/ghost-body-white.png" ), 0, 16, 16, 2, 0.2f ) ;
-  window->loadSprite( Sprites::EyesRight, ASSET( "sprites/eyes-right.png" ) ) ;
-  window->loadSprite( Sprites::EyesUp, ASSET( "sprites/eyes-up.png" ) ) ;
-  window->loadSprite( Sprites::EyesDown, ASSET( "sprites/eyes-down.png" ) ) ;
-  window->loadSprite( Sprites::EyesDead, ASSET( "sprites/eyes-dead.png" ) ) ;
+  window->loadSprite( Sprites::GhostBody, ASSET( "sprites/pacman/ghost-body-white.png" ), 0, 16, 16, 2, 0.2f ) ;
+  window->loadSprite( Sprites::EyesRight, ASSET( "sprites/pacman/eyes-right.png" ) ) ;
+  window->loadSprite( Sprites::EyesUp, ASSET( "sprites/pacman/eyes-up.png" ) ) ;
+  window->loadSprite( Sprites::EyesDown, ASSET( "sprites/pacman/eyes-down.png" ) ) ;
+  window->loadSprite( Sprites::EyesDead, ASSET( "sprites/pacman/eyes-dead.png" ) ) ;
 
+  window->loadSprite( Sprites::GoalNode, ASSET( "sprites/pacman/goal-node.png" ) ) ;
+  window->loadSprite( Sprites::GameOverTitle, ASSET( "sprites/pacman/game-over.png" ) ) ;
 
   // Create a few fonts
   window->createFont( Fonts::Arial24, "Arial", 24, FW_NORMAL, false ) ;
@@ -326,10 +332,29 @@ void Draw()
 
       // Now draw the player and enemies
       game->drawPeople() ;
+
+
+
+
+      /*
+      //!! DEBUG:  draw the map nodes
+      Graph* graph = game->getAsciiMap()->graph ;
+      D3DCOLOR dColor = D3DCOLOR_ARGB( 128, 255, 0, 0 ) ;
+      for( int i = 0 ; i < graph->nodes.size() ; i++ )
+      {
+        float x = graph->nodes[i]->coord.col * game->tileSize;
+        float y = graph->nodes[i]->coord.row * game->tileSize;
+        Vector2 dv = game->getDrawingVectorAt( Vector2(x,y) ) ;
+        window->drawBoxCentered( dColor, dv.x, dv.y, 20, 20 ) ;
+      }
+      */
     }
     break;
 
   case GameWorld::GameState::GameOver:
+    // Draw the game over sprite
+    window->drawSprite( Sprites::GameOverTitle,
+      window->getWidth()/2, 200 ) ;
     break;
   }
 
@@ -345,6 +370,11 @@ void Draw()
   // it always appears on TOP of everything.
   window->drawMouseCursor( Sprites::Mario ) ;
 
+
+
+
+
+  
 
 }
 

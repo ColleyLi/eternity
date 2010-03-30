@@ -2,7 +2,9 @@
 
 ///////////////////////////////
 // PATHFINDING EXAMPLE
-//
+
+// (Tilesets from http://rivendell.fortunecity.com/goddess/268/tilesets.html)
+
 // USE WASD and the ARROW KEYS
 // to move the start and goal node
 // around respectively.
@@ -161,7 +163,43 @@ AsciiMap *asciiMap ; // this will be filled
 // Set up globals for the start, end pos's
 Coord start ; // the start pos is the beginning of the map
 Coord end ;   // the end position
-DequeCoord* solutionPath ; // stores the solution to the A* path-find
+DequeCoord solutionPath ; // stores the solution to the A* path-find
+
+// ???????????????????????????????????
+// ?????WTF IS A DEQUE, YOU ASKUE?????
+// ???????????????????????????????????
+
+// Well sir, a <DEQUE> is short for
+// "double-ended queue".
+
+// You know how an STL <vector> is a
+// list of objects, and you can
+// use vector.push_back( "item" )
+// and "item" will be added to the
+// back of the list of things?
+
+// WELL a <DEQUE> is just.. a two-sided
+// <vector>, kind of.  The only difference
+// really is you can call:
+//   deque.push_front( "item" )   add an item to the front of the deque
+//   deque.push_back( "item" )    add an item to the back of the deque
+//   deque.pop_front()            remove item at front of deque
+//   deque.pop_back()             remove item at back of deque
+// 
+// Its really that simple!  A deque
+// is a flexible and useful data
+// structure.  Pathfinding uses it
+// because when you path-find you
+// actually need to BACKTRACK from
+// the end node to the start node,
+// following your poo-trail of shortest-pathess-ness,
+// so in the AStar::solve function, you'll
+// see a bunch of push_front()'s..
+// because we're walking backwards
+// from the goal-node to the start node.
+// Pathfinding is an advanced subject
+// so please don't be pissed if that
+// just confused you.
 
 GridConnection gridConnection ;
 #pragma endregion
@@ -180,24 +218,24 @@ void Init()
 
   // Animated sprite
   window->loadSprite( SixteenCounter, ASSET("sprites/16counter.png"), 0, 32, 32, 16, 0.5f ) ;
-  window->loadSprite( Grass, ASSET("sprites/week-11/grass.png" ) ) ;
-  window->loadSprite( GrassBlueFlowers, ASSET("sprites/week-11/grass-blue-flowers.png" ) ) ;
-  window->loadSprite( GrassBumpy, ASSET("sprites/week-11/grass-bumpy.png" ) ) ;
-  window->loadSprite( GrassCobblestone, ASSET("sprites/week-11/grass-cobblestone.png" ) ) ;
-  window->loadSprite( GrassHole, ASSET("sprites/week-11/grass-hole.png" ) ) ;
-  window->loadSprite( GrassMailbox, ASSET("sprites/week-11/grass-mailbox.png" ) ) ;
-  window->loadSprite( GrassPurpleFlowers, ASSET("sprites/week-11/grass-purple-flowers.png" ) ) ;
-  window->loadSprite( GrassRocks, ASSET("sprites/week-11/grass-rocks.png" ) ) ;
-  window->loadSprite( GrassTombstone, ASSET("sprites/week-11/grass-tombstone.png" ) ) ;
-  window->loadSprite( Trees1, ASSET("sprites/week-11/trees-1.png" ) ) ;
-  window->loadSprite( Trees2, ASSET("sprites/week-11/trees-2.png" ) ) ;
-  window->loadSprite( Trees3, ASSET("sprites/week-11/trees-3.png" ) ) ;
-  window->loadSprite( Water, ASSET("sprites/week-11/water.png" ) ) ;
-  window->loadSprite( WaterDeep, ASSET("sprites/week-11/water-deep.png" ) ) ;
-  window->loadSprite( WaterPuddle, ASSET("sprites/week-11/water-puddle.png" ) ) ;
-  window->loadSprite( OnPath, ASSET("sprites/week-11/on-path.png" ) ) ;
-  window->loadSprite( StartNode, ASSET("sprites/week-11/start-node.png" ) ) ;
-  window->loadSprite( EndNode, ASSET("sprites/week-11/end-node.png" ) ) ;
+  window->loadSprite( Grass, ASSET("sprites/pathfinding-example/grass.png" ) ) ;
+  window->loadSprite( GrassBlueFlowers, ASSET("sprites/pathfinding-example/grass-blue-flowers.png" ) ) ;
+  window->loadSprite( GrassBumpy, ASSET("sprites/pathfinding-example/grass-bumpy.png" ) ) ;
+  window->loadSprite( GrassCobblestone, ASSET("sprites/pathfinding-example/grass-cobblestone.png" ) ) ;
+  window->loadSprite( GrassHole, ASSET("sprites/pathfinding-example/grass-hole.png" ) ) ;
+  window->loadSprite( GrassMailbox, ASSET("sprites/pathfinding-example/grass-mailbox.png" ) ) ;
+  window->loadSprite( GrassPurpleFlowers, ASSET("sprites/pathfinding-example/grass-purple-flowers.png" ) ) ;
+  window->loadSprite( GrassRocks, ASSET("sprites/pathfinding-example/grass-rocks.png" ) ) ;
+  window->loadSprite( GrassTombstone, ASSET("sprites/pathfinding-example/grass-tombstone.png" ) ) ;
+  window->loadSprite( Trees1, ASSET("sprites/pathfinding-example/trees-1.png" ) ) ;
+  window->loadSprite( Trees2, ASSET("sprites/pathfinding-example/trees-2.png" ) ) ;
+  window->loadSprite( Trees3, ASSET("sprites/pathfinding-example/trees-3.png" ) ) ;
+  window->loadSprite( Water, ASSET("sprites/pathfinding-example/water.png" ) ) ;
+  window->loadSprite( WaterDeep, ASSET("sprites/pathfinding-example/water-deep.png" ) ) ;
+  window->loadSprite( WaterPuddle, ASSET("sprites/pathfinding-example/water-puddle.png" ) ) ;
+  window->loadSprite( OnPath, ASSET("sprites/pathfinding-example/on-path.png" ) ) ;
+  window->loadSprite( StartNode, ASSET("sprites/pathfinding-example/start-node.png" ) ) ;
+  window->loadSprite( EndNode, ASSET("sprites/pathfinding-example/end-node.png" ) ) ;
 
   // fill out the mapping of tiles to sprites
   tileToSpriteMapping[ Tiles::Grass ] = Sprites::Grass ;
@@ -240,21 +278,21 @@ void Init()
   // If you assign a tile the special cost IMPASSIBLE,
   // then the pathfinder will NEVER travel
   // over that tile!
-  asciiMap->addTile( Tiles::Grass, 1.0f ) ;
-  asciiMap->addTile( Tiles::GrassBlueFlowers, 1.5f ) ;
-  asciiMap->addTile( Tiles::GrassBumpy, 1.5f ) ;
-  asciiMap->addTile( Tiles::GrassCobblestone, 0.8f ) ; // you like cobblestone
-  asciiMap->addTile( Tiles::GrassHole, 10.0f ) ;
-  asciiMap->addTile( Tiles::GrassMailbox, 5.0f ) ; // because you stop to check it
-  asciiMap->addTile( Tiles::GrassPurpleFlowers, 1.5f ) ;
-  asciiMap->addTile( Tiles::GrassRocks, 5.0f ) ; // they trip you up 
-  asciiMap->addTile( Tiles::GrassTombstone, IMPASSIBLE ) ;  // too big, so you can't walk on it
-  asciiMap->addTile( Tiles::Trees1, 2.0f ) ;  // one tree, not hard to get around
-  asciiMap->addTile( Tiles::Trees2, 2.0f ) ; 
-  asciiMap->addTile( Tiles::Trees3, 3.0f ) ; 
-  asciiMap->addTile( Tiles::Water, 11.0f ) ; 
-  asciiMap->addTile( Tiles::WaterDeep, 14.0f ) ; 
-  asciiMap->addTile( Tiles::WaterPuddle, 8.0f ) ; 
+  asciiMap->setTileCost( Tiles::Grass, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::GrassBlueFlowers, 1.5f ) ;
+  asciiMap->setTileCost( Tiles::GrassBumpy, 1.5f ) ;
+  asciiMap->setTileCost( Tiles::GrassCobblestone, 0.8f ) ; // you like cobblestone
+  asciiMap->setTileCost( Tiles::GrassHole, 10.0f ) ;
+  asciiMap->setTileCost( Tiles::GrassMailbox, 5.0f ) ; // because you stop to check it
+  asciiMap->setTileCost( Tiles::GrassPurpleFlowers, 1.5f ) ;
+  asciiMap->setTileCost( Tiles::GrassRocks, 5.0f ) ; // they trip you up 
+  asciiMap->setTileCost( Tiles::GrassTombstone, IMPASSIBLE ) ;  // too big, so you can't walk on it
+  asciiMap->setTileCost( Tiles::Trees1, 2.0f ) ;  // one tree, not hard to get around
+  asciiMap->setTileCost( Tiles::Trees2, 2.0f ) ; 
+  asciiMap->setTileCost( Tiles::Trees3, 3.0f ) ; 
+  asciiMap->setTileCost( Tiles::Water, 11.0f ) ; 
+  asciiMap->setTileCost( Tiles::WaterDeep, 14.0f ) ; 
+  asciiMap->setTileCost( Tiles::WaterPuddle, 8.0f ) ; 
 
 
   // See fillRandom() function
@@ -309,7 +347,9 @@ void Update()
   // the Draw() function when it comes time
   // to draw out the solution.
   solutionPath = asciiMap->solve( start, end ) ;
-  
+  // solutionPath is now a series
+  // of Coords describing the shortest path
+  // from start to end.
 
 
 
@@ -463,7 +503,7 @@ void Draw()
   }
 
   // Draw the solution by overlaying boxes
-  foreach( DequeCoordIter, iter, (*solutionPath) )
+  foreach( DequeCoordIter, iter, solutionPath )
   {
     x = offsetX + (iter->col * tileSize) ;
     y = offsetY + (iter->row * tileSize) ;

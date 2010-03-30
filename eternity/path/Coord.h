@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+/// A Coordinate
+/// with a row and a column.
 struct Coord
 {
   int row, col ;

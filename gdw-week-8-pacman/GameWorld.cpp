@@ -55,6 +55,7 @@ void GameWorld::setState( GameWorld::GameState newState )
   | 3.  Running -> Paused
   | 4.  Paused  -> Running
   | 5.  Running -> GameOver
+  | 6.  GameOver-> Menu
   */
 
   // 1.  Splash -> Menu
@@ -66,6 +67,8 @@ void GameWorld::setState( GameWorld::GameState newState )
 
     // Start up the title theme music
     window->loopSound( Sounds::PacmanTitleThemeLoop ) ;
+
+    window->setBackgroundColor( Color::Black ) ;
   }
 
   // 2.  MENU -> RUNNING
@@ -95,6 +98,8 @@ void GameWorld::setState( GameWorld::GameState newState )
     window->pause() ; // Pause the engine as well
     // This halts animations.
 
+    window->setBackgroundColor( D3DCOLOR_ARGB( 255, 64, 0, 64 ) ) ;
+
     info( "Paused..." ) ;
   }
   // 4. unpause  PAUSED -> RUNNING
@@ -103,13 +108,24 @@ void GameWorld::setState( GameWorld::GameState newState )
   {
     window->unpause() ;
 
+    window->setBackgroundColor( D3DCOLOR_ARGB( 255, 0, 0, 64 ) ) ;
+
     info( "unpaused" ) ;
   }
   // 5. player died.  RUNNING -> GAMEOVER
   else if( gameState == GameState::Running &&
            newState == GameState::GameOver )
   {
-    
+    window->stopSound( Sounds::PacmanGamePlayMusic ) ;
+    window->playSound( Sounds::GameOverRiff ) ;
+    window->setBackgroundColor( Color::White ) ;
+  }
+  else if( gameState == GameState::GameOver &&
+           newState == GameState::Menu )
+  {
+    // Start up the title theme music
+    window->loopSound( Sounds::PacmanTitleThemeLoop ) ;
+    window->setBackgroundColor( Color::Black ) ;
   }
   else
   {
@@ -127,37 +143,117 @@ void GameWorld::setState( GameWorld::GameState newState )
 
 void GameWorld::loadLevel( char *filename )
 {
+  
   // Parse-out the level text from the filename
   
+  #pragma region load the map from the file
+  // Open the file in read mode.
+  ifstream in( filename ) ;
   // Because you are C++ HACKERS
   // I'm using ifstream here.
 
-  // Open the file in read mode.
-  ifstream in( filename ) ;
+  // Allocate a 2d array of char
+  // large enough for this map
+  char **tileMap = new char*[mapRows];
+  for( int row = 0 ; row < mapRows ; row++ )
+    tileMap[row] = new char[mapCols];  // allocate space
 
+  // now load the map
   for( int row = 0 ; row < mapRows ; row++ )
   {
     for( int col = 0 ; col < mapCols ; col++ )
     {
-      char mapChar = in.get() ;
-      
+      tileMap[row][col] = in.get() ;
+    }
+
+    // The newline will be the 21st character
+    // on each line, so we can discard it
+    char newLine = in.get() ;
+    if( !in.eof() && newLine != '\n' )
+    {
+      // Whoops!  The person must
+      // have fed in a wrong file
+      warning( "Line lengths are not %d characters...", mapCols ) ;
+    }
+  }
+
+  in.close() ;
+  #pragma endregion
+
+  // Create the AsciiMap object, based on tileMap
+  asciiMap = new AsciiMap( tileMap, mapRows, mapCols ) ;
+  
+  // Set up the costs
+  asciiMap->setTileCost( Tiles::Barrier, 99.0f ) ; // avoid ghosts going
+  // back into the home by a high cost to the barrier
+
+  // Now most of the rest of these are just
+  // unit cost, meaning they're all "passable"
+  // tiles and there's nothing special to say.
+  asciiMap->setTileCost( Tiles::Blinky, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Bonus, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Empty, 2.0f ) ; // made empty tiles more expensive
+  //
+  asciiMap->setTileCost( Tiles::FlameThrower, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Gun, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Inky, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::PacmanStart, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Pellet, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Pinky, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::PowerPellet, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Sue, 1.0f ) ;
+  asciiMap->setTileCost( Tiles::Wall, IMPASSIBLE ) ;
+  asciiMap->setTileCost( Tiles::Unwalkable, IMPASSIBLE ) ;
+  
+  // Finally, its a 4-way grid, not 8-way.
+  asciiMap->setGridConnection( GridConnection::FourWay ) ;
+
+  asciiMap->constructGraph() ;
+
+  // NOTE HOWEVER if you wanted to you could
+  // assign pellets different costs from
+  // empty tiles, etc.  This gets really neat though because you
+  // COULD make it so "empty" tiles are MORE EXPENSIVE
+  // to walk on than tiles with pellets, which will
+  // cause the ghosts to PREFER the areas with
+  // pellets in them instead of the empty areas,
+  // making the game more challenging.
+
+  // This is the kind of thing that would
+  // take some experimentation.
+
+  // You could also make the powerpellet tiles
+  // really cheap to walk on so that the ghosts
+  // should tend to try to go that way as well.
+
+  // that walking on PowerPellets for example,
+  // is to be avoided by the ghosts (though you
+  // COULD cause that to happen if you give
+  // the powerpellets a high "cost")
+
+  // Now process each char in the map
+  #pragma region process each tile of the map
+  for( int row = 0 ; row < mapRows ; row++ )
+  {
+    for( int col = 0 ; col < mapCols ; col++ )
+    {
       // Set up the tile according
       // to the character loaded.
       // To avoid cluttering the Tile
       // class with level construction information,
       // I've chosen to put the SWITCH HERE
       // and _not_ in the Tile object.
-      
+      char mapChar = tileMap[row][col] ;
+
       Tile *tile = new Tile();
       tile->setTile( mapChar ) ;
       
       switch( mapChar )
       {
-      
-        // put nothing in the tiles map..
       case Tiles::PacmanStart:
         // Pacman is not a tile...!!
         //tile->setSpriteId( Sprites::Pacman ) ;
+        // put nothing in the tiles map..
 
         // He's a GameObject!
         // The difference between
@@ -172,8 +268,6 @@ void GameWorld::loadLevel( char *filename )
         pacman->pos.y = row * tileSize ;
 
         pacman->spriteId = Sprites::Pacman ;
-        
-        
         break;
 
       case Tiles::Bonus:
@@ -201,6 +295,14 @@ void GameWorld::loadLevel( char *filename )
         tile->setPassable( true ) ;
         break;
 
+      case Tiles::Unwalkable:
+        // Empty yet impassible.  Used for
+        // completely enclosed BLANK areas
+        // so ghosts don't try
+        // to pathfind to them as a destination
+        tile->setSpriteId( Sprites::Empty ) ;
+        tile->setPassable( false ) ;
+        break;
       case Tiles::Barrier:
         tile->setSpriteId( Sprites::Barrier ) ;
         tile->setPassable( true ) ;
@@ -219,7 +321,7 @@ void GameWorld::loadLevel( char *filename )
           // ...THEN create a ghost object
           // in the place where this tile was
           Ghost * ghost = new Ghost() ;
-          ghost->name = mapChar ;
+          ghost->setName( mapChar ) ;
 
           ghost->pos.x = col * tileSize ;
           ghost->pos.y = row * tileSize ;
@@ -243,21 +345,19 @@ void GameWorld::loadLevel( char *filename )
       }
       
       level[ row ][ col ] = tile ;
-
-    }
-
-    // The newline will be the 21st character
-    // on each line, so we can discard it
-    char newLine = in.get() ;
-    if( !in.eof() && newLine != '\n' )
-    {
-      // Whoops!  The person must
-      // have fed in a wrong file
-      warning( "Line lengths are not %d characters...", mapCols ) ;
     }
   }
+  #pragma endregion
 
-  in.close() ;
+  // Delete tileMap now, we are done with it,
+  // all the information we need we stored
+  // in the "level" variable, and in the asciiMap variable.
+  for( int row = 0 ; row < mapRows; row++ )
+    delete[] tileMap[row];
+  delete[] tileMap;
+
+  
+
 }
 
 void GameWorld::step( float time )
@@ -271,7 +371,36 @@ void GameWorld::step( float time )
 
 
   // Cause all object intersections to "happen"
+  foreach( vector<Ghost*>::iterator, ghost, ghosts )
+  {
+    // check if they collide
+    if( (*ghost)->isIntersectingWith( pacman ) )
+    {
+      // Have them both hit each other
+      (*ghost)->doIntersect( pacman ) ;
 
+      pacman->doIntersect( *ghost ) ;
+    }
+  }
+
+
+  // Now after this intersection,
+  // the player may be dead.  If he is,
+  // end the game
+  if( pacman->getHealth() <= 0 )
+  {
+    setState( GameState::GameOver ) ;
+
+    // Go back to the menu 5 seconds after THAT
+    Callback1<GameState> * cb1 = new Callback1<GameState>(
+      4.0f,
+      transitionToState,
+      GameState::Menu
+    ) ;
+
+    window->addCallback( cb1 ) ;
+  }
+  
 }
 
 void GameWorld::drawBoard()
@@ -324,6 +453,33 @@ void GameWorld::drawStats()
   window->drawString( Fonts::Arial24, scoreBuf, Color::White,
                       startX, yStatsOffset + 80, 200, 200,
                       DT_TOP | DT_LEFT ) ;
+
+
+  window->drawString( Fonts::PacFont24, "Health", Color::Yellow,
+                      xStatsOffset, yStatsOffset + 120, 200, 200,
+                      DT_TOP | DT_LEFT ) ;
+
+  // Draw the health bar
+  // get % filled up
+  float percentFull = (float)game->getPlayer()->getHealth() / 100.0f ; 
+
+  float healthBarWidth = 120 ;
+  float healthBarHeight = 10 ;
+
+  // Draw red box as backing, to indicate missing health
+  window->drawBox( Color::RosyBrown,
+    xStatsOffset + 20, yStatsOffset + 145,
+    120, 10
+  ) ;
+
+  // draw green box on top of red box
+  window->drawBox( Color::Gainsboro,
+    xStatsOffset + 20, yStatsOffset + 145,
+    120 * percentFull, 10
+  ) ;
+
+
+
 }
 
 void GameWorld::drawPeople()
@@ -413,17 +569,42 @@ Tile* GameWorld::getTileAt( Vector2 & pos )
   return level[ row ][ col ] ;
 }
 
-int GameWorld::getBoardOffsetX()
+Coord GameWorld::getNearestCoord( Vector2 & pos )
 {
-  return xBoardOffset ;
+  int col = round( pos.x/tileSize ) ; 
+  int row = round( pos.y/tileSize ) ;
+
+  checkCoords( row, col ) ;
+  return Coord( row, col ) ;
 }
 
-int GameWorld::getBoardOffsetY()
+Vector2 GameWorld::getVectorAt( const Coord & coord )
 {
-  return yBoardOffset ;
+  return Vector2(
+    coord.col*tileSize,
+    coord.row*tileSize
+  ) ;
+}
+
+Vector2 GameWorld::getDrawingVectorAt( const Coord & coord ) 
+{
+  return Vector2(
+    coord.col*tileSize + xBoardOffset,
+    coord.row*tileSize + yBoardOffset
+  ) ;
+}
+
+Vector2 GameWorld::getDrawingVectorAt( const Vector2& pos )
+{
+  return Vector2( pos.x + xBoardOffset, pos.y + yBoardOffset ) ;
 }
 
 Player* GameWorld::getPlayer()
 {
   return pacman ;
+}
+
+AsciiMap* GameWorld::getAsciiMap()
+{
+  return asciiMap ;
 }

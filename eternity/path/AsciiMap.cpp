@@ -18,17 +18,14 @@ AsciiMap::AsciiMap( char ** inputMap, int rows, int cols )
 {
   // copy over the input asciiMap
   initVars() ;
-  setSize( rows, cols ) ;
-  copyMap( asciiMap, inputMap ) ;
-  copyMap( asciiMapSolved, inputMap ) ;
+  setAsciiMap( inputMap, rows, cols ) ;
 }
 
 void AsciiMap::initVars()
 {
   asciiMap = asciiMapSolved = 0 ;
   graph = 0 ;
-  coordSolution = new DequeCoord ;
-
+  
   gridConn = GridConnection::FourWay ; // start assuming 4-way connection
   // between tiles
 
@@ -40,7 +37,6 @@ AsciiMap::~AsciiMap()
   deleteMaps();
 }
 
-
 char ** AsciiMap::getAsciiMap()
 {
   DESTROY( graph ) ; // he's going to dirty
@@ -49,6 +45,15 @@ char ** AsciiMap::getAsciiMap()
 
   return asciiMap ;
 }
+
+void AsciiMap::setAsciiMap( char ** inputMap, int rows, int cols )
+{
+  deleteMaps() ;  // must delete existing maps if they exist
+  setSize( rows, cols ) ;
+  copyMap( asciiMap, inputMap ) ;
+  copyMap( asciiMapSolved, inputMap ) ;
+}
+
 char ** AsciiMap::getAsciiMapSolved()
 {
   return asciiMapSolved ;
@@ -58,6 +63,7 @@ int AsciiMap::getRows()
 {
   return mapRows ;
 }
+
 int AsciiMap::getCols()
 {
   return mapCols ;
@@ -123,7 +129,7 @@ void AsciiMap::deleteMaps()
   }
 }
 
-void AsciiMap::addTile( char tile, float cost )
+void AsciiMap::setTileCost( char tile, float cost )
 {
   if( tileCosts.find( tile ) != tileCosts.end() ) 
   {
@@ -134,6 +140,15 @@ void AsciiMap::addTile( char tile, float cost )
   {
     tileCosts.insert( make_pair( tile, cost ) ) ;
   }
+
+  // !! The asciiMap is "dirty" now.
+  // The edge weights
+  // in the graph need to be updated.
+  
+  // We'll DELETE the graph here, since
+  // it no longer counts, and re-generate it
+  // ONCE, when the user asks for a solution
+  DESTROY( graph ) ;
 }
 
 float AsciiMap::getCostOf( char mapChar )
@@ -172,18 +187,21 @@ CostMap AsciiMap::getCostMapCopy()
   return tileCosts ;
 }
 
-void AsciiMap::setCost( char mapChar, float newCost )
+Coord AsciiMap::getRandomWalkableTile()
 {
-  tileCosts[ mapChar ] = newCost ;
+  // Instead of hit/miss approach
+  // where you keep looking up tiles
+  // until you get one that hits,
+  // just pull one from the graph,
+  // because the graph will only
+  // have nodes for tiles
+  // that hit
+  if( !graph )
+  {
+    constructGraph() ;
+  }
 
-  // !! The asciiMap is "dirty" now.
-  // The edge weights
-  // in the graph need to be updated.
-  
-  // We'll DELETE the graph here, since
-  // it no longer counts, and re-generate it
-  // ONCE, when the user asks for a solution
-  DESTROY( graph ) ;
+  return graph->getRandomNode()->coord ;
 }
 
 char AsciiMap::getCostMapCharAt( UINT index )
@@ -204,7 +222,7 @@ char AsciiMap::getRandom()
   if( tileCosts.empty() )
   {
     warning("Pathfinder:  tileCosts are empty.  Creating tile '.', cost=1.0..");
-    addTile( '.', 1.0f ) ;
+    setTileCost( '.', 1.0f ) ;
   }
   CostMapIter iter = tileCosts.begin() ;
   advance( iter, rand()%tileCosts.size() ) ;
@@ -278,10 +296,10 @@ void AsciiMap::fillRandom( int setNumber )
 
 /// Constructs a graph out of your AsciiMap
 /// object.
-void AsciiMap::constructGraph( GridConnection gridConnection )
+void AsciiMap::constructGraph()
 {
   DESTROY( graph ) ; // if it exists, destroy it
-  graph = new Graph( this, gridConnection ) ;
+  graph = new Graph( this, gridConn ) ;
 }
 
 void AsciiMap::setStartPos( const Coord &start )
@@ -313,10 +331,9 @@ void AsciiMap::setGridConnection( GridConnection gridConnection )
   DESTROY( graph ) ;
 }
 
-DequeCoord* AsciiMap::solve()
+DequeCoord AsciiMap::solve()
 {
-  // clear off any existing solution if any
-  coordSolution->clear() ;
+  DequeCoord coordSolution ;
 
   // re-copy the asciiMap to asciiMapSolved
   // in case its been solved before
@@ -328,7 +345,7 @@ DequeCoord* AsciiMap::solve()
   // finding a solution is fast, because you
   // won't have to wait to construct the graph.
   if( !graph )
-    constructGraph( gridConn ) ;
+    constructGraph() ;
   
   astarSolver->setGraph( graph ) ;
 
@@ -356,7 +373,7 @@ DequeCoord* AsciiMap::solve()
   // relate the DequeGraphNode to a DequeCoord
   foreach( DequeGraphNodeIter, gn, (*graphSolution) )
   {
-    coordSolution->push_back( (*gn)->coord ) ;
+    coordSolution.push_back( (*gn)->coord ) ;
 
     // write the solution
     asciiMapSolved[ (*gn)->coord.row ][ (*gn)->coord.col ] = 'X' ;
@@ -369,7 +386,7 @@ DequeCoord* AsciiMap::solve()
   return coordSolution ;
 }
 
-DequeCoord* AsciiMap::solve( const Coord & start, const Coord & end )
+DequeCoord AsciiMap::solve( const Coord & start, const Coord & end )
 {
   setStartPos( start ) ;
   setEndPos( end ) ;

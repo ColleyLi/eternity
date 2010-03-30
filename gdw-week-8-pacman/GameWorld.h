@@ -73,6 +73,7 @@ public:
     GameOver= 5
   };
 
+  #pragma region state-machines
   /*
   Allowable state transitions:
   Here's a rough ASCII state change diagram.
@@ -104,7 +105,7 @@ public:
 GameOver<--------Running <-------------> Paused
                     
   */
-
+  #pragma endregion
 
 private:
   // Define the array to hold
@@ -112,6 +113,16 @@ private:
   Tile* level[ mapRows ][ mapCols ] ; // OPEN lvl1.txt TO SEE
   // Notice we're using pointers...
   // Notice also this could be layered...
+
+  // Define the ASCIIMAP object
+  // used only for pathfinding,
+  // NOT for drawing or anything else.
+  AsciiMap *asciiMap ;
+  //!! Note - you might find a way to factor 
+  // together AsciiMap and that 2D
+  // array of Tile* together.
+  // If I re-coded this I might find a way to
+  // unify AsciiMap and that Tile* array.
 
   // The GameState.
   GameState gameState ;
@@ -170,17 +181,23 @@ public:
   /// at some location
   Tile* getTileAt( Vector2 & pos ) ;
 
-  /// Gives you the X offset of the
-  /// board from the top
-  /// left corner of the screen
-  int getBoardOffsetX() ;
+  Coord getNearestCoord( Vector2 & pos ) ;
 
-  /// Gives you the Y offset of the
-  /// board from the top
-  /// left corner of the screen
-  int getBoardOffsetY() ;
+  Vector2 getVectorAt( const Coord & coord ) ;
+
+  /// Gets you the vector you should
+  /// use to draw at a certain coordinate
+  Vector2 getDrawingVectorAt( const Coord & coord ) ;
+
+  /// Gets you the drawing vector
+  /// you should use to draw (just
+  /// adds offsetX and offsetY to
+  /// the vector
+  Vector2 getDrawingVectorAt( const Vector2& pos ) ;
 
   Player *getPlayer() ;
+
+  AsciiMap *getAsciiMap() ;
 } ;
 
 extern GameWorld *game ; // an extern is

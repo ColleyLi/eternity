@@ -43,18 +43,7 @@ public:
   // is actually completely lost.
   Coord coord ;
 
-  // This is an indexed value again,
-  // and it is set once a node has been
-  // visited and a cost to arrive here
-  // has been determined.
-  // Because A* only "REACHES" each
-  // node ONCE and ONLY ONCE,
-  // this value gets set once and only
-  // once when you first arrive at the node
-  float costToGetHere ;
-
-  Coord additionalInformation ; 
-  /// Link the GraphNode to the
+  /// The coord links the GraphNode to the
   /// "reality" of the game world.
   /// Without this connection, the information
   /// about WHAT this Graph was constructed
@@ -67,6 +56,17 @@ public:
   /// but I didn't want this to be unnecessarily
   /// confusing.
   //T additionalInformation ;
+
+  // This is an indexed value again,
+  // and it is set once a node has been
+  // visited and a cost to arrive here
+  // has been determined.
+  // Because A* only "REACHES" each
+  // node ONCE and ONLY ONCE,
+  // this value gets set once and only
+  // once when you first arrive at the node
+  float costToGetHere ;
+
 
   GraphNode() ;
   ~GraphNode() ;

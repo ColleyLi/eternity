@@ -28,6 +28,7 @@ struct Tiles
   const static char Bonus       = 'B' ; 
   const static char Barrier     = '_' ; // the ghost door barrier that pacman
                                         // can't pass through but ghosts can
+  const static char Unwalkable  = '`' ; // blank, but UNWALKABLE tile
 
   // For future
   const static char FlameThrower = 'f';

@@ -17,3 +17,4 @@ http://www.holovaty.com/writing/329/
 logo
 http://agategames.com/
 
+The game over sound is from T&C Surf Design, an old NES game

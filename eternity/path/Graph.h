@@ -47,6 +47,10 @@ public:
   /// how to get the right GraphNode* for your tile position.
   GraphNode* getGraphNodeByCoord( const Coord & searchCoord ) ;
 
+  /// Gets you a random node
+  /// from the graph
+  GraphNode* getRandomNode() ;
+
   /// Finds the heuristic function value
   /// distance between two nodes
   float h( GraphNode *A, GraphNode *B ) const ;

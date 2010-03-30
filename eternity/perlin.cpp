@@ -33,7 +33,7 @@ double noise1(double arg)
    u = rx0 * g1[ p[ bx0 ] ];
    v = rx1 * g1[ p[ bx1 ] ];
 
-   return(lerp(sx, u, v));
+   return(perlin_lerp(sx, u, v));
 }
 
 double noise2(double vec[2])
@@ -63,13 +63,13 @@ double noise2(double vec[2])
 
    q = g2[ b00 ] ; u = at2(rx0,ry0);
    q = g2[ b10 ] ; v = at2(rx1,ry0);
-   a = lerp(sx, u, v);
+   a = perlin_lerp(sx, u, v);
 
    q = g2[ b01 ] ; u = at2(rx0,ry1);
    q = g2[ b11 ] ; v = at2(rx1,ry1);
-   b = lerp(sx, u, v);
+   b = perlin_lerp(sx, u, v);
 
-   return lerp(sy, a, b);
+   return perlin_lerp(sy, a, b);
 }
 
 double noise3(double vec[3])
@@ -101,25 +101,25 @@ double noise3(double vec[3])
 
    q = g3[ b00 + bz0 ] ; u = at3(rx0,ry0,rz0);
    q = g3[ b10 + bz0 ] ; v = at3(rx1,ry0,rz0);
-   a = lerp(t, u, v);
+   a = perlin_lerp(t, u, v);
 
    q = g3[ b01 + bz0 ] ; u = at3(rx0,ry1,rz0);
    q = g3[ b11 + bz0 ] ; v = at3(rx1,ry1,rz0);
-   b = lerp(t, u, v);
+   b = perlin_lerp(t, u, v);
 
-   c = lerp(sy, a, b);
+   c = perlin_lerp(sy, a, b);
 
    q = g3[ b00 + bz1 ] ; u = at3(rx0,ry0,rz1);
    q = g3[ b10 + bz1 ] ; v = at3(rx1,ry0,rz1);
-   a = lerp(t, u, v);
+   a = perlin_lerp(t, u, v);
 
    q = g3[ b01 + bz1 ] ; u = at3(rx0,ry1,rz1);
    q = g3[ b11 + bz1 ] ; v = at3(rx1,ry1,rz1);
-   b = lerp(t, u, v);
+   b = perlin_lerp(t, u, v);
 
-   d = lerp(sy, a, b);
+   d = perlin_lerp(sy, a, b);
 
-   return lerp(sz, c, d);
+   return perlin_lerp(sz, c, d);
 }
 
 void normalize2(double v[2])
