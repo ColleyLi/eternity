@@ -33,6 +33,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gdw-week-11-pathfinding", "
 		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example-6-3d-rendering", "example-6-3d-rendering\example-6-3d-rendering.vcproj", "{EF2A8351-AB66-4B91-A034-8BDAC3779A72}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -67,6 +72,10 @@ Global
 		{98EEBEF4-CD18-4493-85C0-D02F37682577}.Debug|Win32.Build.0 = Debug|Win32
 		{98EEBEF4-CD18-4493-85C0-D02F37682577}.Release|Win32.ActiveCfg = Release|Win32
 		{98EEBEF4-CD18-4493-85C0-D02F37682577}.Release|Win32.Build.0 = Release|Win32
+		{EF2A8351-AB66-4B91-A034-8BDAC3779A72}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EF2A8351-AB66-4B91-A034-8BDAC3779A72}.Debug|Win32.Build.0 = Debug|Win32
+		{EF2A8351-AB66-4B91-A034-8BDAC3779A72}.Release|Win32.ActiveCfg = Release|Win32
+		{EF2A8351-AB66-4B91-A034-8BDAC3779A72}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

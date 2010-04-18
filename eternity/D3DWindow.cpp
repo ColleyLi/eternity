@@ -85,53 +85,11 @@ bool D3DWindow::initD3D()
   
 
 
-  hr = gpu->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE | (1 << D3DFVF_TEXCOUNT_SHIFT) ) ;
-  DX_CHECK( hr, "SetFVF" ) ;
 
-  int cumulativeOffset = 0 ;
-  D3DVERTEXELEMENT9 pos ;
-  pos.Usage = D3DDECLUSAGE_POSITION ;
-  pos.UsageIndex = 0 ;
-  pos.Stream = 0 ;
-  pos.Type = D3DDECLTYPE_FLOAT3 ;
-  pos.Offset = cumulativeOffset ;
-  pos.Method = D3DDECLMETHOD_DEFAULT ; 
-  cumulativeOffset += 3*sizeof(float) ;
+  initVertexDeclaration() ;
 
-  D3DVERTEXELEMENT9 col;
-  col.Usage = D3DDECLUSAGE_COLOR ;
-  col.UsageIndex = 0 ;
-  col.Stream = 0 ;
-  col.Type = D3DDECLTYPE_D3DCOLOR ;
-  col.Offset = cumulativeOffset ;
-  col.Method = D3DDECLMETHOD_DEFAULT ;
-  cumulativeOffset += sizeof( D3DCOLOR ) ;
 
-  D3DVERTEXELEMENT9 uv ;
-  uv.Usage = D3DDECLUSAGE_TEXCOORD ;
-  uv.UsageIndex = 0 ;
-  uv.Stream = 0 ;
-  uv.Type = D3DDECLTYPE_FLOAT2 ;
-  uv.Offset = cumulativeOffset ;
-  uv.Method = D3DDECLMETHOD_DEFAULT ;
-  cumulativeOffset += 2*sizeof(float) ;
-
-  D3DVERTEXELEMENT9 vertexElements[] =
-  {
-    pos,
-    col,
-    uv,
-
-    D3DDECL_END()
-  } ;
-
-  IDirect3DVertexDeclaration9 * Vdecl ;
-
-  hr = gpu->CreateVertexDeclaration( vertexElements, &Vdecl ) ;
-  DX_CHECK( hr, "CreateVertexDeclaration" ) ;
-
-  hr = gpu->SetVertexDeclaration( Vdecl ) ;
-  DX_CHECK( hr, "SetVertexDeclaration" ) ;
+  
 
   hr = gpu->SetRenderState( D3DRS_COLORVERTEX, TRUE ) ;
   DX_CHECK( hr, "SetRenderState( COLORVERTEX )" ) ;
@@ -162,12 +120,72 @@ bool D3DWindow::initD3D()
 
   hr = gpu->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE ) ;
   DX_CHECK( hr, "alpha blending on" ) ;
-
-
   
   clearColor = D3DCOLOR_ARGB( 255, 0, 10, 45 ) ;
 
+  // init the eye,look, up, so that
+  // you're not zero'd out at prog start
+  eye = D3DXVECTOR3( 4, 2, 10 ) ;
+  look = D3DXVECTOR3( 0, 0, 0 ) ;
+  up = D3DXVECTOR3( 0, 1, 0 ) ;
+
   return true ;
+}
+
+void D3DWindow::initVertexDeclaration()
+{
+  HRESULT hr ;
+  // w/ texture
+  //hr = gpu->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE | (1 << D3DFVF_TEXCOUNT_SHIFT) ) ;
+
+  hr = gpu->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE ) ;
+  DX_CHECK( hr, "SetFVF" ) ;
+
+  int cumulativeOffset = 0 ;
+  D3DVERTEXELEMENT9 pos ;
+  pos.Usage = D3DDECLUSAGE_POSITION ;
+  pos.UsageIndex = 0 ;
+  pos.Stream = 0 ;
+  pos.Type = D3DDECLTYPE_FLOAT3 ;
+  pos.Offset = cumulativeOffset ;
+  pos.Method = D3DDECLMETHOD_DEFAULT ; 
+  cumulativeOffset += 3*sizeof(float) ;
+
+  D3DVERTEXELEMENT9 col;
+  col.Usage = D3DDECLUSAGE_COLOR ;
+  col.UsageIndex = 0 ;
+  col.Stream = 0 ;
+  col.Type = D3DDECLTYPE_D3DCOLOR ;
+  col.Offset = cumulativeOffset ;
+  col.Method = D3DDECLMETHOD_DEFAULT ;
+  cumulativeOffset += sizeof( D3DCOLOR ) ;
+
+  /*
+  D3DVERTEXELEMENT9 uv ;
+  uv.Usage = D3DDECLUSAGE_TEXCOORD ;
+  uv.UsageIndex = 0 ;
+  uv.Stream = 0 ;
+  uv.Type = D3DDECLTYPE_FLOAT2 ;
+  uv.Offset = cumulativeOffset ;
+  uv.Method = D3DDECLMETHOD_DEFAULT ;
+  cumulativeOffset += 2*sizeof(float) ;
+  */
+
+  D3DVERTEXELEMENT9 vertexElements[] =
+  {
+    pos,
+    col,
+
+    D3DDECL_END()
+  } ;
+
+  IDirect3DVertexDeclaration9 * Vdecl ;
+
+  hr = gpu->CreateVertexDeclaration( vertexElements, &Vdecl ) ;
+  DX_CHECK( hr, "CreateVertexDeclaration" ) ;
+
+  hr = gpu->SetVertexDeclaration( Vdecl ) ;
+  DX_CHECK( hr, "SetVertexDeclaration" ) ;
 }
 
 void D3DWindow::d3dLoseDevice()
@@ -182,6 +200,11 @@ void D3DWindow::d3dLoseDevice()
   foreach( vector<ID3DXFont*>::iterator, iter, registeredFonts )
   {
     DX_CHECK( (*iter)->OnLostDevice(), "vector: font OnLostDevice" ) ;
+  }
+
+  foreach( vector<ID3DXLine*>::iterator, iter, registeredLines )
+  {
+    DX_CHECK( (*iter)->OnLostDevice(), "vector: line OnLostDevice" ) ;
   }
 }
 
@@ -211,6 +234,11 @@ bool D3DWindow::d3dResetDevice( D3DPRESENT_PARAMETERS & pps )
     foreach( vector<ID3DXFont*>::iterator, iter, registeredFonts )
     {
       DX_CHECK( (*iter)->OnResetDevice(), "vector: font OnResetDevice" ) ;
+    }
+
+    foreach( vector<ID3DXLine*>::iterator, iter, registeredLines )
+    {
+      DX_CHECK( (*iter)->OnResetDevice(), "vector: line OnResetDevice" ) ;
     }
   }
   else
@@ -294,6 +322,84 @@ void D3DWindow::d3dWindowStep()
   d3dDeviceCheck() ;
 }
 
+void D3DWindow::project2D()
+{
+  HRESULT hr ;
+
+  D3DXMATRIX projx ;
+  D3DXMatrixOrthoRH( &projx, getWidth(), getHeight(), 1, 100 ) ;
+  hr = gpu->SetTransform( D3DTS_PROJECTION, &projx ) ;
+  DX_CHECK( hr, "setting projection xform" ) ;
+
+  D3DXMATRIX viewx ;
+  int x = getWidth() / 2 ;
+  int y = getHeight() / 2 ;
+  D3DXVECTOR3 eye( x, y, 10 ) ;
+  D3DXVECTOR3 look( x, y, 0 ) ;
+  D3DXVECTOR3 up( 0, 1, 0 ) ;
+  D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
+  hr = gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
+  DX_CHECK( hr, "setting view xform" ) ;
+
+}
+
+void D3DWindow::project3D()
+{
+  HRESULT hr ;
+
+  // Projection transformation
+  D3DXMATRIX projx ;
+  D3DXMatrixPerspectiveFovRH( &projx, (float)(PI/4),
+    (float)getWidth()/getHeight(), 1.0f, 1000.0f ) ;
+  hr = gpu->SetTransform( D3DTS_PROJECTION, &projx ) ;
+  DX_CHECK( hr, "setting projection xform" ) ;
+
+  // Viewing transformation
+  D3DXMATRIX viewx ;
+  D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
+  hr = gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
+  DX_CHECK( hr, "setting view xform" ) ;
+}
+
+// 3d
+void D3DWindow::setCamera( D3DXVECTOR3 &newEye, D3DXVECTOR3 &newLook, D3DXVECTOR3 &newUp )
+{
+  HRESULT hr ;
+
+  eye = newEye ;
+  look = newLook ;
+  up = newUp ;
+  D3DXMATRIX viewx ;
+  D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
+  hr = gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
+
+  DX_CHECK( hr, "setCamera, setting viewing xform" ) ;
+}
+
+void D3DWindow::setDrawingMode( DrawingMode dm )
+{
+  if( dm == D2 )
+  {
+    // Set up the camera
+    project2D() ;
+  }
+  else if( dm == D3 )
+  {
+    project3D() ;
+  }
+  else
+  {
+    warning( "Invalid drawing mode selected, nothing changed" ) ;
+  }
+
+  // Save off drawing mode..
+  drawingMode = dm ;
+}
+
+DrawingMode D3DWindow::getDrawingMode()
+{
+  return drawingMode ;
+}
 
 bool D3DWindow::beginDrawing()
 {
@@ -309,27 +415,15 @@ bool D3DWindow::beginDrawing()
     clearColor, 1.0f, 0 ) ;
   DX_CHECK( hr, "Clear error" ) ;
 
-  #pragma region set up the camera
-  D3DXMATRIX projx ;
-
-  D3DXMatrixOrthoRH( &projx, getWidth(), getHeight(), 1, 100 ) ;
-  //D3DXMatrixPerspectiveFovRH( &projx, PI/4, backBufferWidth/backBufferHeight, 1.0f, 1000.0f ) ;
-
-  gpu->SetTransform( D3DTS_PROJECTION, &projx ) ;
-
-  D3DXMATRIX viewx ;
-
-  int x = getWidth() / 2 ;
-  int y = getHeight() / 2 ;
-  D3DXVECTOR3 eye( x, y, 10 ) ;
-  D3DXVECTOR3 look( x, y, 0 ) ;
-  D3DXVECTOR3 up( 0, 1, 0 ) ;
-  D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
-  gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
-  #pragma endregion
-
   hr = gpu->BeginScene() ;
   DX_CHECK( hr, "BeginScene error" ) ;
+
+  // By __default__, put you in
+  // 2d mode
+  if( drawingMode == D3 )
+    setDrawingMode( D3 ) ;
+  else
+    setDrawingMode( D2 ) ;
 
   return true ;
 }
@@ -430,3 +524,7 @@ void D3DWindow::registerSpriteRenderer( ID3DXSprite* spriteRenderer )
   registeredSprites.push_back( spriteRenderer ) ;
 }
 
+void D3DWindow::registerLine( ID3DXLine* line )
+{
+  registeredLines.push_back( line ) ;
+}

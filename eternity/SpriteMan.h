@@ -1,6 +1,7 @@
 #ifndef SPRITEMAN_H
 #define SPRITEMAN_H
 
+#include <vector>
 #include <map>
 using namespace std;
 
@@ -34,6 +35,8 @@ protected:
   // to pass them to D3DWindow.
   ID3DXSprite *id3dxSpriteRenderer ;
   ID3DXFont *id3dxDefaultFont ;
+  ID3DXLine *id3dxLine ;
+
   FontMap fonts ;
   // </Direct3D objects>
 
@@ -51,6 +54,7 @@ private:
 
   Sprite *whitePixel ;    // used for drawing solid colored boxes.
   
+  vector<Line> lines ;
 
   int screenWidth, screenHeight ;
 
@@ -171,6 +175,10 @@ public:
 
 
 
+  // DRAWLINE
+
+  void drawLine( D3DXVECTOR2 & start, D3DXVECTOR2 & end, D3DCOLOR color, float thickness ) ;
+
   /*
  _                       _ _____          _   __            _ _       
 | |__   _____  _____  __| /__   \_____  _| |_/ _\_ __  _ __(_) |_ ___ 
@@ -258,12 +266,13 @@ public:
   // loadSprite()
   Sprite* getSprite( int spriteId ) ;
 
-  //!! marked for deletion
-  /* -- */ void drawAxes() ; /* -- */
+  void drawAxes( float LEN ) ;
 
   void addSprite( int id, Sprite *sprite ) ;
 
   void addFont( int fontId, ID3DXFont* font ) ;
+
+  
 
 } ;
 

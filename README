@@ -376,6 +376,18 @@
     for smooth random map generation
   - Updates to Pacman
 
++ Apr 16 / 2010 v0.1.4-3d-caps
+  - Added in project3D() function, rewired default
+    projection through project2D() function.
+    
+  + 2D line drawing caps thru
+    SpriteMan::drawLine( start, end, color, thickness )
+    
+    These are 2d lines ONLY, not 3d lines (can't go
+    "into the screen", you'd have to use polygon
+    geometry for that).
+    
+    
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in

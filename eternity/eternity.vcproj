@@ -307,6 +307,10 @@
 				Name="Aux_And_Util"
 				>
 				<File
+					RelativePath=".\D3DVertex.h"
+					>
+				</File>
+				<File
 					RelativePath=".\Gamepad.h"
 					>
 				</File>
@@ -334,10 +338,6 @@
 			<Filter
 				Name="unused"
 				>
-				<File
-					RelativePath=".\D3DVertex.h"
-					>
-				</File>
 				<File
 					RelativePath=".\DrawSpriteCommand.h"
 					>

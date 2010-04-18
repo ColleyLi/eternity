@@ -15,6 +15,7 @@ GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
   // is actually here, in this class
   registerFont( id3dxDefaultFont ) ;
   registerSpriteRenderer( id3dxSpriteRenderer ) ;
+  registerLine( id3dxLine ) ;
 
   initInputMan( hwnd, windowWidth, windowHeight ); // clip zone gets set here too
   
@@ -43,6 +44,8 @@ void GameWindow::step()
   {
     spriteManStep( timer.time_since_last_frame ) ;
   }
+
+
 
   // Call all callbacks due to execute now
   runCallbacks() ;
@@ -271,4 +274,54 @@ void GameWindow::runCallbacks()
       info( "A callback executed.  %d callbacks remain on the buffer", callbacks.size() ) ;
     }
   }
+}
+
+void GameWindow::drawTri( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c )
+{
+  vertices.push_back( a ) ;
+  vertices.push_back( b ) ;
+  vertices.push_back( c ) ;
+}
+
+void GameWindow::drawQuad( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c, D3DVertexC &d )
+{
+  vertices.push_back( a ) ;
+  vertices.push_back( b ) ;
+  vertices.push_back( c ) ;
+
+  vertices.push_back( c ) ;
+  vertices.push_back( d ) ;
+  vertices.push_back( a ) ;
+}
+
+// Must call this to actually flush out
+// the 3d draw calls
+void GameWindow::flush3D()
+{
+  HRESULT hr ;
+
+  // flush triangles
+  if( vertices.size() > 0 )
+  {
+    //!! really better if we could use a
+    // vertex array but that would require..
+    // some very neat set up, right now it
+    // doesn't make sense (since models aren't
+    // being loaded at all, this is only for
+    // simple primitives.)
+    // Later we can provide a 'model' class..
+    hr = gpu->DrawPrimitiveUP(
+      D3DPT_TRIANGLELIST,
+      vertices.size()/3,
+      &vertices[0], 
+      sizeof(D3DVertexC)
+    ) ;
+
+    DX_CHECK( hr, "flush3D: DrawPrimitive" ) ;
+
+    vertices.clear() ;
+  }
+
+
+
 }

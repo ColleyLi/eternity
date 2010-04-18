@@ -12,6 +12,23 @@
 
 #include "WindowClass.h"
 
+/// Drawing modes available.  Yes,
+/// these are backwards due to
+/// C++ variable naming rules (cannot
+/// name a mode "3D", and ThreeD is too long.)
+/// Read these as, "Dimensions: 3"
+enum DrawingMode
+{
+  D2 = 2,
+  D3 = 3
+  // Thought of just having the
+  // sole function that uses this enum
+  // use straight integers instead (indeed it can
+  // due to set up here), but I eventually may
+  // create .. some other modes than just
+  // straight 2d and 3d
+} ;
+
 class D3DWindow : public Window
 {
 protected:
@@ -35,13 +52,26 @@ protected:
   // to "communicate" with this base class,
   // provide a "receiving point" in the base class
   // that the derived class should just know to call.
+
+  vector<ID3DXLine*> registeredLines ; // just to follow the pattern..
+  // there's only one line as of now, but, there could be more in the future
   
   // Think about the direction the inheritance arrow goes in..
   
   // We won't try to tell the base class
   // about the derived class (would be really very bad)
-   
+  
+
   D3DCOLOR clearColor ;
+
+  
+  /// Eye, look, up vectors
+  /// really only matters for 3d drawing modes
+  D3DXVECTOR3 eye, look, up ;
+
+  /// The current drawing mode,
+  /// will be either 2d or 3d.
+  DrawingMode drawingMode ;
 
 public:
   D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
@@ -49,6 +79,8 @@ public:
 
 private:
   bool initD3D() ;
+
+  void initVertexDeclaration() ;
 
 private:
   void d3dLoseDevice() ;
@@ -62,6 +94,27 @@ public:
   // Things the d3dwindow needs to do every frame
   // (check and clean-up state of d3d device really)
   void d3dWindowStep() ;
+
+  void project2D() ;
+
+  void project3D() ;
+
+  /// Let's you set the 3d camera
+  /// to different angles etc
+  /// Note setting the camera doesn't
+  /// __change the mode__ -- to draw
+  /// in 3d you must call setDrawingMode( D3 ) ;
+  void setCamera( D3DXVECTOR3 &newEye, D3DXVECTOR3 &newLook, D3DXVECTOR3 &newUp ) ;
+
+
+  /// Let's you specify either
+  /// 2d or 3d drawing.  can be
+  /// called any # times, but its
+  /// best to batch out your 3d calls first,
+  /// then do all your 2d drawing needs
+  void setDrawingMode( DrawingMode dm ) ;
+
+  DrawingMode getDrawingMode() ;
 
   bool beginDrawing() ; // Call once per frame before drawing.
   // Returns TRUE when beginDrawing succeeded.
@@ -82,6 +135,8 @@ public:
 
   void registerFont( ID3DXFont* font ) ;
   void registerSpriteRenderer( ID3DXSprite* spriteRenderer ) ;
+  void registerLine( ID3DXLine* line) ;
+
 } ;
 
 #endif

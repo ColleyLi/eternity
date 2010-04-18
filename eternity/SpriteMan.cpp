@@ -43,6 +43,8 @@ void SpriteMan::initSpriteMan( IDirect3DDevice9 *theGpu, int scrWidth, int scrHe
   // are registered with D3DWindow when
   // this function call returns
 
+  D3DXCreateLine( lgpu, &id3dxLine ) ;
+
 }
 
 void SpriteMan::initDefaultSprite()
@@ -519,6 +521,34 @@ void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float h
   id3dxSpriteRenderer->End();
 }
 
+
+
+
+void SpriteMan::drawLine( D3DXVECTOR2 & start, D3DXVECTOR2 & end, D3DCOLOR color, float thickness )
+{
+  // Batching. INACTIVE
+  //lines.push_back( Line( start, end, color, thickness ) ) ;
+
+  //!! DRAW IMMEDIATLEY FOR NOW.  This really
+  // should be fixed to batched lines
+
+  HRESULT hr ;
+  static D3DXVECTOR2 line[2];
+
+  DX_CHECK( id3dxLine->SetWidth( thickness ), "line thickness set" ) ;
+  DX_CHECK( id3dxLine->Begin(), "line begin" ) ;
+  
+  line[0] = start ;
+  line[1] = end ;
+
+  // Draw the line
+  DX_CHECK( id3dxLine->Draw( line, 2, color ), "Drawing line" ) ;
+
+  DX_CHECK( id3dxLine->End(), "line end" ) ;
+}
+
+
+
 void SpriteMan::loadSprite( int spriteId, char *filename )
 {
   loadSprite( spriteId, filename, D3DCOLOR_ARGB( 0,0,0,0 ),
@@ -596,24 +626,21 @@ int SpriteMan::randomSpriteId( int below )
   return sprites.begin()->first ;
 }
 
-//!! marked for deletion
- /* -- */ void SpriteMan::drawAxes()  /* -- */
+void SpriteMan::drawAxes( float LEN )
 {
-  int LEN = 40 ;
-  
-  static D3DVertex axis[] = {
+  static D3DVertexC axis[] = {
 
     // x-axis is red
-    D3DVertex( -LEN, 0, 0, 0, 0, 255, 0, 0 ),
-    D3DVertex( +LEN, 0, 0, 0, 0, 255, 0, 0 ),
+    D3DVertexC( -LEN, 0, 0, 255, 0, 0 ),
+    D3DVertexC( +LEN, 0, 0, 255, 0, 0 ),
 
     // y-axis green
-    D3DVertex( 0, -LEN, 0, 0, 0, 0, 255, 0 ),
-    D3DVertex( 0, +LEN, 0, 0, 0, 0, 255, 0 ),
+    D3DVertexC( 0, -LEN, 0, 0, 255, 0 ),
+    D3DVertexC( 0, +LEN, 0, 0, 255, 0 ),
 
     // z-axis blue
-    D3DVertex( 0, 0, -LEN, 0, 0, 0, 0, 255 ),
-    D3DVertex( 0, 0, +LEN, 0, 0, 0, 0, 255 )
+    D3DVertexC( 0, 0, -LEN, 0, 0, 255 ),
+    D3DVertexC( 0, 0, +LEN, 0, 0, 255 )
 
   } ;
 
@@ -621,7 +648,7 @@ int SpriteMan::randomSpriteId( int below )
   HRESULT hr = lgpu->SetTexture( 0, NULL ) ;
   DX_CHECK( hr, "unset the SetTexture" ) ;
   
-  hr = lgpu->DrawPrimitiveUP( D3DPT_LINELIST, 3, axis, sizeof( D3DVertex ) ) ;
+  hr = lgpu->DrawPrimitiveUP( D3DPT_LINELIST, 3, axis, sizeof( D3DVertexC ) ) ;
   DX_CHECK( hr, "DrawPrimitiveUP FAILED!" ) ;
 
   static float pointSize = 8.0f ;
@@ -629,14 +656,16 @@ int SpriteMan::randomSpriteId( int below )
   lgpu->SetRenderState( D3DRS_POINTSIZE, CAST_AS_DWORD( pointSize ) ) ;
 
   // Draw points at end of axis.
-  static D3DVertex points[] = {
-    D3DVertex( LEN, 0, 0, 0, 0, 255, 0, 0 ),
-    D3DVertex( 0, LEN, 0, 0, 0, 0, 255, 0 ),
-    D3DVertex( 0, 0, LEN, 0, 0, 0, 0, 255 ),
+  static D3DVertexC points[] = {
+    D3DVertexC( LEN, 0, 0, 255, 0, 0 ),
+    D3DVertexC( 0, LEN, 0, 0, 255, 0 ),
+    D3DVertexC( 0, 0, LEN, 0, 0, 255 ),
   } ;
 
-  hr = lgpu->DrawPrimitiveUP( D3DPT_POINTLIST, 3, points, sizeof( D3DVertex ) ) ;
+  hr = lgpu->DrawPrimitiveUP( D3DPT_POINTLIST, 3, points, sizeof( D3DVertexC ) ) ;
   DX_CHECK( hr, "DrawPrimitiveUP FAILED!" ) ;
+
+
 }
 
 void SpriteMan::addSprite( int spriteId, Sprite *sprite )
@@ -666,3 +695,4 @@ void SpriteMan::addFont( int fontId, ID3DXFont* font )
 
   fonts.insert( make_pair( fontId, font ) ) ;
 }
+

@@ -24,6 +24,10 @@ protected:
   bool paused ;  /*!< game paused or unpaused. */
   Timer timer ;  /*!< used as timer and frame limiter */
 
+  /// Maintain a vector of vertices
+  /// to draw out in 3d
+  vector<D3DVertexC> vertices ;
+
   /// The vector full of callback functions
   /// to execute, sometime in the future.
   vector<Callback*> callbacks ;
@@ -133,6 +137,27 @@ private:
   /// will call all items in 'callbacks'
   /// whose execution time is up
   void runCallbacks() ;
+
+
+public:
+
+  // <3d>
+
+  /// the triangle described by 3 vertices
+  /// is abc, assuming CCW winding order
+  void drawTri( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c ) ;
+
+  /// the rectangle described by 4 vertices
+  /// is abc, cda, assuming CCW winding order
+  /// b    a
+  /// 
+  /// c    d
+  void drawQuad( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c, D3DVertexC &d ) ;
+
+  void flush3D() ;
+
+  // </3d>
+
 
 } ;
 #endif

@@ -19,6 +19,32 @@
 #include "helperFunctions.h"
 #include "GDIPlusTexture.h"
 
+/// Defines a line for drawing
+struct Line
+{
+  D3DXVECTOR2 start, end ;
+  D3DCOLOR color ;
+
+  float thickness ;
+
+  Line()
+  {
+    start = end = D3DXVECTOR2() ;
+    color = 0 ;
+    thickness = 1;
+  }
+
+  Line( D3DXVECTOR2 iStart, D3DXVECTOR2 iEnd, D3DCOLOR iColor, float iThickness )
+  {
+    start = iStart ;
+    end = iEnd ;
+    color = iColor ;
+    thickness = iThickness ;
+
+    // just waiting until there's variables pod and pad..
+  }
+} ;
+
 class Sprite
 {
 private:
