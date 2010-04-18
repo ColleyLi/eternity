@@ -388,6 +388,22 @@
     geometry for that).
   
   - Engine can draw in 3d now
+
++ Apr 17 / 2010 v0.1.5-3d-camera
+  - adding a 3d player controlled camera for fly/space
+    and walk motion
+  
+  - Added dx, dy vars to Mouse object, so it knows
+    change in mouseX and mouseY since last frame
+    
+  - FIXED a long running (undetected!) bug where you
+    could not check (would miss information about)
+    if the mouse had been pressed or not in the DRAW
+    function.  Practically you really shouldn't check
+    logic in the draw function but you could want to
+    only draw something if a mouse button is down,
+    conceivably.. anyway it was a bug and it has been
+    fixed (with dx, dy addition)
   
     
   - TODO:

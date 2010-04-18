@@ -7,6 +7,7 @@
 #include "SpriteMan.h"
 #include "InputMan.h"
 #include "Callback.h"
+#include "Camera3D.h"
 
 /*
   __ _  __ _ _ __ ___   ___ 
@@ -31,6 +32,8 @@ protected:
   /// The vector full of callback functions
   /// to execute, sometime in the future.
   vector<Callback*> callbacks ;
+
+  Camera3D camera ;
 
 public:
   /// Creates a GameWindow instance
@@ -157,6 +160,12 @@ public:
   void flush3D() ;
 
   // </3d>
+
+
+  // <camera>
+  Camera3D* getCamera() { return &camera ; }
+  void setByCamera() ;
+  // </camera>
 
 
 } ;

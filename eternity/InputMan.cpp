@@ -80,10 +80,19 @@ int InputMan::getMouseX()
 {
   return mouse.getX() ;
 }
+int InputMan::getMouseDx()
+{
+  return mouse.getDx() ;
+}
 int InputMan::getMouseY()
 {
   return mouse.getY() ;
 }
+int InputMan::getMouseDy()
+{
+  return mouse.getDy() ;
+}
+
 
 // Returns true if key is DOWN this frame
 // and was UP previous frame.

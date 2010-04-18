@@ -327,3 +327,8 @@ void GameWindow::flush3D()
 
 
 }
+
+void GameWindow::setByCamera()
+{
+  setCamera( camera.getEye(), camera.getLook(), camera.getUp() ) ;
+}

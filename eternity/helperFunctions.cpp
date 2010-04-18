@@ -232,6 +232,23 @@ int round( double x )
   return (int)( 0.5 + x ) ;
 }
 
+D3DXMATRIX* D3DXMatrixSetRow( D3DXMATRIX* matrix, int row, D3DXVECTOR3* vec )
+{
+  // We'll do this using a memcpy.
+  memcpy( &(matrix->m[row][0]), vec, sizeof(D3DXVECTOR3) ) ;
+
+  return matrix ;
+}
+
+D3DXMATRIX* D3DXMatrixSetCol( D3DXMATRIX* matrix, int col, D3DXVECTOR3* vec )
+{
+  matrix->m[0][col] = vec->x ; 
+  matrix->m[1][col] = vec->y ; 
+  matrix->m[2][col] = vec->z ;
+
+  return matrix ;
+}
+
 void addSinewave( short *data, int durationInSamples,
                   int offset, int frequency,
                   short amplitude, bool distortion ) 

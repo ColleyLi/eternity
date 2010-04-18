@@ -25,7 +25,18 @@
 class Mouse
 {
 private:
-  int x, y ;  // x and y position of the mouse in the window.
+  int x, y ;   // x and y position of the mouse in the window.
+  int dx, dy ; // difference between mouse pos last frame
+  // and this frame
+
+  // Keeps track of how many frames its been
+  // since dx and dy last were updated.
+  // WHEN this value exceeds 1, then
+  // dx and dy are reset to 0.
+  // This value will keep on getting pushed
+  // back to 0 if the mouse is changing a lot
+  // rapidly (every frame)
+  int framesSinceLastChange ;
 
   RECT clipZone ;  // the bounding rectangle thta the mouse
   // isn't allowed to leave, even when you move it.
@@ -47,6 +58,9 @@ public:
     x = 320 ;
     y = 240 ;
 
+    dx = dy = 0 ;
+    framesSinceLastChange = 0 ;
+
     leftHeldDown = rightHeldDown = middleHeldDown =
        leftJustPressed = rightJustPressed = middleJustPressed =
        leftJustReleased = rightJustReleased = middleJustReleased = false ;
@@ -57,9 +71,17 @@ public:
   {
     return x;
   }
+  int getDx()
+  {
+    return dx;
+  }
   int getY()
   {
     return y;
+  }
+  int getDy()
+  {
+    return dy;
   }
 
   void moveX( int dx )
@@ -167,12 +189,16 @@ public:
   // __not necessarily every frame__
   void updateInput( RAWINPUT *raw )
   {
+    framesSinceLastChange = 0 ; // say that mouse just changed.
+
     // These are EVENTS, so they only occur
     // ONCE.
+    dx = raw->data.mouse.lLastX ;
+    dy = raw->data.mouse.lLastY ;
 
     // Move the mouse now
-    moveX( raw->data.mouse.lLastX );
-    moveY( raw->data.mouse.lLastY );
+    moveX( dx );
+    moveY( dy );
     
     leftJustPressed = raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN ;
     rightJustPressed = raw->data.mouse.ulButtons & RI_MOUSE_RIGHT_BUTTON_DOWN ;
@@ -222,17 +248,36 @@ public:
   // to UNSET the justPressed, justReleased vars
   void step()
   {
-    leftJustPressed = 
-    rightJustPressed = 
-    middleJustPressed = 
+    framesSinceLastChange++;
 
-    leftJustReleased = 
-    rightJustReleased = 
-    middleJustReleased = false ;
+    // If its been exactly 1 frame
+    // since there was an UPDATE
+    // message (of ANY kind!) then
+    // we reset the mouse's state
+    // variables to their default values.
+    // If successive frames occur where
+    // there is a mouse update then
+    // all these variables would be updated
+    // by the updateInput function anyway
+    if( framesSinceLastChange == 2 )
+    {
+      leftJustPressed = 
+      rightJustPressed = 
+      middleJustPressed = 
 
-    // we have nothing to say about
-    // the *HeldDown states.
+      leftJustReleased = 
+      rightJustReleased = 
+      middleJustReleased = false ;
 
+      // we have nothing to say about
+      // the *HeldDown states.
+
+      // We also most reset the
+      // dx and dy vars
+      dx = dy = 0 ;
+    }
+    
+   
   }
 } ;
 

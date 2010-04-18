@@ -35,8 +35,15 @@ public:
   /** Gets you the mouse's x location */
   int getMouseX() ;
 
+  /** Gets you the mouse's CHANGE in x since last frame */
+  int getMouseDx() ;
+
   /** Gets you the mouse's current y location */
   int getMouseY() ;
+
+  /** Gets you the mouse's CHANGE in y since last frame */
+  int getMouseDy() ;
+
 
   /// Tells you if "key" was JUST PRESSED DOWN.
   /// 

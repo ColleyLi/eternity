@@ -52,6 +52,37 @@ void Update()
     bail( "game ended!" ) ;
   }
 
+  float increment = 0.005f ;
+
+  // move the camera by dy and dx
+  window->getCamera()->stepPitch( - increment*window->getMouseDy() ) ;
+  window->getCamera()->stepYaw( - increment*window->getMouseDx() ) ;
+
+
+  float speed = 100 ;
+  if( window->keyIsPressed( 'W' ) )
+  {
+    window->getCamera()->stepForward( speed*increment ) ;
+  }
+
+  if( window->keyIsPressed( 'S' ) )
+  {
+    window->getCamera()->stepForward( -speed*increment ) ;
+  }
+
+  if( window->keyIsPressed( 'D' ) ) 
+  {
+    window->getCamera()->stepSide( speed*increment ) ;
+  }
+
+  if( window->keyIsPressed( 'A' ) ) 
+  {
+    window->getCamera()->stepSide( -speed*increment ) ;
+  }
+
+
+
+  window->setByCamera() ;
 }
 
 
@@ -72,7 +103,7 @@ void Draw()
 
   window->drawQuad(
 
-    D3DVertexC( 1.2, 0.5, 1, 255, 255, 255 ),
+    D3DVertexC( 1.2f, 0.5f, 1, 255, 255, 255 ),
     D3DVertexC( 5, 0, 1, 0, 255, 0 ),
     D3DVertexC( 2.5, 5, 1, 0, 255, 255 ),
     D3DVertexC( 0, 5, 1, 0, 0, 255 )
@@ -91,8 +122,9 @@ void Draw()
     5.0f
   ) ;
 
+  
   // draw the mouse cursor with this sprite.
-  window->drawMouseCursor( Mario ) ;
+  //window->drawMouseCursor( Mario ) ;
 
   window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner

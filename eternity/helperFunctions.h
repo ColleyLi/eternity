@@ -131,6 +131,14 @@ void clamp( T &num, T low, T high )
 /// nearest integer
 int round( double x ) ;
 
+/// Matrix: Set a row with a vector
+/// (leaves 4th entry as was)
+D3DXMATRIX* D3DXMatrixSetRow( D3DXMATRIX* matrix, int row, D3DXVECTOR3* vec );
+
+/// Matrix: Set a column with a vector
+/// (leaves 4th entry as was)
+D3DXMATRIX* D3DXMatrixSetCol( D3DXMATRIX* matrix, int col, D3DXVECTOR3* vec );
+
 void addSinewave( short *data, int durationInSamples,
                   int offset, int frequency,
                   short amplitude, bool distortion ) ;
