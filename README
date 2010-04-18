@@ -386,7 +386,9 @@
     These are 2d lines ONLY, not 3d lines (can't go
     "into the screen", you'd have to use polygon
     geometry for that).
-    
+  
+  - Engine can draw in 3d now
+  
     
   - TODO:
     - DOXYGEN-ATE all files

@@ -1,4 +1,4 @@
-This is eternity engine version 0.1.3
+This is eternity engine version 0.1.4
 
 change log
 ==========
@@ -22,6 +22,5 @@ v0.1.2
 v0.1.3
   - added perlin noise generator and pathfinding
 
-
-
-
+v0.1.4
+  - added 3d raster caps

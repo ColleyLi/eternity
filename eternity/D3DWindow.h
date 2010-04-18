@@ -78,7 +78,7 @@ public:
   ~D3DWindow() ;
 
 private:
-  bool initD3D() ;
+  bool initD3D( int width, int height ) ;
 
   void initVertexDeclaration() ;
 
@@ -95,10 +95,11 @@ public:
   // (check and clean-up state of d3d device really)
   void d3dWindowStep() ;
 
+private:
   void project2D() ;
-
   void project3D() ;
 
+public:
   /// Let's you set the 3d camera
   /// to different angles etc
   /// Note setting the camera doesn't

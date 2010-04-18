@@ -50,7 +50,7 @@ void GameWindow::step()
   // Call all callbacks due to execute now
   runCallbacks() ;
 
-  timer.lock( 60 ) ; // // ^^Leave as last line: YES, RECOMMENDED.  Use this line to LOCK FRAMERATE
+  timer.lock( 60 ) ;  // ^^Leave as last line: YES, RECOMMENDED.  Use this line to LOCK FRAMERATE
   // at 60 fps max.  This will "waste" any idle time at the end of
   // processing a frame.
   
@@ -299,6 +299,8 @@ void GameWindow::drawQuad( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c, D3DVerte
 void GameWindow::flush3D()
 {
   HRESULT hr ;
+
+  setDrawingMode( D3 ) ; 
 
   // flush triangles
   if( vertices.size() > 0 )

@@ -7,11 +7,8 @@ D3DWindow::D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
           windowXPos, windowYPos,
           windowWidth, windowHeight )
 {
-  d3dpps.BackBufferWidth = windowWidth ;
-  d3dpps.BackBufferHeight = windowHeight ;
-
   info( "Starting up Direct3D..." ) ;
-  if( !initD3D() )
+  if( !initD3D( windowWidth, windowHeight ) )
   {
     bail( "D3D failed to initialize. Check your set up params in initD3D() function, check your width and height are valid" ) ;
   }
@@ -24,7 +21,7 @@ D3DWindow::~D3DWindow()
   SAFE_RELEASE( d3d ) ;
 }
 
-bool D3DWindow::initD3D()
+bool D3DWindow::initD3D( int width, int height )
 {
   // start by nulling out both pointers:
   d3d = 0 ;
@@ -53,8 +50,8 @@ bool D3DWindow::initD3D()
   d3dpps.BackBufferFormat = D3DFMT_X8R8G8B8 ;
   
   d3dpps.Windowed = true ;
-  //d3dpps.BackBufferWidth =  ;  // these have already been set
-  //d3dpps.BackBufferHeight =  ; // in Window() ctor
+  d3dpps.BackBufferWidth = width ;
+  d3dpps.BackBufferHeight = height ;
   //d3dpps.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE ; // FRAMERATE::UNBOUNDED  You need to
   // uncomment this line to make the GPU flip over really really fast
 
@@ -78,11 +75,15 @@ bool D3DWindow::initD3D()
 
 
   info( "Direct3D9 GPU device creation successful" ) ;
-
   isDeviceLost = false ;
 
   gpu->GetDeviceCaps( &caps ) ;
   
+
+  // here we need to set the actual window size,
+  // in case there was a hard reset to the default 800x600 resolution
+  Window::setSize( getWidth(), getHeight(), false ) ;
+
 
 
 
@@ -125,9 +126,11 @@ bool D3DWindow::initD3D()
 
   // init the eye,look, up, so that
   // you're not zero'd out at prog start
-  eye = D3DXVECTOR3( 4, 2, 10 ) ;
+  eye = D3DXVECTOR3( 4, 2, 25 ) ;
   look = D3DXVECTOR3( 0, 0, 0 ) ;
   up = D3DXVECTOR3( 0, 1, 0 ) ;
+
+
 
   return true ;
 }
@@ -264,7 +267,7 @@ void D3DWindow::d3dDeviceCheck()
     error( "Hmm, the driver experienced an internal error.  This is unusual." ) ;
 
     // Try and re-initialize d3d.  If it fails, quit.
-    if( !initD3D() )
+    if( !initD3D( getWidth(), getHeight() ) )
     {
       bail( "Experienced D3DERR_DRIVERINTERNALERROR" ) ;
     }
@@ -378,18 +381,19 @@ void D3DWindow::setCamera( D3DXVECTOR3 &newEye, D3DXVECTOR3 &newLook, D3DXVECTOR
 
 void D3DWindow::setDrawingMode( DrawingMode dm )
 {
-  if( dm == D2 )
+  if( dm != D2 && dm != D3 )
+  {
+    warning( "Invalid drawing mode selected, nothing changed" ) ;
+    return ;
+  }
+  else if( dm == D2 && drawingMode != D2 ) // don't re-setup things if already set up
   {
     // Set up the camera
     project2D() ;
   }
-  else if( dm == D3 )
+  else if( dm == D3 && drawingMode != D3 ) // like don't switch to 3d mode if already 3d
   {
     project3D() ;
-  }
-  else
-  {
-    warning( "Invalid drawing mode selected, nothing changed" ) ;
   }
 
   // Save off drawing mode..
@@ -494,7 +498,9 @@ bool D3DWindow::setSize( int width, int height, bool fullScreen )
       
       // try and completely reset d3d to stock options
       d3dShutdown() ;
-      if( !initD3D() )
+
+      // DEFAULT to an 800x600 resolution,
+      if( !initD3D( 800, 600 ) )
       {
         bail( "Couldn't even re-initialize d3d" ) ;
         return false ;

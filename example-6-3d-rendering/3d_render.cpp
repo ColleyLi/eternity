@@ -62,37 +62,34 @@ void Draw()
 
   window->setDrawingMode( D3 ) ; // 3d
   
-  static float x=2,y=2,z=20, incr=0.1f;
-  if( window->keyIsPressed( 'X' ) )
-    x+=incr;
-  if( window->keyIsPressed( 'Y' ) )
-    y+=incr;
-  if( window->keyIsPressed( 'Z' ) )
-    z+=incr;
-  window->setCamera(
-    D3DXVECTOR3( x, y, z ),
-    D3DXVECTOR3( 0, 0, 0 ),
-    D3DXVECTOR3( 0, 1, 0 )
-  ) ;
   window->drawAxes( 8.0f ) ;
 
   window->drawTri(
     D3DVertexC( 0, 0, 0, 255, 0, 0 ),
-    D3DVertexC( 0, 5, 0, 255, 0, 0 ),
-    D3DVertexC( -5, 5, 0, 255, 0, 0 )
+    D3DVertexC( 0, 5, 0, 0, 255, 0 ),
+    D3DVertexC( -5, 5, 0, 0, 0, 255 )
+  ) ;
+
+  window->drawQuad(
+
+    D3DVertexC( 1.2, 0.5, 1, 255, 255, 255 ),
+    D3DVertexC( 5, 0, 1, 0, 255, 0 ),
+    D3DVertexC( 2.5, 5, 1, 0, 255, 255 ),
+    D3DVertexC( 0, 5, 1, 0, 0, 255 )
+
   ) ;
 
 
+  // This isn't really necessary
+  // due to how id3dx sprite works
   window->setDrawingMode( D2 ) ; // 2d
 
-  /*
   window->drawLine(
-    D3DXVECTOR2( x, 2 ),
-    D3DXVECTOR2( 500, 500 ),
-    D3DCOLOR_ARGB( 255, 255, 0, 0 ),
+    D3DXVECTOR2( 100, 100 ),
+    D3DXVECTOR2( 200, 100 ),
+    D3DCOLOR_ARGB( 255, 255, 255, 0 ),
     5.0f
   ) ;
-  */
 
   // draw the mouse cursor with this sprite.
   window->drawMouseCursor( Mario ) ;

@@ -532,7 +532,6 @@ void SpriteMan::drawLine( D3DXVECTOR2 & start, D3DXVECTOR2 & end, D3DCOLOR color
   //!! DRAW IMMEDIATLEY FOR NOW.  This really
   // should be fixed to batched lines
 
-  HRESULT hr ;
   static D3DXVECTOR2 line[2];
 
   DX_CHECK( id3dxLine->SetWidth( thickness ), "line thickness set" ) ;
