@@ -259,7 +259,7 @@ public:
     // there is a mouse update then
     // all these variables would be updated
     // by the updateInput function anyway
-    if( framesSinceLastChange == 2 )
+    if( framesSinceLastChange == 1 )
     {
       leftJustPressed = 
       rightJustPressed = 

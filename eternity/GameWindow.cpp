@@ -323,9 +323,12 @@ void GameWindow::flush3D()
 
     vertices.clear() ;
   }
+}
 
-
-
+void GameWindow::setWorld( D3DXMATRIX *world )
+{
+  HRESULT hr = gpu->SetTransform( D3DTS_WORLD, world ) ;
+  DX_CHECK( hr, "world transformation" ) ;
 }
 
 void GameWindow::setByCamera()

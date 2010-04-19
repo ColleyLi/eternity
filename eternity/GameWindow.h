@@ -159,6 +159,8 @@ public:
 
   void flush3D() ;
 
+  void setWorld( D3DXMATRIX* world ) ;
+
   // </3d>
 
 

@@ -405,7 +405,29 @@
     conceivably.. anyway it was a bug and it has been
     fixed (with dx, dy addition)
   
++ Apr 19 / 2010 v0.1.6-obj-loading
+  - OBJ file format parse, load and render
+  - More fixes to the camera (double-message problem
+    with mouse clicks fixed, related to the "FIXED"
+    long running bug referred to on April 17th patch)
     
+  - OBJ file parser notes:
+    * At one point I'm using C-style strings, and
+      creating a map<char*, Group> to store the
+      collection of groups, for example.
+      - I think this approach has adverse effects
+        because its requiring me to be really careful
+        about how I insert into the std::map,
+        since if I do map.insert( string, GroupObject )
+        two negative things can happen:
+          - the string is a straight pointer and could 
+            go away if not properly copied
+          - the GroupObject goes through unnecessary
+            amounts of copy construction
+          - I'm committing now, and then I'll revise
+            this most likely to map<std::string, Group*>
+            OR AT LEAST map<char*, Group*>
+
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in

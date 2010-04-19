@@ -38,6 +38,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example-6-3d-rendering", "e
 		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CarsimProject", "CarsimProject\CarsimProject.vcproj", "{CE2A7B9E-D9D3-427B-ABCE-EEF45A941040}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7110EEC4-41B5-42EE-B8AD-913A9D4F5450} = {7110EEC4-41B5-42EE-B8AD-913A9D4F5450}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -76,6 +81,10 @@ Global
 		{EF2A8351-AB66-4B91-A034-8BDAC3779A72}.Debug|Win32.Build.0 = Debug|Win32
 		{EF2A8351-AB66-4B91-A034-8BDAC3779A72}.Release|Win32.ActiveCfg = Release|Win32
 		{EF2A8351-AB66-4B91-A034-8BDAC3779A72}.Release|Win32.Build.0 = Release|Win32
+		{CE2A7B9E-D9D3-427B-ABCE-EEF45A941040}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CE2A7B9E-D9D3-427B-ABCE-EEF45A941040}.Debug|Win32.Build.0 = Debug|Win32
+		{CE2A7B9E-D9D3-427B-ABCE-EEF45A941040}.Release|Win32.ActiveCfg = Release|Win32
+		{CE2A7B9E-D9D3-427B-ABCE-EEF45A941040}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

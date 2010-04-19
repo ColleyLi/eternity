@@ -260,6 +260,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ObjFileParse.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Path.h"
 				>
 			</File>

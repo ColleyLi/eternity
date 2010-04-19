@@ -3,12 +3,6 @@
 
 #include "helperFunctions.h"
 
-enum CamMode
-{
-  Grounded,
-  Fly
-} ;
-
 /// A camera has 3 important vectors:
 ///   RIGHT, UP, FORWARD
 /// THIS WORKS DIFFERENTLY THAN
@@ -45,6 +39,14 @@ enum CamMode
 /// care of MOTION of the RIGHT, UP and FORWARD
 class Camera3D
 {
+public:
+  enum CamMode
+  {
+    Grounded,
+    Fly
+  } ;
+
+private:
   /// For a sense of where
   /// it is in space
   D3DXVECTOR3 eye ; // look ; // look vector not necessary
@@ -140,7 +142,25 @@ public:
 
   void stepForward( float increment )
   {
-    eye += increment*forward ;
+    if( camMode == Fly )
+    {
+      // just move, y can change
+      eye += increment*forward ;
+    }
+    else
+    {
+      // lock y to zero and move in x and z only
+      D3DXVECTOR3 yLess( forward ) ;
+      yLess.y = 0 ;
+      
+      // Probably expensive, but eah
+      // because if the person looks up
+      // then there will be too dramatic a slowdown in movement speed.
+      D3DXVec3Normalize( &yLess, &yLess ) ;
+
+      eye += increment*yLess ;
+
+    }
   }
 
   void stepSide( float increment )
@@ -207,6 +227,8 @@ public:
     // when you "look down too far"
 
 
+#pragma region old way of stoping camera flip
+#if 0
     float dotProduct = D3DXVec3Dot( &up, &forward ) ;
 
 
@@ -244,9 +266,43 @@ public:
 
     // So, you have to be careful that INCREMENT
     // isn't too large or you'll jump these limits.
+#endif
+#pragma endregion
 
+    // new way, we'll just 
+    // BEFORE MOVING, take cross product cr1
+    // Compute what move WOULD be, take cross product cr2
+    // dot the two cr1.cr2, if the result is -1, then
+    // the vectors have crossed over, if the result is 1,
+    // then the vectors are still lined up the same
     
+    D3DXVECTOR3 candidateFwd, cr1, cr2 ;
 
+    // Compute what the transformation WOULD result in.
+    D3DXVec3TransformNormal( &candidateFwd, &forward, &rotMat ) ;
+
+    D3DXVec3Cross( &cr1, &forward, &up ) ;
+    D3DXVec3Cross( &cr2, &candidateFwd, &up ) ;
+    
+    // the sign of the dot product
+    // between cr1 and cr2
+    // is what we're interested in.
+    // If the vectors haven't crossed over,
+    // then the dot product should be 1.
+    // fi they have then the two cr1 cr2 vectors
+    // point in completely opposite directions,
+    // so the move should NOT be allowed
+    
+    float dotProduct = D3DXVec3Dot( &cr1, &cr2 ) ;
+    if( dotProduct < 0 )
+    {
+      //info( "NO MOVE!!" ) ;
+    }
+    else
+    {
+      // allow the move
+      forward = candidateFwd ;
+    }
 
     // IF WE ARE IN FLY MODE,
     // then rotations affect UP.
@@ -268,6 +324,11 @@ public:
     trackFwdSpeed = iFwd ;
     trackRotSpeed = iRot ;
     trackPitchSpeed = iPitch ;
+  }
+
+  CamMode getCamMode()
+  {
+    return camMode ;
   }
 
   void setCamMode( CamMode newCamMode )
