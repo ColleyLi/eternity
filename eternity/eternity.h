@@ -7,5 +7,6 @@
 #include "boost/function.hpp"
 #include "Path.h"
 #include "perlin.h"
+#include "ObjFileParse.h"
 
 #endif

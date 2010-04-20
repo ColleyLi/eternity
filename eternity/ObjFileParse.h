@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <string>
 #include <vector>
 #include <map>
 using namespace std ;
 
-
+#include "GameWindow.h"
 #include "helperFunctions.h"
 
 
@@ -30,18 +31,48 @@ private:
   // we need guard since setting it requires
   // freeing its old value.
 
-public:
+  // WHY is this char* you ask?  Well,
+  // this is really an experiment in performance.
+
+  // With a char* I can use memsets to clear
+  // this object out, with a string member,
+  // I do not think its a good idea to memset it
+  // because I don't know its internal implementation
+  // if it has a v-table or not.
+
+  // after its done I'll try swapping out all char*
+  // with std::strings in these objects and see
+  // if there's a performance hit, however marginal.
+
+
+
+  // The CARSIM file format actually specifies
+  // the texture file as "map_Kd", line looks like 
+  /*
+  
+  map_Kd tread.tga
+  
+  */
+  char *textureFilename ;
+
+  /// Because this is the eternity engine,
+  /// we may as well store a reference to
+  /// the spriteId like, its SPRITE.
+  int spriteId ;
+
   D3DXVECTOR3 Ka, Kd, Ks ;
 
   int illum ;
 
-  /// This is diffusion, for
+  /// `d` is diffusion, for
   /// things like glass.  presently unused.
   float d ;
 
   /// Specularity
   float Ns ;
 
+public:
+  #pragma region ctor and copy ctor
   Material()
   {
     /*
@@ -73,40 +104,119 @@ public:
     // for the string in a new object
     memcpy( this, &other, sizeof(Material) ) ;
 
-    name = (char*)malloc( strlen( other.name ) + 1 ) ;
-    strcpy( this->name, other.name ) ;
+    cstrcpy( name, other.name ) ;
+    cstrcpy( textureFilename, other.textureFilename ) ;
   }
+  #pragma endregion
 
   char* getName()
   {
-    return name ;
+    if( name )
+      return name ;
+    else
+      return "__UNNAMED__" ;
   }
 
   void setName( char* iName )
   {
-    if( name )
-      free(name) ;
-    name = NULL ;
-
-    if( !iName )
-      return ; // user meant to clear
-    // out old name, so that's done now
-    // no new name to save
-
-    name = (char*)malloc( strlen(iName)+1 ) ;
-    strcpy( name, iName ) ;
+    cstrfree(name);
+    cstrcpy(name,iName);
   }
+
+  // You don't need to read the next 3 lines ;)
+  D3DXVECTOR3 getKa(){return Ka;}
+  D3DXVECTOR3 getKd(){return Kd;}
+  D3DXVECTOR3 getKs(){return Ks;}
+
+  bool checkErr( char *fnName, char* str, int numArgsGot, int numArgsExpected )
+  {
+    if( numArgsGot != numArgsExpected )
+    {
+      warning( "%s failed to parse %d args from `%s`, parsed %d", fnName, numArgsExpected, str, numArgsGot ) ;
+      return false ;
+    }
+    else
+      return true ;
+  }
+  
+  #pragma region set vectors
+  /// You set Ka from a string
+  /// that you read from a file
+  /// @param str The string to parse the
+  /// 3 values of Ka from
+  /// @return True if the parse was successful,
+  /// false if it failed (3 params not extracted)
+  bool setKa( char* str )
+  {
+    int res = sscanf( str, "Ka %f %f %f", &Ka.x, &Ka.y, &Ka.z ) ;
+    return checkErr( "setKa", str, res, 3 ) ;
+  }
+
+  bool setKd( char* str )
+  {
+    int res = sscanf( str, "Kd %f %f %f", &Kd.x, &Kd.y, &Kd.z ) ;
+    return checkErr( "setKd", str, res, 3 ) ;
+  }
+  
+  bool setKs( char* str )
+  {
+    int res = sscanf( str, "Ks %f %f %f", &Ks.x, &Ks.y, &Ks.z ) ;
+    return checkErr( "setKs", str, res, 3 ) ;
+  }
+  #pragma endregion
+
+  #pragma region non-vector get/sets
+  int getIllum(){ return illum ; }
+  float getD(){ return d ; }
+  float getNs(){ return Ns ; }
+
+  bool setIllum( char *str )
+  {
+    int res = sscanf( str, "illum %d", &illum ) ;
+    return checkErr( "setIllum", str, res, 1 ) ;
+  }
+
+  bool setD( char *str )
+  {
+    int res = sscanf( str, "d %f", &d ) ;
+    return checkErr( "setD", str, res, 1 ) ;
+  }
+
+  bool setNs( char *str )
+  {
+    int res = sscanf( str, "Ns %f", &Ns ) ;
+    return checkErr( "setNs", str, res, 1 ) ;
+  }
+  #pragma endregion
+
+  void setSpriteId( int iSpriteId )
+  {
+    spriteId = iSpriteId ;
+  }
+
+  char* getTextureFilename()
+  {
+    if( textureFilename )
+      return textureFilename ;
+    else
+      return "__NO TEXTURE__" ;
+  }
+
+  void setTextureFilename( char *iFilename )
+  {
+    cstrfree( textureFilename ) ;
+    cstrcpy( textureFilename, iFilename ) ;
+  }
+
 
   ~Material()
   {
-    if( name )
-    {
-      free( name ) ;
-      name = NULL ;
-    }
+    cstrfree( name ) ;
+    cstrfree( textureFilename ) ;
   }
 } ;
 
+class ObjFile ;
 
 /// Groups are not just
 /// vertices -- instead
@@ -124,14 +234,27 @@ private:
   char *name ;
 
 public:
-  /// Using D3DXVECTOR3's for
-  /// storage of both verts and normals
-  vector<D3DXVECTOR3> vertices ;
-  vector<D3DXVECTOR3> normals ;
 
-  /// We're not expecting volumetric
-  /// textures..
-  vector<D3DXVECTOR2> texCoords ;
+  /// The parent file, which
+  /// contains the actual vertices
+  /// referred to by facesVertices,
+  /// facesNormals and facesTexture
+  ObjFile *parentFile ;
+
+  /// The faces array is an index buffer
+  /// indexing the vertices and normals
+  /// arrays
+  vector<int> facesVertices ;
+
+  /// The tie-together for normals is
+  /// completely independent of the
+  /// tie-together for vertices.. hence
+  /// why the #normals != #vertices necessarily.
+  vector<int> facesNormals ;
+
+  /// Texture coordinate lookup
+  vector<int> facesTexture ;
+
 
   /// Each group uses a material,
   /// depending on which PART of the
@@ -140,46 +263,29 @@ public:
   /// is also specified.
   Material material ;
 
-  Group()
+  Group( ObjFile *parent )
   {
     name = NULL ;
-
-    /// The collection of verts+normals
-    /// will grow as we parse thru the file
-    vertices.resize( 0 ) ;
-    normals.resize( 0 ) ;
-    texCoords.resize( 0 ) ;
-    material = Material() ; // redundant, I know.
+    parentFile = parent ;
   }
 
   char* getName()
   {
-    return name ;
+    if( name )
+      return name ;
+    else
+      return "__UNNAMED__" ;
   }
 
   void setName( char *iName )
   {
-    if( name )
-    {
-      free( name ) ;
-      name = NULL ;
-    }
-
-    if( !iName )
-      return ; // user wanted to unset name only
-
-    name = (char*)malloc( strlen(iName)+1 ) ;
-    strcpy( name, iName ) ;
-
+    cstrfree( name ) ;
+    cstrcpy( name, iName ) ;
   }
 
   ~Group()
   {
-    if( name )
-    {
-      free( name ) ;
-      name = NULL ;
-    }
+    cstrfree( name ) ;
   }
 } ;
 
@@ -201,6 +307,9 @@ public:
 #define MTL_NSPEC_LEN   2
 #define MTL_D           "d"
 #define MTL_D_LEN       1
+#define MTL_TEXTURE_NAME "map_Kd"
+// There could be others used by other formats
+#define MTL_TEXTURE_NAME_LEN 6
 
 /// Switch material 
 #define OBJ_CHANGE_MATERIAL "usemtl"
@@ -208,14 +317,18 @@ public:
 /// A group is created by "g"
 #define OBJ_GROUP_NAME      "g"
 
-typedef map<char*, Material> /* as simply */ MatMap ;
-typedef map<char*, Material>::iterator /* as simply */ MatMapIter ;
+typedef map<string, Material*> /* as simply */ MatMap ;
+typedef map<string, Material*>::iterator /* as simply */ MatMapIter ;
 
-typedef map<char*, Group> /* as simply */ GroupMap ;
-typedef map<char*, Group>::iterator /* as simply */ GroupMapIter ;
+typedef map<string, Group*> /* as simply */ GroupMap ;
+typedef map<string, Group*>::iterator /* as simply */ GroupMapIter ;
 
 class ObjFile
 {
+  GameWindow * window ;
+
+  string originalObjFilename, originalMtllibName ;
+
   /// Materials by Name, Material
   MatMap materials ;
 
@@ -223,45 +336,82 @@ class ObjFile
   /// occur in groups.
   GroupMap groups ;
 
-  /// The faces array is an index buffer
-  /// indexing the vertices and normals
-  /// arrays
-  vector<int> facesVertices ;
+  /// Using D3DXVECTOR3's for
+  /// storage of both verts and normals
+  vector<D3DXVECTOR3> vertices ;
+  vector<D3DXVECTOR3> normals ;
 
-  /// The tie-together for normals is
-  /// completely independent of the
-  /// tie-together for vertices.. hence
-  /// why the #normals != #vertices necessarily.
-  vector<int> facesNormals ;
+  /// We're not expecting volumetric
+  /// textures..
+  vector<D3DXVECTOR2> texCoords ;
 
-  /// Texture coordinate lookup
-  vector<int> facesTexture ;
+
 
 public:
 
-  Group* getGroup( char *groupName )
+  // Ok, a bit of a kludge here.
+  // For this object to load
+  // texture objects seemlessly,
+  // I actually need your GameWindow
+  // instance.
+  // If GameWindow were a true singleton
+  // then accessing the one and only instance
+  // of it shouldn't be so tough..
+  // EVEN IF an extern declaration of it
+  // is in GameWindow.h, and it is assumed
+  // to exist, that would be fine as well..
+
+  ObjFile( GameWindow* gameWindow, char* objFilename )
   {
-    GroupMapIter groupEntry = groups.find( groupName ) ;
-    if( groupEntry == groups.end() )
+    // Save off the reference
+    window = gameWindow ;
+
+    if( !objFilename )
     {
-      // It doesn't exist
-      return NULL ;
+      error( "I can't open a NULL pointer filename!" ) ;
+      return ;
     }
-    else
-    {
-      return &(groupEntry->second) ;
-    }
+
+    originalObjFilename = objFilename ;
+
+    // Try and open the file
+    FILE * objFile = fopen( objFilename, "r" ) ;
+    if( !objFile )
+      error( "ObjFile: %s not found", objFilename ) ;
+
+    // PASS #1
+    firstPass( objFile ) ;
+
+    rewind( objFile ) ; // eventually people won't
+    // understand this function when there are
+    // no more cassette or VHS tapes.
+
+    // PASS #2
+    secondPass( objFile ) ;
+    
+    
+
+    
   }
+
+  
 
   void firstPass( FILE* f )
   {
     // Get the material library filename,
     // open and load all materials
-    int numVerts, numNormals, numTexCoords ;
-    int numFaces ;
+    int numVerts=0, numNormals=0, numTexCoords=0, numFaces=0 ;
+
+    // Count up the number of faces
+    // stored in each group.
+    map<string, int> numFacesByGroup ;
     
+    string currentGroup = ""; // we must know what
+    // group we're on at all times.
+
     char buf[ 300 ] ;
 
+    #pragma region parse file
     while( !feof( f ) )
     {
       // Count normals,
@@ -274,7 +424,12 @@ public:
       // a v, vn, vt, f
       
       fgets( buf, 300, f ) ;
-      if( buf[0] == 'v' && buf[1] == 'n' )
+      if( buf[0] == '#' )
+      {
+        // Its a comment, pass it thru
+        info( buf ) ;
+      }
+      else if( buf[0] == 'v' && buf[1] == 'n' )
       {
         // vertex normal
         numNormals++ ;
@@ -295,47 +450,115 @@ public:
         // with 'v' is a vertex itself.
         // the buf[1] character will be
         // either a SPACE or a TAB
-        numVertices++ ;
+        numVerts++ ;
       }
       else if( buf[0] == 'f' && IS_WHITE(buf[1]) )
       {
         // face
         numFaces++ ;
+
+        // Increase the numFaces count
+        // FOR THE CURRENT GROUP
+
+        // if currentGroup has a value
+        // then it will already have been
+        // inserted into the `numFacesByGroup`
+        // map
+        map<string,int>::iterator iter = numFacesByGroup.find( currentGroup ) ;
+        if( iter == numFacesByGroup.end() )
+        {
+          error( "Obj file parse pass #1:  face specified "
+            "to join a group that doesn't exist `%s`", currentGroup.c_str() ) ;
+        }
+        else
+        {
+          // The group name exists already, so increment face count
+          iter->second = iter->second + 1 ;
+        }
       }
       else if( buf[0] == 'g' && IS_WHITE(buf[1]) )
       {
+        // Count DISTINCT groups, which'll just be groups.size() when
+        // thsi is all done
+
         // A group.  Create it now, unless it already exists
 
         // Get the name
         char *groupName = buf+2 ; // pass "g ", name goes to end of line
+
+        cstrnulllastnl(groupName) ;
+
+        currentGroup = groupName ;
+
+        //!! two problems here to do with file anomolies.
+        // 1 Sometimes files contain an EMPTY "g",
+        // usually at the very top of the file.
+        // I'm not sure what this means but its
+        // an empty group.. and the "g" statements
+        // aren't usually followed by a material name either.
+        // 2 The second problem is when a file has
+        // "more than one name" in the group name string.
+        // I'm not sure whta this means either, but it
+        // ends up creating a "group" that has a unique name
+        // (in this implemenation!)
+        // instead of being a combination...
+        // I'm going to leave it that way since it doesn't
+        // seem to make sense to define groups of faces
+        // that belong to more than just one group..
+        // (although in Maya I think you CAN do this..)
+
 
         Group *group = getGroup( groupName ) ;
         if( group )
         {
           // The group exists
           // so skip.
-          //continue ; // there's nothign else to process this line
-          // (though there's no need for the continue stmt!)
+          
         }
         else
         {
           // create the group and add it to the groups collection
-          Group g ;
-          g.setName( groupName ) ;
-          /// !!there is too much copy construction going on here.
-          /// we need to change the map to taking a POINTER to a Group.
+          Group * g = new Group( this ) ;
+          g->setName( groupName ) ;
+
+          //!! I think I should wrap groupName in string(groupName)
+          // but I haven't here.
           groups.insert( make_pair(
-            g.getName(), g
+            groupName, g
           ) ) ;
+
+          // Initialize numFaces @ 0
+          numFacesByGroup.insert( make_pair( currentGroup, 0 ) ) ;
         }
       }
-      
-
-      // Count DISTINCT groups,
-      
-
+      else if( !strncmp( buf, MTL_LIBRARY, MTL_LIBRARY_LEN ) )
+      {
+        // Its the material library filename!  grab it!
+        
+        // Now we may as well parse this up here,
+        // on the first pass.
+        loadMtlFile( buf+(MTL_LIBRARY_LEN+1) ) ;
+      }
     }
+    #pragma endregion
 
+    info( "verts=%d, normals=%d, texCoords=%d, faces=%d, groups=%d",
+          numVerts, numNormals, numTexCoords, numFaces, groups.size() ) ;
+    info( "First pass on %s complete", originalObjFilename.c_str() ) ;
+
+    // Allocate space in the vertices, normals, texCoords arrays
+    vertices.resize( numVerts ) ;
+    normals.resize( numNormals ) ;
+    texCoords.resize( numTexCoords ) ;
+
+    // faces are divided up into the different groups,
+    // so we can't really say right now faces.resize()..
+    for( map<string, int>::iterator iter = numFacesByGroup.begin() ;
+         iter != numFacesByGroup.end() ;
+         ++iter )
+    {
+      info( "Group `%s` has %d faces", iter->first.c_str(), iter->second ) ;
+    }
 
     // IF THERE WAS NO MATERIAL FILENAME
     // BY EOF, THEN CREATE A DEFAULT MATERIAL
@@ -343,141 +566,165 @@ public:
 
   void secondPass( FILE* file )
   {
+    // In the second pass we actually
+    // read up the vertices and save them.
+
+
   }
 
-  ObjFile( char* objFilename )
+  Group* getGroup( string groupName )
   {
-    // Open a file and scan thru
-    // for the vertex set.
+    GroupMapIter groupEntry = groups.find( groupName ) ;
+    if( groupEntry == groups.end() )
+    {
+      // It doesn't exist
+      return NULL ;
+    }
+    else
+    {
+      return groupEntry->second ;
+    }
+  }
 
-    // 2 passes:
-    
-    // PASS #1:  
-    
+  void loadMtlFile( char *mtllibName )
+  {
 
+    if( !mtllibName )
+    {
+      error( "Mtllibname was null" ) ;
+      return ;
+    }
 
+    // Save this filename forever :)
+    originalMtllibName = mtllibName ;
 
-    // First, gather up the materials
-    FILE * objFile = fopen( objFilename, "r" ) ;
-    if( !objFile )
-      error( "ObjFile: %s not found", objFilename ) ;
+    FILE *mtlFile = fopen( mtllibName, "r" ) ;
+    if( !mtlFile )
+    {
+      error( "Couldn't open mtllib %s", mtllibName ) ;
+      return ;
+    }
 
-    firstPass( objFile ) ;
-
-    rewind( objFile ) ; // eventually people won't
-    // understand this function when there are
-    // no more cassette or VHS tapes.
-
-    secondPass( objFile ) ;
-    
     char buf[ 300 ] ;
-    Material currentMaterial ;
+    Material *currentMaterial = NULL ;
 
     while( !feof( mtlFile ) )
     {
       fgets( buf, 300, mtlFile ) ;
 
+      if( buf[0] == '#' )
+      {
+        // its a comment
+        //info( buf ) ;
+      }
+
       // if it starts with newmtl,
       // its a new material
-      if( !strncmp( buf, MTL_NEW, MTL_NEW_LEN ) )
+      else if( !strncmp( buf, MTL_NEW, MTL_NEW_LEN ) )
       {
         // It means we're starting a new
         // material..
 
         // If the currentMaterial
-        // isn't the NOTHING material,
-        // then, we should save it
+        // isn't NULL then, we should save it
         // before re-creating a new one
-        if( currentMaterial.name )
+        if( currentMaterial )
         {
           // Save it, here keyed
           // by its name
           materials.insert(
             make_pair(
-              currentMaterial.name,
+              currentMaterial->getName(),
               currentMaterial
             )
           ) ;
 
+          info( "Loaded material `%s`, texture: `%s`",
+            currentMaterial->getName(),
+            currentMaterial->getTextureFilename() ) ;
+
           // Make a NEW material
           // / reset the material
-          currentMaterial = Material() ;
+          currentMaterial = new Material() ;
         }
 
+        char *mtlName = buf+(MTL_NEW_LEN+1) ;
 
-        // Retrieve the new name
-        // and save it
-
-        // From position 7 in the
-        // array will be the material's name
-        currentMaterial.setName( buf+7 ) ;
-        // We're making some assumptions here
-        // about not more than one space etc
-        // but this is a FILE FORMAT, so I
-        // think its safe to do so.
+        // Retrieve the new material's name and save it
+        currentMaterial->setName( mtlName ) ;
       }
 
-      // I wonder if this can be done
-      // with less hard comparisons by
-      // checking if sscanf( "Ka ..." ) __fails__
-      // If it does then it means this isn't
-      // the Ka term..
-      if( !strncmp( buf, MTL_AMBIENT, MTL_AMBIENT_LEN ) )
+      // The rest of these just affect the
+      // CURRENT MATERIAL, whatever that is.
+      else
       {
-        // The ambient term is being specified
-        sscanf( buf, "Ka %f %f %f",
-          &currentMaterial.Ka.x,
-          &currentMaterial.Ka.y,
-          &currentMaterial.Ka.z ) ;
-      }
+        // For this to RUN, there MUST have been
+        // a CREATE MATERIAL stmt previously
+        // This'll only happen if there are BLANK LINES
+        // above the first newmtl stmt
+        // in the worst case you'll see MATERIAL STATEMENTS here
+        // and so you'll know something is wrong
+        if( !currentMaterial )
+          warning( "material parse: no material yet (a line had to be ignored, `%s`)", buf ) ;
 
-      if( !strncmp( buf, MTL_DIFFUSION, MTL_DIFFUSION_LEN ) )
-      {
         // The ambient term is being specified
-        sscanf( buf, "Kd %f %f %f",
-          &currentMaterial.Kd.x,
-          &currentMaterial.Kd.y,
-          &currentMaterial.Kd.z ) ;
-      }
+        else if( !strncmp( buf, MTL_AMBIENT, MTL_AMBIENT_LEN ) )
+          currentMaterial->setKa( buf ) ;
 
-      if( !strncmp( buf, MTL_SPECULARITY, MTL_SPECULARITY_LEN ) )
-      {
         // The ambient term is being specified
-        sscanf( buf, "Ks %f %f %f",
-          &currentMaterial.Ks.x,
-          &currentMaterial.Ks.y,
-          &currentMaterial.Ks.z ) ;
-      }
+        else if( !strncmp( buf, MTL_DIFFUSION, MTL_DIFFUSION_LEN ) )
+          currentMaterial->setKd( buf ) ;
 
-      if( !strncmp( buf, MTL_ILLUM, MTL_ILLUM_LEN ) )
-      {
-        // The ambient term is being specified
-        sscanf( buf, "illum %d",
-          &currentMaterial.illum ) ;
-      }
+        // The specularity term is being specified
+        else if( !strncmp( buf, MTL_SPECULARITY, MTL_SPECULARITY_LEN ) )
+          currentMaterial->setKs( buf ) ;
 
-      if( !strncmp( buf, MTL_NSPEC, MTL_NSPEC_LEN ) )
-      {
-        // The ambient term is being specified
-        sscanf( buf, "Ns %f",
-          &currentMaterial.Ns ) ;
-      }
+        // The illum term is being specified
+        else if( !strncmp( buf, MTL_ILLUM, MTL_ILLUM_LEN ) )
+          currentMaterial->setIllum( buf ) ;
 
-      if( !strncmp( buf, MTL_D, MTL_D_LEN ) )
-      {
-        // The ambient term is being specified
-        sscanf( buf, "d %f",
-          &currentMaterial.d ) ;
+        // The Ns term is being specified
+        else if( !strncmp( buf, MTL_NSPEC, MTL_NSPEC_LEN ) )
+          currentMaterial->setNs( buf ) ;
+
+        else if( !strncmp( buf, MTL_D, MTL_D_LEN ) )
+          currentMaterial->setD( buf ) ;
+
+        else if( !strncmp( buf, MTL_TEXTURE_NAME, MTL_TEXTURE_NAME_LEN ) )
+        {
+          // We found a texture filename
+          // We need to assign it the next
+          // available texture id.
+          char *spriteFile = buf+(MTL_TEXTURE_NAME_LEN+1) ;
+          int spriteId = window->getNextSpriteId() ;
+
+          window->loadSprite( spriteId, spriteFile ) ;
+          
+          // Save the sprite id
+          currentMaterial->setSpriteId( spriteId ) ;
+          currentMaterial->setTextureFilename( spriteFile ) ;
+
+        }
+
       }
     }
 
-    FILE * objFile = fopen( objFilename, "r" ) ;
-    if( !objFile )
-      error( "ObjFile: %s not found", objFilename ) ;
+    // Save the last material
+    if( currentMaterial )
+    {
+      materials.insert(
+        make_pair(
+          currentMaterial->getName(),
+          currentMaterial
+        )
+      ) ;
+    }
 
-    
+    info( "%d materials loaded", materials.size() ) ;
+
   }
 
+  
   void computeNormals()
   {
     // Computes normals on loaded vertex set

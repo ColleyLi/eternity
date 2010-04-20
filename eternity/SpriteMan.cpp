@@ -625,6 +625,24 @@ int SpriteMan::randomSpriteId( int below )
   return sprites.begin()->first ;
 }
 
+int SpriteMan::getNextSpriteId()
+{
+  // We can't really assume the
+  // sprites were created in ORDER.
+
+  // Unfortunately we have to walk through
+  // the entire collection and return the largest
+  // id so far
+  int largestSpriteId = 0 ;
+  foreach( SpriteMapIter, iter, sprites )
+  {
+    if( iter->first > largestSpriteId )
+      largestSpriteId= iter->first ;
+  }
+
+  return largestSpriteId + 1 ;
+}
+
 void SpriteMan::drawAxes( float LEN )
 {
   static D3DVertexC axis[] = {
@@ -674,6 +692,12 @@ void SpriteMan::addSprite( int spriteId, Sprite *sprite )
   {
     // the sprite with that id existed.  erase it
     warning( "Sprite with id=%d already existed.  Destroying it..", spriteId ) ;
+    warning( "Is this happening unexpectedly?  "
+      "If it is, try doing all your loadSprite calls "
+      "__before__ any calls to OBJFILE, the model loading "
+      "functions" ) ;
+    // The reason for this is the objfile loading
+    // automatically loads textures,
     delete existingSpritePtr->second ;
   }
 

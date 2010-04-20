@@ -261,6 +261,10 @@ public:
   int randomSpriteId() ;
   int randomSpriteId( int below ) ;
 
+  /// Gives you next available
+  /// (unusued) sprite id
+  int getNextSpriteId() ;
+
   // Gives you a Sprite object by ID
   // that you loaded previously with
   // loadSprite()

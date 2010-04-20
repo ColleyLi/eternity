@@ -48,12 +48,13 @@ void Init()
 
   // Load a CARSIM sim file
   simWorld->LoadCarSimFile( "filename.sim" ) ;
+
+  ObjFile *o = new ObjFile( window, ASSET( "models/porsche.obj" ) ) ;
 }
 
 void Update()
 {
   
-
   // CARSIM UPDATE
 
 
@@ -103,7 +104,7 @@ void Update()
   #pragma endregion
 
 
-  if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!" ) ;
+  if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", true ) ;
 }
 
 
@@ -295,7 +296,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
 
   // Setup the window
   window = new GameWindow( hInstance, TEXT( "eternity engine base" ),
-     1280+32, 32, // x pos, y pos
+     32, 32, // x pos, y pos
      1024, 768 // width, height
   ) ;
 

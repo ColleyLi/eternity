@@ -428,6 +428,15 @@
             this most likely to map<std::string, Group*>
             OR AT LEAST map<char*, Group*>
 
+    * YEAH OOPS!!  you can't even key a map on char*.
+      it doesn't overload== or<
+      
+    "Because map requires a strict weak ordering, a map
+     keyed on floating-point numbers can produce
+     undefined behavior if any of the keys are NaNs."
+  
+  - 
+
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in

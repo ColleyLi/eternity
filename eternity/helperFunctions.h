@@ -160,6 +160,20 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
 /// YOU ARE RESPONSIBLE FOR CALLING delete[] on the string returned!
 wchar_t* getUnicode( char* ascii ) ;
 
+/// b must exist.
+#define cstrcpy(a,b) if(b){a=(char*)malloc( strlen(b)+1 ) ; strcpy(a,b) ;}
+#define cstrfree(str) if(str){free(str);str=0;}
+
+// R S T 0
+// 0 1 2 3
+// len is 3
+// str[len] = 0 does nothing
+// str[len-1] sets last char to 0
+/// nulls the newline at the end of a string.
+/// we have to use strrchr to make sure its safe
+#define cstrnulllastnl(str) {char* nl=strrchr(str,'\n'); if(nl){*nl=0;}}
+
+
 void printRawKeyboard( RAWINPUT * raw ) ;
 void printRawMouse( RAWINPUT * raw ) ;
 
