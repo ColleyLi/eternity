@@ -1,0 +1,10 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl bush1
+Ka  1 1 0
+Kd  1 1 0
+Ks  0 1 1
+d  1.0
+map_Kd bush1.tga
+#
+# EOF

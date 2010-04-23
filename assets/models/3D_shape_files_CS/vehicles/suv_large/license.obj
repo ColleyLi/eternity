@@ -1,0 +1,31 @@
+# Max2Obj Version 4.0 Mar 10th, 2001
+#
+mtllib ./license.mtl
+g
+# object Plane01 to come ...
+#
+v  -4.477 0.210 0.238
+v  -4.477 -0.201 0.238
+v  -4.492 0.210 0.407
+v  -4.492 -0.201 0.407
+# 4 vertices
+
+vt  0.000 0.001 0.500
+vt  1.000 0.000 0.500
+vt  0.000 1.000 0.500
+vt  1.000 0.999 0.500
+# 4 texture vertices
+
+vn  -0.996 -0.000 -0.089
+vn  -0.996 -0.000 -0.089
+vn  -0.996 -0.000 -0.089
+vn  -0.996 -0.000 -0.089
+# 4 vertex normals
+
+g Plane01
+usemtl 12_-_Default
+s 1
+f 1/1/1 2/2/2 4/4/4 3/3/3
+# 1 faces
+
+g

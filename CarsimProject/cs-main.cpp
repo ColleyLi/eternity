@@ -115,6 +115,9 @@ void Draw()
 
   window->setDrawingMode( D3 ) ; // 3d
   
+
+  window->setDefaultVertexDeclaration() ;
+  window->setLighting( false ) ;
   window->drawAxes( 50.0f ) ;
 
 

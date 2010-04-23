@@ -182,13 +182,23 @@ void D3DWindow::initVertexDeclaration()
     D3DDECL_END()
   } ;
 
-  IDirect3DVertexDeclaration9 * Vdecl ;
+  
 
-  hr = gpu->CreateVertexDeclaration( vertexElements, &Vdecl ) ;
+  hr = gpu->CreateVertexDeclaration( vertexElements, &vDeclPositionColor ) ;
   DX_CHECK( hr, "CreateVertexDeclaration" ) ;
 
-  hr = gpu->SetVertexDeclaration( Vdecl ) ;
-  DX_CHECK( hr, "SetVertexDeclaration" ) ;
+  // After constructing it, set it as the one to use by default
+  setDefaultVertexDeclaration() ;
+}
+
+void D3DWindow::setDefaultVertexDeclaration()
+{
+  DX_CHECK( gpu->SetVertexDeclaration( vDeclPositionColor ), "setDefaultVertexDeclaration" ) ;
+}
+
+void D3DWindow::setLighting( BOOL on )
+{
+  DX_CHECK( gpu->SetRenderState( D3DRS_LIGHTING, on ), "Lighting state" ) ;
 }
 
 void D3DWindow::d3dLoseDevice()

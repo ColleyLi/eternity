@@ -1,0 +1,134 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl 1_-_Default
+Ka  0.7098 0.7098 0.7098
+Kd  0.7098 0.7098 0.7098
+Ks  1 1 1
+d  1
+Ns  8.5
+illum 2
+#
+# Multi/Sub Material__46 (2) to come 
+#
+newmtl 2_-_Default
+Ka  0.0588 0.0588 0.0588
+Kd  0.0588 0.0588 0.0588
+Ks  1 1 1
+d  1
+Ns  6.8
+illum 2
+#
+newmtl 4_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd greenlight.tga
+#
+# Multi/Sub Material__46 done 
+#
+# Multi/Sub Material__79 (2) to come 
+#
+newmtl 2_-_Default
+Ka  0.0588 0.0588 0.0588
+Kd  0.0588 0.0588 0.0588
+Ks  1 1 1
+d  1
+Ns  6.8
+illum 2
+#
+newmtl 5_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd redlight.tga
+#
+# Multi/Sub Material__79 done 
+#
+# Multi/Sub Material__35 (2) to come 
+#
+newmtl 2_-_Default
+Ka  0.0588 0.0588 0.0588
+Kd  0.0588 0.0588 0.0588
+Ks  1 1 1
+d  1
+Ns  6.8
+illum 2
+#
+newmtl 3_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd yellowlight.tga
+#
+# Multi/Sub Material__35 done 
+#
+# Multi/Sub Material__57 (2) to come 
+#
+newmtl 2_-_Default
+Ka  0.0588 0.0588 0.0588
+Kd  0.0588 0.0588 0.0588
+Ks  1 1 1
+d  1
+Ns  6.8
+illum 2
+#
+newmtl 4_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd greenlight.tga
+#
+# Multi/Sub Material__57 done 
+#
+# Multi/Sub Material__68 (2) to come 
+#
+newmtl 2_-_Default
+Ka  0.0588 0.0588 0.0588
+Kd  0.0588 0.0588 0.0588
+Ks  1 1 1
+d  1
+Ns  6.8
+illum 2
+#
+newmtl 5_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd redlight.tga
+#
+# Multi/Sub Material__68 done 
+#
+newmtl 7_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd tree.tga
+map_d tree.tga
+#
+newmtl 2_-_Default
+Ka  0.0588 0.0588 0.0588
+Kd  0.0588 0.0588 0.0588
+Ks  1 1 1
+d  1
+Ns  6.8
+illum 2
+#
+# EOF

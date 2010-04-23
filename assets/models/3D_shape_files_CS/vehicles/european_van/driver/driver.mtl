@@ -1,0 +1,84 @@
+# 3ds Max Wavefront OBJ Exporter v0.94b - (c)2007 guruware
+# File Created: 06.02.2009 09:17:45
+
+newmtl Shoes
+	Ns 18.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0706 0.0706 0.0706
+	Kd 0.0706 0.0706 0.0706
+	Ks 0.1208 0.1208 0.1208
+	Ke 0.0000 0.0000 0.0000
+
+newmtl Pants
+	Ns 0.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.1239 0.1239 0.1239
+	Ke 0.0000 0.0000 0.0000
+	map_Ka pants.jpg
+	map_Kd pants.jpg
+
+newmtl Shirt
+	Ns 0.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.1806 0.1806 0.1806
+	Ke 0.0000 0.0000 0.0000
+	map_Ka shirt.jpg
+	map_Kd shirt.jpg
+
+newmtl glove
+	Ns 18.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.5000 1.5000 1.5000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.2979 0.2979 0.2979
+	Ke 0.0000 0.0000 0.0000
+	map_Ka glove.jpg
+	map_Kd glove.jpg
+
+newmtl 12___Default
+	Ns 5.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.5000 1.5000 1.5000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.1560 0.1560 0.1560
+	Ke 0.0000 0.0000 0.0000
+	map_Ka hairtop.jpg
+	map_Kd hairtop.jpg
+
+newmtl 11___Default
+	Ns 5.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.5000 1.5000 1.5000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.1560 0.1560 0.1560
+	Ke 0.0000 0.0000 0.0000
+	map_Ka face.jpg
+	map_Kd face.jpg

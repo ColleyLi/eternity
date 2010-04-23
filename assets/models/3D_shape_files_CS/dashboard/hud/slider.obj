@@ -1,0 +1,24 @@
+# Max2Obj Version 4.0 Mar 10th, 2001
+#
+mtllib ./slider.mtl
+g
+# object 10_-_Default to come ...
+#
+v  0 0.01764 -0.03293
+v  0 -0.01764 -0.03293
+v  0 0.01764 0.03293
+v  0 -0.01764 0.03293
+# 4 vertices
+
+vt  0.11073 0.06629 0.9995
+vt  0.88927 0.06629 0.9995
+vt  0.11073 0.93371 0.0005
+vt  0.88927 0.93371 0.0005
+# 4 texture vertices
+
+g 10_-_Default
+usemtl 10_-_Default
+f 1/1 2/2 4/4 3/3
+# 1 faces
+
+g

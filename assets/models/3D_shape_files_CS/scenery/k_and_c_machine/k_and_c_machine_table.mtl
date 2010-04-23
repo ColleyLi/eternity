@@ -1,0 +1,23 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+# Multi/Sub Material__123 (2) to come 
+#
+newmtl 2_-_Default
+Ka  0.8863 0.8941 0.1922
+Kd  0.8863 0.8941 0.1922
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+#
+newmtl 8_-_Default
+Ka  0.6314 0.6314 0.6314
+Kd  0.6314 0.6314 0.6314
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+# Multi/Sub Material__123 done 
+#
+# EOF

@@ -73,14 +73,26 @@ protected:
   /// will be either 2d or 3d.
   DrawingMode drawingMode ;
 
+
+  /// v:   position only
+  /// vc:  position and color
+  /// vt:  position texture
+  /// vn:  position normal
+  /// vtn: position texture normal
+  /// all of these are in the order they appear
+  IDirect3DVertexDeclaration9 *v, *vc, *vt, *vn, *vtn ;
+
 public:
   D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
   ~D3DWindow() ;
 
 private:
   bool initD3D( int width, int height ) ;
-
   void initVertexDeclaration() ;
+
+public:
+  void setLighting( BOOL on ) ;
+  void setDefaultVertexDeclaration() ;
 
 private:
   void d3dLoseDevice() ;

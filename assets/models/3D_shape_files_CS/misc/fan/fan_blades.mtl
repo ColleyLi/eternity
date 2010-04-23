@@ -1,0 +1,8 @@
+newmtl fan_spinning
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+map_Kd fan_spinning.tga
+d 1.0
+Ns 10.0
+ 

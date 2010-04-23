@@ -1,0 +1,58 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl 2_-_Default
+Ka  0.2157 0.2157 0.2157
+Kd  0.2157 0.2157 0.2157
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+# Multi/Sub Object02 (4) to come 
+#
+newmtl sidewalls2
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd sidewalls2.tga
+#
+newmtl 3_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd tread.tga
+#
+newmtl 4_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+map_Kd sidewalls.tga
+#
+newmtl 1_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+#
+# Multi/Sub Object02 done 
+#
+newmtl 1_-_Default
+Ka  1 1 1
+Kd  1 1 1
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+#
+# EOF

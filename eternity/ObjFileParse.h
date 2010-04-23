@@ -60,6 +60,69 @@ using namespace std ;
 
 // So we'll go with the repeated data approach.
 
+// v
+struct Vertex
+{
+  D3DXVECTOR3 pos ;
+
+  Vertex() { pos.x=pos.y=pos.z=0.0f; }
+
+  // Avoid copy construction
+  // by these ctor's
+  Vertex( const D3DXVECTOR3 &iPos )
+  {
+    pos = iPos ;
+  }
+} ;
+
+// v/t
+struct VertexT
+{
+  D3DXVECTOR3 pos ;
+  D3DXVECTOR2 tex ;
+
+  VertexT(){ pos.x=pos.y=pos.z=tex.x=tex.y=0.0f; }
+
+  VertexT( const D3DXVECTOR3 &iPos, const D3DXVECTOR2 &iTex )
+  {
+    pos = iPos ;
+    tex = iTex ;
+  }
+} ;
+
+// v//n
+struct VertexN
+{
+  D3DXVECTOR3 pos ;
+  D3DXVECTOR3 norm ;
+
+  VertexN() { pos.x=pos.y=pos.z=norm.x=norm.y=norm.z=0.0f; }
+
+  VertexN( const D3DXVECTOR3 &iPos, const D3DXVECTOR3 &iNorm )
+  {
+    pos = iPos ;
+    norm = iNorm ;
+  }
+} ;
+
+// v/t/n
+struct VertexTN
+{
+  D3DXVECTOR3 pos ;
+  D3DXVECTOR2 tex ;
+  D3DXVECTOR3 norm ;
+
+  // Preferred this format over memsets, they are hard to read :
+  VertexTN() { pos.x=pos.y=pos.z=tex.x=tex.y=norm.x=norm.y=norm.z=0.0f; }
+
+  VertexTN( const D3DXVECTOR3 &iPos, const D3DXVECTOR2 &iTex, const D3DXVECTOR3 &iNorm )
+  {
+    pos = iPos ;
+    tex = iTex ;
+    norm = iNorm ;
+  }
+} ;
+
 struct Material
 {
 private:
@@ -263,23 +326,47 @@ public:
   
   /// The parent file, which
   /// contains the actual vertices
-  /// referred to by facesVertices,
-  /// facesNormals and facesTexture
+  /// referred to by facesVertexIndices,
+  /// facesNormalIndices and facesTextureIndices
   ObjFile *parentFile ;
+
+  #pragma region temporary construction variables
+  // These 3 faces* arrays are
+  // temporary because when we
+  // draw we'll need to have
+  // pre-assembled the faces
+  // into a single array.
 
   /// The faces array is an index buffer
   /// indexing the vertices and normals
   /// arrays
-  vector<int> facesVertices ;
+  vector<int> facesVertexIndices ;
 
   /// The tie-together for normals is
   /// completely independent of the
   /// tie-together for vertices.. hence
   /// why the #normals != #vertices necessarily.
-  vector<int> facesNormals ;
+  vector<int> facesNormalIndices ;
 
   /// Texture coordinate lookup
-  vector<int> facesTexture ;
+  vector<int> facesTextureIndices ;
+  #pragma endregion
+
+
+  /// The final array of vertex coords.
+  /// Only ONE of these 4 can possibly
+  /// be used, depends on the vertex format
+  /// of the file.  Generally .OBJ files
+  /// don't change format in the middle,
+  /// instead the modeller will export like
+  /// 3 different .OBJ files, all with different
+  /// vertex formats.
+  vector<Vertex> combinedVerticesV ;
+  vector<VertexT> combinedVerticesVT ;
+  vector<VertexN> combinedVerticesVN ;
+  vector<VertexTN> combinedVerticesVTN ;
+
+
 
 
   /// Each group uses a material,
@@ -291,6 +378,7 @@ public:
   {
     name = NULL ;
     parentFile = parent ;
+    material = NULL ;
   }
 
   char* getName()
@@ -326,6 +414,8 @@ public:
   }
 } ;
 
+
+#pragma region defs
 // Define the dictionary words
 // and their lengths
 // In case you're wondering
@@ -368,6 +458,7 @@ typedef map<string, Group*>::iterator /* as simply */ GroupMapIter ;
 
 typedef map<string, int> /* as simply */ MapStringInt ;
 typedef map<string, int>::iterator /* as simply */ MapStringIntIter ;
+#pragma endregion
 
 class ObjFile
 {
@@ -383,11 +474,10 @@ public:
   static void init( GameWindow *window )
   {
     // Set up the default material
-    setColor( &Material::defaultMaterial.Ambient, 1.f,  1.f, 1.f, 1.f ) ;
-    setColor( &Material::defaultMaterial.Diffuse, 1.f,  1.f, 1.f, 1.f ) ;
+    setColor( &Material::defaultMaterial.Ambient,  1.f,  1.f, 1.f, 1.f ) ;
+    setColor( &Material::defaultMaterial.Diffuse,  1.f,  1.f, 1.f, 1.f ) ;
     setColor( &Material::defaultMaterial.Specular, 1.f,  1.f, 1.f, 1.f ) ;
     setColor( &Material::defaultMaterial.Emissive, 0.f,  0.f, 0.f, 0.f ) ;
-
 
     IDirect3DDevice9 *gpu = window->getGpu();
 
@@ -445,19 +535,13 @@ public:
     vertexElementsVTN[ 3 ] = end ;
     DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVTN, &vtn ), "CreateVertexDeclaration FAILED vtn!" ) ;
 
-
     // VN
     D3DVERTEXELEMENT9 *vertexElementsVN = new D3DVERTEXELEMENT9[3] ;
     vertexElementsVN[ 0 ] = pos ;
     norm.Offset = 3*sizeof(float);  // This needed to be updated
-    vertexElementsVN[ 2 ] = norm ;
-    vertexElementsVN[ 3 ] = end ;
+    vertexElementsVN[ 1 ] = norm ;
+    vertexElementsVN[ 2 ] = end ;
     DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVN, &vn ), "CreateVertexDeclaration FAILED vn!" ) ;
-
-
-    
-
-    
 
   }
 
@@ -496,6 +580,12 @@ private:
     Texcoords = 1 << 2
   } ;
   FaceSpecMode faceSpecMode ;
+
+  /// This is the total # triangular faces
+  /// in the model, after triangulation.
+  /// 3*this number is the size of the
+  /// ACTIVE combinedVertices? array.
+  int numTriangleFacesTOTAL ;
 
   /// The string format we expect
   /// faces to be in, depends on
@@ -573,10 +663,16 @@ private:
     
     // Get the material library filename,
     // open and load all materials
+    int numVerts=0, numNormals=0, numTexCoords=0 ;
+
     // numFacesStock is just the number of "f 3 4 5" statements
-    // in the file, while
-    // numFacesTOTAL is total # faces, after triangulation
-    int numVerts=0, numNormals=0, numTexCoords=0, numFacesTOTAL=0, numFacesStock = 0 ;
+    // in the file,
+    int numFacesStock = 0 ;
+    
+    // numTriangleFacesTOTAL is total # faces, after triangulation
+    numTriangleFacesTOTAL = 0 ;   // This will be tallied up
+    // on this pass, and verified on the second pass.
+    
 
     string currentGroupName = ""; // we must know what
     // group we're on at all times.
@@ -669,7 +765,7 @@ private:
         int verticesInFace = countVerts( buf ) ;
         int facesFromVerts = verticesInFace - 2 ;
 
-        numFacesTOTAL += facesFromVerts ;
+        numTriangleFacesTOTAL += facesFromVerts ;
 
         // Increase the numFaces count
         // FOR THE CURRENT GROUP
@@ -758,14 +854,19 @@ private:
     }
     #pragma endregion
 
-    info( "verts=%d, normals=%d, texCoords=%d, stock faces=%d triangulated faces=%d, groups=%d",
-        numVerts, numNormals, numTexCoords, numFacesStock, numFacesTOTAL, groups.size() ) ;
+    info( "verts=%d, normals=%d, texCoords=%d, "
+          "stock faces=%d triangulated faces=%d, "
+          "groups=%d",
+           numVerts, numNormals, numTexCoords,
+           numFacesStock, numTriangleFacesTOTAL,
+           groups.size() ) ;
     info( "First pass on %s complete", originalObjFilename.c_str() ) ;
 
     // Allocate space in the vertices, normals, texCoords arrays
-    vertices.resize( numVerts ) ;
-    normals.resize( numNormals ) ;
-    texCoords.resize( numTexCoords ) ;
+    // +1 because index 0 IS NOT USED.
+    vertices.resize( numVerts+1 ) ;
+    normals.resize( numNormals+1 ) ;
+    texCoords.resize( numTexCoords+1 ) ;
 
     // faces are divided up into the different groups,
     // so we can't really say right now faces.resize()..
@@ -787,9 +888,10 @@ private:
       }
       else
       {
-        groupIter->second->facesVertices.resize( faces ) ;
-        groupIter->second->facesNormals.resize( faces ) ;
-        groupIter->second->facesTexture.resize( faces ) ;
+        // Every face takes __3__ indices to specify it.
+        groupIter->second->facesVertexIndices.resize( 3*faces ) ;
+        groupIter->second->facesNormalIndices.resize( 3*faces ) ;
+        groupIter->second->facesTextureIndices.resize( 3*faces ) ;
       }
     }
 
@@ -861,7 +963,6 @@ private:
       return "v" ;
     else
       return "INVALID FaceSpecMode" ;
-    
   }
 
   int getFaceSpecMode( char *str )
@@ -971,7 +1072,7 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertices.size() )
+        if( index +i+2 >= (int)group->facesVertexIndices.size() )
         {
           //!! this error really shouldn't happen
           // and needs to be fixed
@@ -979,19 +1080,19 @@ private:
           continue;
         }
         // always start with 0th vertex.
-        group->facesVertices[ index + i ] = verts[ 0 ] ;
-        group->facesTexture[ index + i ] = texcoords[ 0 ] ;
-        group->facesNormals[ index + i ] = normals[ 0 ] ;
+        group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
+        group->facesTextureIndices[ index + i ] = texcoords[ 0 ] ;
+        group->facesNormalIndices[ index + i ] = normals[ 0 ] ;
 
         // tie with c'th vertex
-        group->facesVertices[ index + i+1 ] = verts[ c ] ;
-        group->facesTexture[ index + i+1 ] = texcoords[ c ] ;
-        group->facesNormals[ index + i+1 ] = normals[ c ] ;
+        group->facesVertexIndices[ index + i+1 ] = verts[ c ] ;
+        group->facesTextureIndices[ index + i+1 ] = texcoords[ c ] ;
+        group->facesNormalIndices[ index + i+1 ] = normals[ c ] ;
 
         // and c'th+1 vertex
-        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
-        group->facesTexture[ index + i+2 ] = texcoords[ c+1 ] ;
-        group->facesNormals[ index + i+2 ] = normals[ c+1 ] ;
+        group->facesVertexIndices[ index + i+2 ] = verts[ c+1 ] ;
+        group->facesTextureIndices[ index + i+2 ] = texcoords[ c+1 ] ;
+        group->facesNormalIndices[ index + i+2 ] = normals[ c+1 ] ;
 
         // Advance by 3 faces, we just added 3 coords
         i += 3 ;
@@ -1031,7 +1132,7 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertices.size() )
+        if( index +i+2 >= (int)group->facesVertexIndices.size() )
         {
           //!! this error really shouldn't happen
           // and needs to be fixed
@@ -1039,16 +1140,16 @@ private:
           continue;
         }
         // always start with 0th vertex.
-        group->facesVertices[ index + i ] = verts[ 0 ] ;
-        group->facesNormals[ index + i ] = normals[ 0 ] ;
+        group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
+        group->facesNormalIndices[ index + i ] = normals[ 0 ] ;
 
         // tie with c'th vertex
-        group->facesVertices[ index + i+1 ] = verts[ c ] ;
-        group->facesNormals[ index + i+1 ] = normals[ c ] ;
+        group->facesVertexIndices[ index + i+1 ] = verts[ c ] ;
+        group->facesNormalIndices[ index + i+1 ] = normals[ c ] ;
 
         // and c'th+1 vertex
-        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
-        group->facesNormals[ index + i+2 ] = normals[ c+1 ] ;
+        group->facesVertexIndices[ index + i+2 ] = verts[ c+1 ] ;
+        group->facesNormalIndices[ index + i+2 ] = normals[ c+1 ] ;
 
         // Advance by 3 faces, we just added 3 coords
         i += 3 ;
@@ -1080,7 +1181,7 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertices.size() )
+        if( index +i+2 >= (int)group->facesVertexIndices.size() )
         {
           //!! this error really shouldn't happen
           // and needs to be fixed
@@ -1088,16 +1189,16 @@ private:
           continue;
         }
         // always start with 0th vertex.
-        group->facesVertices[ index + i ] = verts[ 0 ] ;
-        group->facesTexture[ index + i ] = texcoords[ 0 ] ;
+        group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
+        group->facesTextureIndices[ index + i ] = texcoords[ 0 ] ;
 
         // tie with c'th vertex
-        group->facesVertices[ index + i+1 ] = verts[ c ] ;
-        group->facesTexture[ index + i+1 ] = texcoords[ c ] ;
+        group->facesVertexIndices[ index + i+1 ] = verts[ c ] ;
+        group->facesTextureIndices[ index + i+1 ] = texcoords[ c ] ;
 
         // and c'th+1 vertex
-        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
-        group->facesTexture[ index + i+2 ] = texcoords[ c+1 ] ;
+        group->facesVertexIndices[ index + i+2 ] = verts[ c+1 ] ;
+        group->facesTextureIndices[ index + i+2 ] = texcoords[ c+1 ] ;
 
         // Advance by 3 faces, we just added 3 coords
         i += 3 ;
@@ -1127,7 +1228,7 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertices.size() ) // 4018 needs to go away.
+        if( index +i+2 >= (int)group->facesVertexIndices.size() ) // 4018 needs to go away.
         {
           //!! this error really shouldn't happen
           // and needs to be fixed
@@ -1135,13 +1236,13 @@ private:
           continue;
         }
         // always start with 0th vertex.
-        group->facesVertices[ index + i ] = verts[ 0 ] ;
+        group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
 
         // tie with c'th vertex
-        group->facesVertices[ index + i+1 ] = verts[ c ] ;
+        group->facesVertexIndices[ index + i+1 ] = verts[ c ] ;
 
         // and c'th+1 vertex
-        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
+        group->facesVertexIndices[ index + i+2 ] = verts[ c+1 ] ;
 
         // Advance by 3 faces, we just added 3 coords
         i += 3 ;
@@ -1160,7 +1261,15 @@ private:
     // to the first pass, only we
     // are actually snapping out the data here.
 
-    int numVerts=0, numNormals=0, numTexCoords=0, numFacesTOTAL=0, numFacesStock=0 ;
+    int numVerts=0, numNormals=0, numTexCoords=0 ;
+    int numFacesStock=0 ;
+
+    // DIFFERS from numTriangleFacesTOTAL, this
+    // variable is just an OCD count of
+    // total faces in second pass, to make sure
+    // its the same as numTriangleFacesTOTAL
+    int numFacesTOTALSecondPass=0 ;
+    
 
     MapStringInt facesByGroupCount ;  // this is parallel to numFacesByGroup.
     // By the end of the second pass they will match
@@ -1190,18 +1299,21 @@ private:
       else if( buf[0] == 'v' && buf[1] == 'n' )
       {
         // vertex normal
-        
-        // Actually save it.
-        parseNormal( buf, &normals[ numNormals ] ) ;
 
         // Increment the counter so we know which normal we're on
+        
+        // This goes BEFORE use of the variable
+        // because index 0 is not used.
         numNormals++ ;
+
+        // Actually save it.
+        parseNormal( buf, &normals[ numNormals ] ) ;
       }
       else if( buf[0] == 'v' && buf[1] == 't' )
       {
         //texture coordinate
+        numTexCoords++ ;  // index 0 not used
         parseTexcoord( buf, &texCoords[ numTexCoords ] ) ;
-        numTexCoords++ ;
       }
       else if( buf[0] == 'v' && buf[1] == 'p' )
       {
@@ -1210,12 +1322,13 @@ private:
       }
       else if( buf[0] == 'v' && IS_WHITE(buf[1]) )
       {
+        numVerts++ ; // idx 0 unused
+
         // The only other thing that starts 
         // with 'v' is a vertex itself.
         // the buf[1] character will be
         // either a SPACE or a TAB
         parseVertex( buf, &vertices[ numVerts ] ) ;
-        numVerts++ ;
       }
       else if( buf[0] == 'f' && IS_WHITE(buf[1]) )
       {
@@ -1225,7 +1338,7 @@ private:
         int verticesInFace = countVerts( buf ) ;
         int facesFromVerts = verticesInFace - 2 ;
 
-        numFacesTOTAL += facesFromVerts ;
+        numFacesTOTALSecondPass += facesFromVerts ;
 
 
         MapStringIntIter iter = facesByGroupCount.find( currentGroupName ) ;
@@ -1285,8 +1398,6 @@ private:
           // The group exists
           // We are switching to entry into this group.
           //info( "Switching to group `%s`", groupName ) ;
-
-
         }
         else
         {
@@ -1329,6 +1440,21 @@ private:
     }
     #pragma endregion
 
+
+    // PARITY CHECKS
+    if( numFacesTOTALSecondPass != numTriangleFacesTOTAL )
+    {
+      warning( "numFacesTOTALSecondPass=%d, numTriangleFacesTOTAL=%d, "
+        "but these numbers should have been the same.",
+        numFacesTOTALSecondPass, numTriangleFacesTOTAL ) ;
+    }
+    else
+    {
+      info( "OK! numFacesTOTALSecondPass=%d, numTriangleFacesTOTAL=%d",
+        numFacesTOTALSecondPass, numTriangleFacesTOTAL ) ;
+
+    }
+
     setupVertexBuffers() ;
   }
 
@@ -1356,6 +1482,20 @@ private:
     else
     {
       return groupEntry->second ;
+    }
+  }
+
+  int getNumFacesInGroup( string groupName )
+  {
+    MapStringIntIter countEntry = numFacesByGroup.find( groupName ) ;
+    if( countEntry == numFacesByGroup.end() )
+    {
+      warning( "getNumFaces: Group %s doesn't exist, you get 0", groupName.c_str() ) ;
+      return 0 ;
+    }
+    else
+    {
+      return countEntry->second ;
     }
   }
 
@@ -1512,6 +1652,181 @@ private:
     IDirect3DDevice9 *gpu = window->getGpu() ;
 
     // Combine all the groups..
+    #pragma region VTN
+    if( (faceSpecMode & Normals) && (faceSpecMode & Texcoords) )
+    {
+      // v/t/n
+      info( "VB as v/t/n" ) ;
+
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        Group *g = groupIter->second ;
+
+        // the count of faces for this group
+        // is in the map numFacesByGroup
+        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
+        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
+          warning( "Parity error:  number of faces in group `%s` "
+          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
+          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
+        g->combinedVerticesVTN.resize( numFacesInGroup ) ;
+        
+        for( int i = 0 ; i < groupIter->second->facesVertexIndices.size() ; i+=3 )
+        {
+          int vIndex1 = g->facesVertexIndices[ i ] ;
+          int vIndex2 = g->facesVertexIndices[ i+1 ] ;
+          int vIndex3 = g->facesVertexIndices[ i+2 ] ;
+
+          int nIndex1 = g->facesNormalIndices[ i ] ;
+          int nIndex2 = g->facesNormalIndices[ i + 1 ] ;
+          int nIndex3 = g->facesNormalIndices[ i + 2 ] ;
+
+          int tIndex1 = g->facesTextureIndices[ i ] ;
+          int tIndex2 = g->facesTextureIndices[ i + 1 ] ;
+          int tIndex3 = g->facesTextureIndices[ i + 2 ] ;
+
+          // Now each __3__ vertex index
+          // forms a triangle, so, perform the lookup.
+          VertexTN v1( vertices[ vIndex1 ], texCoords[ tIndex1 ], normals[ nIndex1 ] ) ;
+          VertexTN v2( vertices[ vIndex2 ], texCoords[ tIndex2 ], normals[ nIndex2 ] ) ;
+          VertexTN v3( vertices[ vIndex3 ], texCoords[ tIndex3 ], normals[ nIndex3 ] ) ;
+
+          g->combinedVerticesVTN[ i ] = v1 ;
+          g->combinedVerticesVTN[ i+1 ] = v2 ;
+          g->combinedVerticesVTN[ i+2 ] = v3 ;
+        }
+      }
+    }
+    #pragma endregion
+    #pragma region VT
+    else if( faceSpecMode & Texcoords )
+    {
+      // v/t
+      info( "VB as v/t" ) ;
+      
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        Group *g = groupIter->second ;
+
+        // the count of faces for this group
+        // is in the map numFacesByGroup
+        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
+        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
+          warning( "Parity error:  number of faces in group `%s` "
+          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
+          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
+        g->combinedVerticesVT.resize( numFacesInGroup ) ;
+
+        // Visit each index in the
+        // vertices index buffer
+        // using numerical indexing..
+        for( int i = 0 ; i < groupIter->second->facesVertexIndices.size() ; i+=3 )
+        {
+          int vIndex1 = g->facesVertexIndices[ i ] ;
+          int vIndex2 = g->facesVertexIndices[ i+1 ] ;
+          int vIndex3 = g->facesVertexIndices[ i+2 ] ;
+
+          int tIndex1 = g->facesTextureIndices[ i ] ;
+          int tIndex2 = g->facesTextureIndices[ i + 1 ] ;
+          int tIndex3 = g->facesTextureIndices[ i + 2 ] ;
+
+          // Now each __3__ vertex index
+          // forms a triangle, so, perform the lookup.
+          VertexT v1( vertices[ vIndex1 ], texCoords[ tIndex1 ] ) ;
+          VertexT v2( vertices[ vIndex2 ], texCoords[ tIndex2 ] ) ;
+          VertexT v3( vertices[ vIndex3 ], texCoords[ tIndex3 ] ) ;
+
+          g->combinedVerticesVT[ i ] = v1 ;
+          g->combinedVerticesVT[ i+1 ] = v2 ;
+          g->combinedVerticesVT[ i+2 ] = v3 ;
+        }
+      }
+    }
+    #pragma endregion
+    #pragma region VN
+    else if( faceSpecMode & Normals )
+    {
+      // v//n
+      info( "VB as v//n" ) ;
+      
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        Group *g = groupIter->second ;
+
+        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
+        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
+          warning( "Parity error:  number of faces in group `%s` "
+          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
+          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
+        g->combinedVerticesVN.resize( numFacesInGroup*3 ) ;
+
+        // Visit each index in the
+        // vertices index buffer
+        // using numerical indexing..
+        for( int i = 0 ; i < numFacesInGroup ; i+=3 )
+        {
+          
+          int vIndex1 = g->facesVertexIndices[ i ] ;
+          int vIndex2 = g->facesVertexIndices[ i+1 ] ;
+          int vIndex3 = g->facesVertexIndices[ i+2 ] ;
+
+          int nIndex1 = g->facesNormalIndices[ i ] ;
+          int nIndex2 = g->facesNormalIndices[ i + 1 ] ;
+          int nIndex3 = g->facesNormalIndices[ i + 2 ] ;
+
+          // Now each __3__ vertex index
+          // forms a triangle, so, perform the lookup.
+          VertexN v1( vertices[ vIndex1 ], normals[ nIndex1 ] ) ;
+          VertexN v2( vertices[ vIndex2 ], normals[ nIndex2 ] ) ;
+          VertexN v3( vertices[ vIndex3 ], normals[ nIndex3 ] ) ;
+
+          g->combinedVerticesVN[ i ] = v1 ;
+          g->combinedVerticesVN[ i+1 ] = v2 ;
+          g->combinedVerticesVN[ i+2 ] = v3 ;
+        }
+      }
+    }
+    #pragma endregion
+    #pragma region V
+    else
+    {
+      // v
+      info( "VB as v" ) ;
+      
+      // groupIter is <name,Group*>
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        Group *g = groupIter->second ;
+        
+        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
+        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
+          warning( "Parity error:  number of faces in group `%s` "
+          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
+          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
+        g->combinedVerticesV.resize( numFacesInGroup ) ;
+
+        for( int i = 0 ; i < groupIter->second->facesVertexIndices.size() ; i+=3 )
+        {
+          int vIndex1 = g->facesVertexIndices[ i ] ;
+          int vIndex2 = g->facesVertexIndices[ i+1 ] ;
+          int vIndex3 = g->facesVertexIndices[ i+2 ] ;
+
+          // Now each __3__ vertex index
+          // forms a triangle, so, perform the lookup.
+          Vertex v1 = vertices[ vIndex1 ] ;
+          Vertex v2 = vertices[ vIndex2 ] ;
+          Vertex v3 = vertices[ vIndex3 ] ;
+
+          //!! Hopefully the double copy will
+          // be optimized out by the compiler,
+          // but you could always eliminate v1,v2, and v3
+          g->combinedVerticesV[ i ] = v1 ;
+          g->combinedVerticesV[ i+1 ] = v2 ;
+          g->combinedVerticesV[ i+2 ] = v3 ;
+        }
+      }
+    }
+    #pragma endregion
   }
   
 public:
@@ -1543,38 +1858,65 @@ public:
     DX_CHECK( gpu->SetRenderState( D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL ), "spec d3dmcs_material" ) ;
     DX_CHECK( gpu->SetRenderState( D3DRS_EMISSIVEMATERIALSOURCE, D3DMCS_MATERIAL ), "emissive d3dmcs_material" ) ;
 
-
     DX_CHECK( gpu->SetVertexDeclaration( vDecl ), "SetVertexDeclaration FAILED!" ) ;
     
+
+    // It depends on
+    // vertex mode..
+    if( (faceSpecMode & Texcoords) && (faceSpecMode & Normals) )
+    {
+      // v/t/n
+      /*
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        DX_CHECK( gpu->SetMaterial( &groupIter->second->getMaterial() ), "Set material" ) ;
+        gpu->DrawPrimitiveUP(
+          D3DPT_TRIANGLELIST, 
+          numTriangleFacesTOTAL,
+          &combinedVerticesVTN[0],
+          sizeof(VertexTN) ) ;
+      }
+      */
+    }
+    else if(faceSpecMode & Texcoords)
+    {
+      // v/t
+    }
+    else if(faceSpecMode & Normals)
+    {
+      // v//n
+    }
+    else
+    {
+      // v
+    }
+
     // groupIter is <name,Group*>
     foreach( GroupMapIter, groupIter, groups )
     {
-      //printf( "Group %s has %d indices to visit\n", groupIter->second->getName(), groupIter->second->facesVertices.size() ) ;
-
-      // Q: how do you turn on the vertex, normal, texture buffers?
-      // A: Vertex format.
-
       DX_CHECK( gpu->SetMaterial( &groupIter->second->getMaterial() ), "Set material" ) ;
 
+      
+
+      /*
       gpu->DrawPrimitiveUP(
         D3DPT_TRIANGLELIST,
         0,
 
-        // We only USE facesVertices here, but
+        // We only USE facesVertexIndices here, but
         // we're drawing out of the COMBINED
         // vertex array.
 
-
         //!! THIS MUST BE CHANGED TO COMBINED.
-        groupIter->second->facesVertices.size(),
-        groupIter->second->facesVertices.size()/3,
-        &groupIter->second->facesVertices[0],
-
+        groupIter->second->facesVertexIndices.size(),
+        groupIter->second->facesVertexIndices.size()/3,
+        &groupIter->second->facesVertexIndices[0],
 
         D3DFMT_INDEX32,
         &combinedVertices[0],
         sizeof( D3DXVECTOR3 )
       ) ;
+      */
     }
     
   }

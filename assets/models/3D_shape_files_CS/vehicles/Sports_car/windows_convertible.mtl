@@ -1,0 +1,23 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+# Multi/Sub Material__10 (2) to come 
+#
+newmtl window_front
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+newmtl window_back
+Ka  1 1 1
+Kd  1 1 1
+Ks  1 1 1
+d  0.6
+Ns  0
+illum 2
+#
+# Multi/Sub Material__10 done 
+#
+# EOF

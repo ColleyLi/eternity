@@ -1,0 +1,50 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl Metal_Black_Plain
+Ka  0.4392 0.4392 0.4392
+Kd  0.4392 0.4392 0.4392
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+#
+newmtl Wood_Old_large
+Ka  0.85 0.85 0.85
+Kd  0.85 0.85 0.85
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+map_Kd old_wood.jpg
+#
+# Multi/Sub Material__11 (2) to come 
+#
+newmtl Wood_White_Plank
+Ka  1 1 1
+Kd  1 1 1
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+map_Kd white_plank.jpg
+#
+newmtl windows
+Ka  0.1373 0.1373 0.1373
+Kd  0.1373 0.1373 0.1373
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+#
+# Multi/Sub Material__11 done 
+#
+newmtl Wood_White_Plank
+Ka  1 1 1
+Kd  1 1 1
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+map_Kd white_plank.jpg
+#
+# EOF

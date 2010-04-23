@@ -1,0 +1,12 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl 14_-_Default
+Ka  1.0 1.0 1.0
+Kd  1.0 1.0 1.0
+Ks  0.2 0.2 0.2
+map_Kd red_white_stripe.tga
+d  1.0
+Ns  0.0
+illum 2
+#
+# EOF

@@ -1,0 +1,68 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl 3_-_Default
+Ka  0 0 0
+Kd  0 0 0
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+newmtl map
+Ka  1 1 1
+Kd  1 1 1
+Ks  0.9 0.9 0.9
+d  1
+Ns  0
+illum 2
+map_Kd ../map.tga
+#
+newmtl 1_-_Default
+Ka  0.502 0.502 0.502
+Kd  0.502 0.502 0.502
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+newmtl 2_-_Default
+Ka  0.702 0.702 0.702
+Kd  0.702 0.702 0.702
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+newmtl 4_-_Default
+Ka  0.4 0.4 0.4
+Kd  0.4 0.4 0.4
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+newmtl 1_-_Default
+Ka  0.502 0.502 0.502
+Kd  0.502 0.502 0.502
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+newmtl 7_-_Default
+Ka  0.302 0.302 0.302
+Kd  0.302 0.302 0.302
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+newmtl 8_-_Default
+Ka  0.098 0.098 0.098
+Kd  0.098 0.098 0.098
+Ks  1 1 1
+d  1
+Ns  0
+illum 2
+#
+# EOF

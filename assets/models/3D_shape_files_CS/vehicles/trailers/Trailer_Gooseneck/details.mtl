@@ -1,0 +1,31 @@
+newmtl Wood_Oak
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 0.329412 0.329412 0.329412
+map_Kd CEDFENCE.JPG
+d 1.0
+Ns 0.0
+ 
+newmtl Material__358
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 0.196078 0.196078 0.196078
+map_Kd Red_white.tga
+d 1.0
+Ns 10.0
+ 
+newmtl Material__426
+Ka 0.0 0.0 0.0
+Kd 0.0 0.0 0.0
+Ks 0.356863 0.356863 0.356863
+d 1.0
+Ns 10.0
+ 
+newmtl brake_lights
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 0.337255 0.337255 0.337255
+map_Kd brakes_off.tga
+d 1.0
+Ns 10.0
+ 
