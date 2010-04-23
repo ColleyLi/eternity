@@ -435,7 +435,10 @@
      keyed on floating-point numbers can produce
      undefined behavior if any of the keys are NaNs."
   
-  - 
++ Apr 23 / 2010 v0.1.6-obj-loading
+  - OBJ loader has progressed
+  - Added functions to change current directory,
+    WindowClass.h, cd() and cdPop()
 
   - TODO:
     - DOXYGEN-ATE all files

@@ -17,11 +17,18 @@ public:
     info( "Constructing simworld.." ) ;
     
     car = new Car() ;
+
+    // Change to the assets/models directory.
+    window->cd( ASSET( "models" ) ) ;
+    car->loadModel( "porsche.obj" ) ;
+    window->cdPop() ;
+
     track = new Track() ;
   }
   ~SimWorld()
   {
     delete car ;
+    delete track ;
   }
 
   void LoadCarSimFile( char* filename )

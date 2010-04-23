@@ -1,4 +1,5 @@
 #include "GameWindow.h"
+#include "ObjFileParse.h"  // to initialize it.
 
 GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
                        int windowXPos, int windowYPos,
@@ -22,6 +23,10 @@ GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
   spriteManSetWindowSize( windowWidth, windowHeight ) ;
   initSoundMan() ;
   paused = false ;
+
+
+  // Initialize the objfileloader
+  ObjFile::init( this ) ;
 }
 
 GameWindow::~GameWindow()
@@ -334,4 +339,7 @@ void GameWindow::setWorld( D3DXMATRIX *world )
 void GameWindow::setByCamera()
 {
   setCamera( camera.getEye(), camera.getLook(), camera.getUp() ) ;
+  //D3DXMATRIX view = camera.getView() ;
+  //HRESULT hr = gpu->SetTransform( D3DTS_VIEW, &view ) ;
+  //DX_CHECK( hr, "set view by cam" ) ;
 }

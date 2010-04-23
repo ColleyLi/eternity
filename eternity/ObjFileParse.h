@@ -22,6 +22,44 @@ using namespace std ;
 ///   32 == space
 #define IS_WHITE(x) (x==9 || x==10 || x==11 || x==13 || x==32)
 
+
+
+// Notes:
+// We're going to have to make a couple of
+// assumptions here.
+
+// The first is, A MODEL IS CONSISTENT
+// across its groups.
+// That means a model __does not__ use
+// v/t/n format for some vertices, and
+// only v/t format for others, while
+// v//n format for yet others.
+
+// Because of this assumption
+// we'll slam the entire model
+// into a single vertex buffer
+// and draw it with a single call.
+
+// So, a model might use multiple materials
+// throughout.  All this means is,
+// we need to adjust the DIFFUSE color
+// component as we traverse the model.
+
+// We can have a fmt like this:
+
+// v  (5.5,3.7,1.5)
+// t  (1.0,2.0)
+// n  (2.1,5.2,1.1)
+// cA (255,255,0)
+// cD (255,128,0)
+// cS (100,130,10)
+
+// So this results in a lot of repetition
+// of the "cA", "cD" and "cS" values
+// (because its basically the MATERIAL)...
+
+// So we'll go with the repeated data approach.
+
 struct Material
 {
 private:
@@ -60,18 +98,11 @@ private:
   /// the spriteId like, its SPRITE.
   int spriteId ;
 
-  D3DXVECTOR3 Ka, Kd, Ks ;
-
-  int illum ;
-
-  /// `d` is diffusion, for
-  /// things like glass.  presently unused.
-  float d ;
-
-  /// Specularity
-  float Ns ;
-
+  D3DMATERIAL9 d3dmaterial ;
+  
 public:
+  static D3DMATERIAL9 defaultMaterial ;
+
   #pragma region ctor and copy ctor
   Material()
   {
@@ -124,22 +155,13 @@ public:
   }
 
   // You don't need to read the next 3 lines ;)
-  D3DXVECTOR3 getKa(){return Ka;}
-  D3DXVECTOR3 getKd(){return Kd;}
-  D3DXVECTOR3 getKs(){return Ks;}
+  D3DCOLORVALUE getKa(){return d3dmaterial.Ambient;}
+  D3DCOLORVALUE getKd(){return d3dmaterial.Diffuse;}
+  D3DCOLORVALUE getKs(){return d3dmaterial.Specular;}
+  D3DCOLORVALUE getKe(){return d3dmaterial.Emissive;}
+  float getNs(){ return d3dmaterial.Power ; }
 
-  bool checkErr( char *fnName, char* str, int numArgsGot, int numArgsExpected )
-  {
-    if( numArgsGot != numArgsExpected )
-    {
-      warning( "%s failed to parse %d args from `%s`, parsed %d", fnName, numArgsExpected, str, numArgsGot ) ;
-      return false ;
-    }
-    else
-      return true ;
-  }
-  
-  #pragma region set vectors
+  #pragma region sets
   /// You set Ka from a string
   /// that you read from a file
   /// @param str The string to parse the
@@ -148,44 +170,44 @@ public:
   /// false if it failed (3 params not extracted)
   bool setKa( char* str )
   {
-    int res = sscanf( str, "Ka %f %f %f", &Ka.x, &Ka.y, &Ka.z ) ;
-    return checkErr( "setKa", str, res, 3 ) ;
+    int res = sscanf( str, "Ka %f %f %f",
+      &d3dmaterial.Ambient.r,
+      &d3dmaterial.Ambient.g,
+      &d3dmaterial.Ambient.b ) ;
+    return argCheck( "setKa", str, res, 3 ) ;
   }
 
   bool setKd( char* str )
   {
-    int res = sscanf( str, "Kd %f %f %f", &Kd.x, &Kd.y, &Kd.z ) ;
-    return checkErr( "setKd", str, res, 3 ) ;
+    int res = sscanf( str, "Kd %f %f %f",
+      &d3dmaterial.Diffuse.r,
+      &d3dmaterial.Diffuse.g,
+      &d3dmaterial.Diffuse.b ) ;
+    return argCheck( "setKd", str, res, 3 ) ;
   }
   
   bool setKs( char* str )
   {
-    int res = sscanf( str, "Ks %f %f %f", &Ks.x, &Ks.y, &Ks.z ) ;
-    return checkErr( "setKs", str, res, 3 ) ;
-  }
-  #pragma endregion
-
-  #pragma region non-vector get/sets
-  int getIllum(){ return illum ; }
-  float getD(){ return d ; }
-  float getNs(){ return Ns ; }
-
-  bool setIllum( char *str )
-  {
-    int res = sscanf( str, "illum %d", &illum ) ;
-    return checkErr( "setIllum", str, res, 1 ) ;
+    int res = sscanf( str, "Ks %f %f %f",
+      &d3dmaterial.Specular.r,
+      &d3dmaterial.Specular.g,
+      &d3dmaterial.Specular.b ) ;
+    return argCheck( "setKs", str, res, 3 ) ;
   }
 
-  bool setD( char *str )
+  bool setKe( char* str )
   {
-    int res = sscanf( str, "d %f", &d ) ;
-    return checkErr( "setD", str, res, 1 ) ;
+    int res = sscanf( str, "Kd %f %f %f",
+      &d3dmaterial.Emissive.r,
+      &d3dmaterial.Emissive.g,
+      &d3dmaterial.Emissive.b ) ;
+    return argCheck( "setKd", str, res, 3 ) ;
   }
 
   bool setNs( char *str )
   {
-    int res = sscanf( str, "Ns %f", &Ns ) ;
-    return checkErr( "setNs", str, res, 1 ) ;
+    int res = sscanf( str, "Ns %f", &d3dmaterial.Power ) ;
+    return argCheck( "setNs", str, res, 1 ) ;
   }
   #pragma endregion
 
@@ -208,6 +230,10 @@ public:
     cstrcpy( textureFilename, iFilename ) ;
   }
 
+  D3DMATERIAL9 getMaterial()
+  {
+    return d3dmaterial ;
+  }
 
   ~Material()
   {
@@ -234,7 +260,7 @@ private:
   char *name ;
 
 public:
-
+  
   /// The parent file, which
   /// contains the actual vertices
   /// referred to by facesVertices,
@@ -257,11 +283,9 @@ public:
 
 
   /// Each group uses a material,
-  /// depending on which PART of the
-  /// It seems that every time a
-  /// Group is selected, a material
-  /// is also specified.
-  Material material ;
+  /// It is a good assumption that
+  /// each group uses only ONE material.
+  Material *material ;
 
   Group( ObjFile *parent )
   {
@@ -283,6 +307,19 @@ public:
     cstrcpy( name, iName ) ;
   }
 
+  D3DMATERIAL9 getMaterial()
+  {
+    if( !material )
+    {
+      // use a default white material instead.
+      return Material::defaultMaterial ;
+    }
+    else
+    {
+      return material->getMaterial() ;
+    }
+  }
+
   ~Group()
   {
     cstrfree( name ) ;
@@ -290,7 +327,12 @@ public:
 } ;
 
 // Define the dictionary words
-// and their lengths 
+// and their lengths
+// In case you're wondering
+// why I define *_LEN for each
+// its to avoid hard-coding numbers
+// like 2, or 6, and also to avoid
+// unnecessary calls to strlen (efficiency)
 #define MTL_LIBRARY     "mtllib"
 #define MTL_LIBRARY_LEN 6
 #define MTL_NEW         "newmtl"
@@ -313,6 +355,7 @@ public:
 
 /// Switch material 
 #define OBJ_CHANGE_MATERIAL "usemtl"
+#define OBJ_CHANGE_MATERIAL_LEN 6
 
 /// A group is created by "g"
 #define OBJ_GROUP_NAME      "g"
@@ -323,8 +366,103 @@ typedef map<string, Material*>::iterator /* as simply */ MatMapIter ;
 typedef map<string, Group*> /* as simply */ GroupMap ;
 typedef map<string, Group*>::iterator /* as simply */ GroupMapIter ;
 
+typedef map<string, int> /* as simply */ MapStringInt ;
+typedef map<string, int>::iterator /* as simply */ MapStringIntIter ;
+
 class ObjFile
 {
+  /// We need to save vertex declarations
+  static IDirect3DVertexDeclaration9 *v, *vt, *vtn, *vn ;
+
+  /// The actual vertex declaration being used by
+  /// THIS obj model instance
+  IDirect3DVertexDeclaration9 *vDecl ;
+
+public:
+  /// Call this once to initialize the class.
+  static void init( GameWindow *window )
+  {
+    // Set up the default material
+    setColor( &Material::defaultMaterial.Ambient, 1.f,  1.f, 1.f, 1.f ) ;
+    setColor( &Material::defaultMaterial.Diffuse, 1.f,  1.f, 1.f, 1.f ) ;
+    setColor( &Material::defaultMaterial.Specular, 1.f,  1.f, 1.f, 1.f ) ;
+    setColor( &Material::defaultMaterial.Emissive, 0.f,  0.f, 0.f, 0.f ) ;
+
+
+    IDirect3DDevice9 *gpu = window->getGpu();
+
+    int cOffset = 0 ;
+
+    D3DVERTEXELEMENT9 pos ;
+    pos.Usage = D3DDECLUSAGE_POSITION ;
+    pos.UsageIndex = 0 ;
+    pos.Stream = 0 ;
+    pos.Type = D3DDECLTYPE_FLOAT3 ;
+    pos.Offset = 0 ;
+    pos.Method = D3DDECLMETHOD_DEFAULT ;
+    cOffset += 3*sizeof(float);
+
+    D3DVERTEXELEMENT9 tex ;
+    tex.Usage = D3DDECLUSAGE_TEXCOORD ;
+    tex.UsageIndex = 0 ;
+    tex.Stream = 0 ;
+    tex.Type = D3DDECLTYPE_FLOAT2 ;
+    tex.Offset = cOffset ;
+    tex.Method = D3DDECLMETHOD_DEFAULT ;
+    cOffset += 2*sizeof(float);
+
+    D3DVERTEXELEMENT9 norm ;
+    norm.Usage = D3DDECLUSAGE_NORMAL ;
+    norm.UsageIndex = 0 ;
+    norm.Stream = 0 ;
+    norm.Type = D3DDECLTYPE_FLOAT3 ;
+    norm.Offset = cOffset ;
+    norm.Method = D3DDECLMETHOD_DEFAULT ; 
+
+    
+    D3DVERTEXELEMENT9 end = D3DDECL_END() ;
+    
+    // Vertices only.  Uses a material for color.
+    D3DVERTEXELEMENT9 *vertexElementsV = new D3DVERTEXELEMENT9[2] ;
+    vertexElementsV[ 0 ] = pos ;
+    vertexElementsV[ 1 ] = end ;
+    // CREATE THE DECLARATION
+    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsV, &v ), "CreateVertexDeclaration FAILED v!" ) ;
+
+    // VT
+    // Vertices and textures.
+    D3DVERTEXELEMENT9 *vertexElementsVT = new D3DVERTEXELEMENT9[3] ;
+    vertexElementsVT[ 0 ] = pos ;
+    vertexElementsVT[ 1 ] = tex ;
+    vertexElementsVT[ 2 ] = end ;
+    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVT, &vt ), "CreateVertexDeclaration FAILED vt!" ) ;
+
+    // VTN
+    D3DVERTEXELEMENT9 *vertexElementsVTN = new D3DVERTEXELEMENT9[4] ;
+    vertexElementsVTN[ 0 ] = pos ;
+    vertexElementsVTN[ 1 ] = tex ;
+    vertexElementsVTN[ 2 ] = norm ;
+    vertexElementsVTN[ 3 ] = end ;
+    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVTN, &vtn ), "CreateVertexDeclaration FAILED vtn!" ) ;
+
+
+    // VN
+    D3DVERTEXELEMENT9 *vertexElementsVN = new D3DVERTEXELEMENT9[3] ;
+    vertexElementsVN[ 0 ] = pos ;
+    norm.Offset = 3*sizeof(float);  // This needed to be updated
+    vertexElementsVN[ 2 ] = norm ;
+    vertexElementsVN[ 3 ] = end ;
+    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVN, &vn ), "CreateVertexDeclaration FAILED vn!" ) ;
+
+
+    
+
+    
+
+  }
+
+private:
+
   GameWindow * window ;
 
   string originalObjFilename, originalMtllibName ;
@@ -345,7 +483,39 @@ class ObjFile
   /// textures..
   vector<D3DXVECTOR2> texCoords ;
 
+  // Count up the number of faces
+  // stored in each group.
+  MapStringInt numFacesByGroup ;
 
+  /// How faces are specified in this file.
+  /// It can be any combination of these 3
+  enum FaceSpecMode
+  {
+    Vertices  = 1 << 0,
+    Normals   = 1 << 1,
+    Texcoords = 1 << 2
+  } ;
+  FaceSpecMode faceSpecMode ;
+
+  /// The string format we expect
+  /// faces to be in, depends on
+  /// FaceSpecMode.
+  /// The general format is
+  /// f v/vt/vn v/vt/vn v/vt/vn v/vt/vn
+  
+  /// For Vertices only, we use something like
+  /// f v v v
+  /// f 3 5 1
+  
+  /// For Vertices|Normals (no texture coords), we use
+  /// f v//vn v//vn v//vn
+  /// f 3//2 1//5 6//1
+
+  /// For Vertices|Texcoords, we use
+  /// f v/vt v/vt v/vt
+  /// f 4/1 3/5 2/2
+
+  char *faceStringFormat ;
 
 public:
 
@@ -366,6 +536,9 @@ public:
     // Save off the reference
     window = gameWindow ;
 
+    // Initialize face spec mode to nothing
+    faceSpecMode = (FaceSpecMode)0 ;
+
     if( !objFilename )
     {
       error( "I can't open a NULL pointer filename!" ) ;
@@ -377,7 +550,10 @@ public:
     // Try and open the file
     FILE * objFile = fopen( objFilename, "r" ) ;
     if( !objFile )
+    {
       error( "ObjFile: %s not found", objFilename ) ;
+      return ;
+    }
 
     // PASS #1
     firstPass( objFile ) ;
@@ -388,30 +564,26 @@ public:
 
     // PASS #2
     secondPass( objFile ) ;
-    
-    
-
-    
   }
 
   
-
+private:
   void firstPass( FILE* f )
   {
+    
     // Get the material library filename,
     // open and load all materials
-    int numVerts=0, numNormals=0, numTexCoords=0, numFaces=0 ;
+    // numFacesStock is just the number of "f 3 4 5" statements
+    // in the file, while
+    // numFacesTOTAL is total # faces, after triangulation
+    int numVerts=0, numNormals=0, numTexCoords=0, numFacesTOTAL=0, numFacesStock = 0 ;
 
-    // Count up the number of faces
-    // stored in each group.
-    map<string, int> numFacesByGroup ;
-    
-    string currentGroup = ""; // we must know what
+    string currentGroupName = ""; // we must know what
     // group we're on at all times.
 
     char buf[ 300 ] ;
 
-    #pragma region parse file
+    #pragma region parse file pass_1
     while( !feof( f ) )
     {
       // Count normals,
@@ -424,10 +596,15 @@ public:
       // a v, vn, vt, f
       
       fgets( buf, 300, f ) ;
+
+      // If the newline gets left on at the end,
+      // we actually want to cut it off.
+      cstrnulllastnl( buf ) ;
+
       if( buf[0] == '#' )
       {
         // Its a comment, pass it thru
-        info( buf ) ;
+        //info( buf ) ;
       }
       else if( buf[0] == 'v' && buf[1] == 'n' )
       {
@@ -454,8 +631,45 @@ public:
       }
       else if( buf[0] == 'f' && IS_WHITE(buf[1]) )
       {
-        // face
-        numFaces++ ;
+        // Actually, ALWAYS detect to see if
+        // there are any anomolies.
+        FaceSpecMode fsm = (FaceSpecMode)getFaceSpecMode( buf ) ;
+        if( fsm != faceSpecMode )
+        {
+          if( !faceSpecMode )
+          {
+            info( "FaceSpecMode is `%s`", getFaceSpecModeString( fsm ) ) ;
+          }
+          else
+          {
+            warning( "Anomaly detected, facespecmode changed from %s to %s",
+               getFaceSpecModeString( faceSpecMode ),
+               getFaceSpecModeString( fsm ) ) ;
+          }
+          
+          faceSpecMode = fsm ;
+        }
+
+        // face. just keep track of total, this
+        // count is a sort of parity check
+        // (total #faces counted across GROUPS == total #faces counted)
+        // The numbers wouldn't add up only if there
+        // was a programmer error in the parse
+        numFacesStock++ ;
+
+        // We save ONLY TRIANGLES, not other types
+        // of polygons.  This means the NUMBER OF FACES
+        // that results from a line
+        // f 3 6 9 1
+        // is __2__, not just one.
+
+        // if the faces are specified
+        // as QUADS, or pentagons, then we need to break this
+        // into (VERTS-2) faces.
+        int verticesInFace = countVerts( buf ) ;
+        int facesFromVerts = verticesInFace - 2 ;
+
+        numFacesTOTAL += facesFromVerts ;
 
         // Increase the numFaces count
         // FOR THE CURRENT GROUP
@@ -464,31 +678,33 @@ public:
         // then it will already have been
         // inserted into the `numFacesByGroup`
         // map
-        map<string,int>::iterator iter = numFacesByGroup.find( currentGroup ) ;
+        MapStringIntIter iter = numFacesByGroup.find( currentGroupName ) ;
         if( iter == numFacesByGroup.end() )
         {
           error( "Obj file parse pass #1:  face specified "
-            "to join a group that doesn't exist `%s`", currentGroup.c_str() ) ;
+            "to join a group that doesn't exist `%s`", currentGroupName.c_str() ) ;
         }
         else
         {
           // The group name exists already, so increment face count
-          iter->second = iter->second + 1 ;
+          iter->second = iter->second + facesFromVerts ;
         }
       }
       else if( buf[0] == 'g' && IS_WHITE(buf[1]) )
       {
         // Count DISTINCT groups, which'll just be groups.size() when
-        // thsi is all done
+        // this is all done
 
         // A group.  Create it now, unless it already exists
 
         // Get the name
         char *groupName = buf+2 ; // pass "g ", name goes to end of line
 
-        cstrnulllastnl(groupName) ;
+        // If there's a long name with spaces just cut off the extra names
+        // this puts it in the same group as the first name.
+        cstrnullnextsp( groupName ) ;
 
-        currentGroup = groupName ;
+        currentGroupName = groupName ;
 
         //!! two problems here to do with file anomolies.
         // 1 Sometimes files contain an EMPTY "g",
@@ -500,7 +716,8 @@ public:
         // "more than one name" in the group name string.
         // I'm not sure whta this means either, but it
         // ends up creating a "group" that has a unique name
-        // (in this implemenation!)
+        // (in this implemenation!).  FIXED by cutoff.
+
         // instead of being a combination...
         // I'm going to leave it that way since it doesn't
         // seem to make sense to define groups of faces
@@ -513,7 +730,6 @@ public:
         {
           // The group exists
           // so skip.
-          
         }
         else
         {
@@ -528,7 +744,7 @@ public:
           ) ) ;
 
           // Initialize numFaces @ 0
-          numFacesByGroup.insert( make_pair( currentGroup, 0 ) ) ;
+          numFacesByGroup.insert( make_pair( currentGroupName, 0 ) ) ;
         }
       }
       else if( !strncmp( buf, MTL_LIBRARY, MTL_LIBRARY_LEN ) )
@@ -542,8 +758,8 @@ public:
     }
     #pragma endregion
 
-    info( "verts=%d, normals=%d, texCoords=%d, faces=%d, groups=%d",
-          numVerts, numNormals, numTexCoords, numFaces, groups.size() ) ;
+    info( "verts=%d, normals=%d, texCoords=%d, stock faces=%d triangulated faces=%d, groups=%d",
+        numVerts, numNormals, numTexCoords, numFacesStock, numFacesTOTAL, groups.size() ) ;
     info( "First pass on %s complete", originalObjFilename.c_str() ) ;
 
     // Allocate space in the vertices, normals, texCoords arrays
@@ -553,23 +769,580 @@ public:
 
     // faces are divided up into the different groups,
     // so we can't really say right now faces.resize()..
-    for( map<string, int>::iterator iter = numFacesByGroup.begin() ;
-         iter != numFacesByGroup.end() ;
-         ++iter )
+    foreach( MapStringIntIter, iter, numFacesByGroup )
     {
-      info( "Group `%s` has %d faces", iter->first.c_str(), iter->second ) ;
+      int faces = iter->second ;
+      info( "Group `%s` has %d faces", iter->first.c_str(), faces ) ;
+
+      // Allocate enough space in each group object
+      // to hold that many faces.
+      
+      // Make sure the group exists
+      GroupMapIter groupIter = groups.find( iter->first ) ;
+      if( groupIter == groups.end() )
+      {
+        // NOT FOUND!
+        // This shouldn't ever happen if the parse code is correct
+        error( "Group `%s` doesn't exist in the `groups` collection", iter->first.c_str() ) ;
+      }
+      else
+      {
+        groupIter->second->facesVertices.resize( faces ) ;
+        groupIter->second->facesNormals.resize( faces ) ;
+        groupIter->second->facesTexture.resize( faces ) ;
+      }
     }
 
-    // IF THERE WAS NO MATERIAL FILENAME
+
+    // Determine what vertex declaration to use
+    // based on face mode
+    if( (faceSpecMode & FaceSpecMode::Texcoords) && (faceSpecMode & FaceSpecMode::Normals) ) // v/t/n
+      vDecl = vtn ;
+    else if( faceSpecMode & FaceSpecMode::Texcoords ) // v/t
+      vDecl = vt ; 
+    else if( faceSpecMode & FaceSpecMode::Normals )   // v//n
+      vDecl = vn ;
+    else   // v
+      vDecl = v ;
+
+    //!! IF THERE WAS NO MATERIAL FILENAME
     // BY EOF, THEN CREATE A DEFAULT MATERIAL
   }
 
-  void secondPass( FILE* file )
+  int countVerts( char *buf )
+  {
+    
+    int count = 0 ;
+    char *line = buf+2 ;
+
+    // advance until the first nonwhitespace character
+    // past the "f "
+    while( isspace( *line ) )  line++ ;
+
+    int len = strlen( line ) ;
+    bool onWord = true ;
+    
+    for( int i = 0 ; i < len; i++ )
+    {
+      if( isspace( line[i] ) )
+      {
+        // INcrement count only when
+        // stepping OFF word to whitespace
+        if( onWord )
+        {
+          count++ ;
+          onWord = false ;
+        }
+      }
+      else
+      {
+        onWord = true ;
+      }
+    }
+
+    // If you ended while still on word
+    // then increment count here to count
+    // the "last" word
+    if( onWord )
+      count++ ;
+
+    return count ;
+  }
+
+  char* getFaceSpecModeString( FaceSpecMode fsm )
+  {
+    if( (fsm & Vertices) && (fsm & Normals) && (fsm & Texcoords) )
+      return "v/t/n/" ;
+    else if( (fsm & Vertices) && (fsm & Texcoords) )
+      return "v/t";
+    else if( (fsm & Vertices) && (fsm & Normals) )
+      return "v//n";
+    else if( fsm & Vertices )
+      return "v" ;
+    else
+      return "INVALID FaceSpecMode" ;
+    
+  }
+
+  int getFaceSpecMode( char *str )
+  {
+    char *pos = str+2 ; // skip "f "
+    
+    while( !isspace(*pos) )
+    {
+      if( *pos == '/' )  // Hit first slash.
+      {
+        // Check if we have a slash right next to it,
+        ++pos ;
+        if( *pos == '/' )
+          return FaceSpecMode::Vertices | FaceSpecMode::Normals ;  // "v//n"
+
+        // If we didn't have a slash right next to it,
+        // it'll either be DIGITS then white space (v/t)
+        // or there'll be ANOTHER white slash before
+        // the next white space.
+
+        while( !isspace(*pos) )
+        {
+          if( *pos == '/' )
+            return FaceSpecMode::Vertices | FaceSpecMode::Texcoords | FaceSpecMode::Normals ; // "v/t/n"
+          ++pos ;
+        }
+
+        // if it WAS a space next (before
+        // hitting a /) then we have v/t
+        return FaceSpecMode::Vertices | FaceSpecMode::Texcoords ; //"v/t"
+      }
+
+      // next char.
+      ++pos;
+    }
+    
+    // If didn't return above, means hit space
+    // before hitting slash at all
+    return FaceSpecMode::Vertices ; // "v"
+  }
+
+  bool parseVertex( char *buf, D3DXVECTOR3 *v )
+  {
+    int res = sscanf( buf, "v %f %f %f", &v->x, &v->y, &v->z ) ;
+    return argCheck( "parseVertex", buf, res, 3 ) ;
+  }
+
+  bool parseNormal( char *buf, D3DXVECTOR3 *v )
+  {
+    int res = sscanf( buf, "vn %f %f %f", &v->x, &v->y, &v->z ) ;
+    return argCheck( "parseNormal", buf, res, 3 ) ;
+  }
+
+  bool parseTexcoord( char *buf, D3DXVECTOR2 *v )
+  {
+    int res = sscanf( buf, "vt %f %f", &v->x, &v->y ) ;
+    return argCheck( "parseTexcoord", buf, res, 2 ) ;
+  }
+
+  void extractFaces( char *buf, int numVerts, Group *group, int index )
+  {
+    // We know how many vertices to expect,
+    // so we're going to save each in a temporary buffer
+    // The reason for the temporary buffer
+    // is we need to triangulate
+    vector<int> verts( numVerts ) ;
+    vector<int> normals( numVerts ) ;
+    vector<int> texcoords( numVerts ) ;
+
+    // Extract numVerts from buf
+    // f 2 4 1 5
+    // f 8/5 2/7 1/3 7/7 1/9 3/7
+    // f 2//6 3//5 1//8 8//3 9//7
+    // f 9/2/5 8/6/7 9/1/3
+
+    // Assume we start here.  So we know everything about the line.  
+
+    FaceSpecMode ff = (FaceSpecMode)getFaceSpecMode( buf ) ; // E.g. "v/t" ;
+
+    char *line = buf + 2 ;
+    while( isspace( *line ) ) ++line ; // skip past any whitespace in front
+
+    // now, based on the line format, use the correct format string
+    if( (ff & Texcoords) && (ff & Normals) )
+    {
+      // v/t/n
+      int v,t,n;
+      char *pos = line ;
+      int vReadCount = 0 ;
+
+      while( *pos ) // while we haven't reached the null terminator yet
+      {
+        int res = sscanf( pos, "%d/%d/%d", &v, &t, &n ) ;
+        
+        // Make a vertex.
+        verts[ vReadCount ] = v ;
+        texcoords[ vReadCount ] = t ;
+        normals[ vReadCount ] = n ;
+
+        vReadCount++ ;
+
+        cstrNextWord( pos ) ;
+      }
+
+      #pragma region triangulation
+      int i ;
+      i = 0 ;
+      for( int c = 1 ; c < (numVerts-1) ; c++ )
+      {
+        if( index +i+2 >= (int)group->facesVertices.size() )
+        {
+          //!! this error really shouldn't happen
+          // and needs to be fixed
+          error("`%s` too big for its britches", group->getName()) ;
+          continue;
+        }
+        // always start with 0th vertex.
+        group->facesVertices[ index + i ] = verts[ 0 ] ;
+        group->facesTexture[ index + i ] = texcoords[ 0 ] ;
+        group->facesNormals[ index + i ] = normals[ 0 ] ;
+
+        // tie with c'th vertex
+        group->facesVertices[ index + i+1 ] = verts[ c ] ;
+        group->facesTexture[ index + i+1 ] = texcoords[ c ] ;
+        group->facesNormals[ index + i+1 ] = normals[ c ] ;
+
+        // and c'th+1 vertex
+        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
+        group->facesTexture[ index + i+2 ] = texcoords[ c+1 ] ;
+        group->facesNormals[ index + i+2 ] = normals[ c+1 ] ;
+
+        // Advance by 3 faces, we just added 3 coords
+        i += 3 ;
+      }
+      #pragma endregion
+    }
+    else if( ff & Normals )
+    {
+      // v//n
+      int v,n;
+
+      char *pos = line ;
+      int vReadCount = 0 ;
+
+      while( pos )
+      {
+        int res = sscanf( pos, "%d//%d", &v, &n ) ;
+        
+        verts[ vReadCount ] = v ;
+        normals[ vReadCount ] = n ;
+
+        vReadCount++ ;
+
+        // Advance to the next "word"
+        cstrNextWord( pos ) ;
+      }
+
+      #pragma region triangulation
+
+      // NOW we have numVerts verts.
+      // So now, if this number is larger than 3,
+      // we need to triangulate.
+
+      // The first face is just the first 3,
+      // as they were
+      int i ;
+      i = 0 ;
+      for( int c = 1 ; c < (numVerts-1) ; c++ )
+      {
+        if( index +i+2 >= (int)group->facesVertices.size() )
+        {
+          //!! this error really shouldn't happen
+          // and needs to be fixed
+          error("`%s` too big for its britches", group->getName()) ;
+          continue;
+        }
+        // always start with 0th vertex.
+        group->facesVertices[ index + i ] = verts[ 0 ] ;
+        group->facesNormals[ index + i ] = normals[ 0 ] ;
+
+        // tie with c'th vertex
+        group->facesVertices[ index + i+1 ] = verts[ c ] ;
+        group->facesNormals[ index + i+1 ] = normals[ c ] ;
+
+        // and c'th+1 vertex
+        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
+        group->facesNormals[ index + i+2 ] = normals[ c+1 ] ;
+
+        // Advance by 3 faces, we just added 3 coords
+        i += 3 ;
+      }
+      #pragma endregion
+    }
+    else if( ff & Texcoords )
+    {
+      // v/t
+      int v,t ;
+
+      char *pos = line ;
+      int vReadCount = 0 ;
+
+      while( pos )
+      {
+        int res = sscanf( pos, "%d/%d", &v, &t ) ;
+        
+        verts[ vReadCount ] = v ;
+        texcoords[ vReadCount ] = t ;
+
+        vReadCount++ ;
+        cstrNextWord( pos ) ;
+      }
+
+      #pragma region triangulation
+
+      int i ;
+      i = 0 ;
+      for( int c = 1 ; c < (numVerts-1) ; c++ )
+      {
+        if( index +i+2 >= (int)group->facesVertices.size() )
+        {
+          //!! this error really shouldn't happen
+          // and needs to be fixed
+          error("`%s` too big for its britches", group->getName()) ;
+          continue;
+        }
+        // always start with 0th vertex.
+        group->facesVertices[ index + i ] = verts[ 0 ] ;
+        group->facesTexture[ index + i ] = texcoords[ 0 ] ;
+
+        // tie with c'th vertex
+        group->facesVertices[ index + i+1 ] = verts[ c ] ;
+        group->facesTexture[ index + i+1 ] = texcoords[ c ] ;
+
+        // and c'th+1 vertex
+        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
+        group->facesTexture[ index + i+2 ] = texcoords[ c+1 ] ;
+
+        // Advance by 3 faces, we just added 3 coords
+        i += 3 ;
+      }
+      #pragma endregion
+    }
+    else
+    {
+      // v
+      int v;
+
+      char *pos = line ;
+      int vReadCount = 0 ;
+
+      while( pos )
+      {
+        sscanf( pos, "%d", &v ) ;
+        verts[ vReadCount ] = v ;
+        
+        vReadCount++ ;
+        cstrNextWord( pos ) ;
+      }
+
+      #pragma region triangulation
+
+      int i ;
+      i = 0 ;
+      for( int c = 1 ; c < (numVerts-1) ; c++ )
+      {
+        if( index +i+2 >= (int)group->facesVertices.size() ) // 4018 needs to go away.
+        {
+          //!! this error really shouldn't happen
+          // and needs to be fixed
+          error("`%s` too big for its britches", group->getName()) ;
+          continue;
+        }
+        // always start with 0th vertex.
+        group->facesVertices[ index + i ] = verts[ 0 ] ;
+
+        // tie with c'th vertex
+        group->facesVertices[ index + i+1 ] = verts[ c ] ;
+
+        // and c'th+1 vertex
+        group->facesVertices[ index + i+2 ] = verts[ c+1 ] ;
+
+        // Advance by 3 faces, we just added 3 coords
+        i += 3 ;
+      }
+
+      #pragma endregion
+    }
+  }
+
+  void secondPass( FILE* f )
   {
     // In the second pass we actually
     // read up the vertices and save them.
 
+    // A lot of this code is similar
+    // to the first pass, only we
+    // are actually snapping out the data here.
 
+    int numVerts=0, numNormals=0, numTexCoords=0, numFacesTOTAL=0, numFacesStock=0 ;
+
+    MapStringInt facesByGroupCount ;  // this is parallel to numFacesByGroup.
+    // By the end of the second pass they will match
+    // exactly, but facesByGroupCount needs to TALLY
+    // up the faces as they come in so we know what
+    // entry in the arrays to index as we're adding faces.
+
+    string currentGroupName = ""; // we must know what
+    // group we're on at all times.
+
+    char buf[ 300 ] ;
+
+    #pragma region parse file pass_2
+   
+    Group *currentGroup = NULL ;
+
+    while( !feof( f ) )
+    {
+      fgets( buf, 300, f ) ;
+      cstrnulllastnl( buf ) ;
+
+      if( buf[0] == '#' )
+      {
+        // Its a comment, pass it thru
+        //info( buf ) ;
+      }
+      else if( buf[0] == 'v' && buf[1] == 'n' )
+      {
+        // vertex normal
+        
+        // Actually save it.
+        parseNormal( buf, &normals[ numNormals ] ) ;
+
+        // Increment the counter so we know which normal we're on
+        numNormals++ ;
+      }
+      else if( buf[0] == 'v' && buf[1] == 't' )
+      {
+        //texture coordinate
+        parseTexcoord( buf, &texCoords[ numTexCoords ] ) ;
+        numTexCoords++ ;
+      }
+      else if( buf[0] == 'v' && buf[1] == 'p' )
+      {
+        // parameter space vertices
+        warning( "Sorry, parameter space vertices not supported, ignoring" ) ;
+      }
+      else if( buf[0] == 'v' && IS_WHITE(buf[1]) )
+      {
+        // The only other thing that starts 
+        // with 'v' is a vertex itself.
+        // the buf[1] character will be
+        // either a SPACE or a TAB
+        parseVertex( buf, &vertices[ numVerts ] ) ;
+        numVerts++ ;
+      }
+      else if( buf[0] == 'f' && IS_WHITE(buf[1]) )
+      {
+        #pragma region face parse
+        numFacesStock++ ;
+        
+        int verticesInFace = countVerts( buf ) ;
+        int facesFromVerts = verticesInFace - 2 ;
+
+        numFacesTOTAL += facesFromVerts ;
+
+
+        MapStringIntIter iter = facesByGroupCount.find( currentGroupName ) ;
+        if( iter == facesByGroupCount.end() )
+        {
+          error( "Obj file parse pass #2:  face specified "
+            "to join a group that doesn't exist `%s`", currentGroupName.c_str() ) ;
+        }
+        else
+        {
+          // The group name exists already,
+          // which is good as we are second pass.
+
+         
+          // Save the face in the current group
+          if( !currentGroup )
+          {
+            error( "I can't save this face because there is no current group defined" ) ;
+          }
+          else
+          {
+            // Now, parse off the face values.
+            extractFaces( buf, verticesInFace, currentGroup, iter->second ) ;
+          }
+
+
+          // HERE WE UPDATE "WHAT FACE WE ARE ON"
+          iter->second = iter->second + facesFromVerts ;
+
+          // BECAUSE FACES CAN BE SPECIFIED IN ANY ORDER,
+          // (like, file can weave in and out of different groups)
+          // You really have to be careful about 
+          // keeping this number up to date.
+
+          /*
+          if( iter->second > numFacesByGroup[ iter->first ] )
+          {
+            error( "Really weird error, face count exceeds what first pass got" ) ;
+          }
+          */
+          
+        }
+
+        #pragma endregion
+      }
+      else if( buf[0] == 'g' && IS_WHITE(buf[1]) )
+      {
+        char *groupName = buf+2 ; // pass "g ", name goes to end of line
+
+        cstrnullnextsp( groupName ) ;
+
+        currentGroupName = groupName ;
+
+        currentGroup = getGroup( groupName ) ;
+        if( currentGroup )
+        {
+          // The group exists
+          // We are switching to entry into this group.
+          //info( "Switching to group `%s`", groupName ) ;
+
+
+        }
+        else
+        {
+          // This shouldn't happen, it means we missed
+          // creating a group in the first pass
+          error( "Obj file parse pass #2:  group `%s` doesn't exist!", groupName ) ;
+        }
+
+        
+        // on the second pass we only need
+        // to keep `facesByGroupCount` updated
+        // If its the first time encountering
+        // this group, then create it and init
+        // its face count to 0.
+        MapStringIntIter iter = facesByGroupCount.find( currentGroupName ) ;
+        if( iter == facesByGroupCount.end() )
+        {
+          // Initialize numFaces @ 0
+          facesByGroupCount.insert( make_pair( currentGroupName, 0 ) ) ;
+        }
+      }
+      else if( !strncmp( buf, OBJ_CHANGE_MATERIAL, OBJ_CHANGE_MATERIAL_LEN ) )
+      {
+        // the material change affects
+        // the properties of the current group only.
+        string mtlName = buf+(OBJ_CHANGE_MATERIAL_LEN+1) ;
+
+        // Set the current group's material
+        // to the loaded material, and let that be that.
+        currentGroup->material = getMaterial( mtlName ) ;
+        // Note if currentGroup->material is NULL
+        // then at draw time you'll get a default material
+        // used (pure white)
+      }
+      else if( !strncmp( buf, MTL_LIBRARY, MTL_LIBRARY_LEN ) )
+      {
+        // Pass #1 loads the material lib file
+        info( "Pass #2:  pass 1 loads the material lib file, skipping" ) ;
+      }
+    }
+    #pragma endregion
+
+    setupVertexBuffers() ;
+  }
+
+  Material* getMaterial( string materialName )
+  {
+    MatMapIter matEntry = materials.find( materialName ) ;
+    if( matEntry == materials.end() )
+    {
+      return NULL ;
+    }
+    else
+    {
+      return matEntry->second ;
+    }
   }
 
   Group* getGroup( string groupName )
@@ -595,8 +1368,11 @@ public:
       return ;
     }
 
+
+
     // Save this filename forever :)
     originalMtllibName = mtllibName ;
+    
 
     FILE *mtlFile = fopen( mtllibName, "r" ) ;
     if( !mtlFile )
@@ -611,6 +1387,7 @@ public:
     while( !feof( mtlFile ) )
     {
       fgets( buf, 300, mtlFile ) ;
+      cstrnulllastnl( buf ) ;
 
       if( buf[0] == '#' )
       {
@@ -643,10 +1420,10 @@ public:
             currentMaterial->getName(),
             currentMaterial->getTextureFilename() ) ;
 
-          // Make a NEW material
-          // / reset the material
-          currentMaterial = new Material() ;
         }
+        // Make a NEW material
+        // / reset the material
+        currentMaterial = new Material() ;
 
         char *mtlName = buf+(MTL_NEW_LEN+1) ;
 
@@ -681,14 +1458,20 @@ public:
 
         // The illum term is being specified
         else if( !strncmp( buf, MTL_ILLUM, MTL_ILLUM_LEN ) )
-          currentMaterial->setIllum( buf ) ;
+        {
+          // illum term not supported by d3d
+          //currentMaterial->setIllum( buf ) ;
+        }
 
         // The Ns term is being specified
         else if( !strncmp( buf, MTL_NSPEC, MTL_NSPEC_LEN ) )
           currentMaterial->setNs( buf ) ;
 
         else if( !strncmp( buf, MTL_D, MTL_D_LEN ) )
-          currentMaterial->setD( buf ) ;
+        {
+          // d term not supported by d3d
+          //currentMaterial->setD( buf ) ;
+        }
 
         else if( !strncmp( buf, MTL_TEXTURE_NAME, MTL_TEXTURE_NAME_LEN ) )
         {
@@ -705,7 +1488,6 @@ public:
           currentMaterial->setTextureFilename( spriteFile ) ;
 
         }
-
       }
     }
 
@@ -724,13 +1506,82 @@ public:
 
   }
 
+  void setupVertexBuffers()
+  {
+    // We need to set up vertex arrays
+    IDirect3DDevice9 *gpu = window->getGpu() ;
+
+    // Combine all the groups..
+  }
   
+public:
   void computeNormals()
   {
     // Computes normals on loaded vertex set
   }
 
+  void draw()
+  {
+    // first let's draw without vb's
+    IDirect3DDevice9 *gpu = window->getGpu() ;
+
+    //printf( "There are %d verts to draw\n", this->vertices.size() ) ;
+  
+    // Set up all the render states.
+    DX_CHECK( gpu->SetRenderState( D3DRS_COLORVERTEX, TRUE ), "ColorVertex enable" ) ;
+    DX_CHECK( gpu->SetRenderState( D3DRS_AMBIENT, D3DCOLOR_XRGB(0,0,0) ), "Turn off ambient color" ) ;
+    DX_CHECK( gpu->SetRenderState( D3DRS_SPECULARENABLE, TRUE ), "Specular enable" ) ;
+    
+    // For materials to work lighting must be on
+    DX_CHECK( gpu->SetRenderState( D3DRS_LIGHTING, TRUE ), "Lighting on" ) ;
+
+    // Set up source of ambient, diffuse, specular and
+    // emissive vertex colorings to all come from
+    // the MATERIAL.
+    DX_CHECK( gpu->SetRenderState( D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL ), "set ambient d3dmcs_material" ) ;
+    DX_CHECK( gpu->SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL ), "diff d3dmcs_material" );
+    DX_CHECK( gpu->SetRenderState( D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL ), "spec d3dmcs_material" ) ;
+    DX_CHECK( gpu->SetRenderState( D3DRS_EMISSIVEMATERIALSOURCE, D3DMCS_MATERIAL ), "emissive d3dmcs_material" ) ;
+
+
+    DX_CHECK( gpu->SetVertexDeclaration( vDecl ), "SetVertexDeclaration FAILED!" ) ;
+    
+    // groupIter is <name,Group*>
+    foreach( GroupMapIter, groupIter, groups )
+    {
+      //printf( "Group %s has %d indices to visit\n", groupIter->second->getName(), groupIter->second->facesVertices.size() ) ;
+
+      // Q: how do you turn on the vertex, normal, texture buffers?
+      // A: Vertex format.
+
+      DX_CHECK( gpu->SetMaterial( &groupIter->second->getMaterial() ), "Set material" ) ;
+
+      gpu->DrawPrimitiveUP(
+        D3DPT_TRIANGLELIST,
+        0,
+
+        // We only USE facesVertices here, but
+        // we're drawing out of the COMBINED
+        // vertex array.
+
+
+        //!! THIS MUST BE CHANGED TO COMBINED.
+        groupIter->second->facesVertices.size(),
+        groupIter->second->facesVertices.size()/3,
+        &groupIter->second->facesVertices[0],
+
+
+        D3DFMT_INDEX32,
+        &combinedVertices[0],
+        sizeof( D3DXVECTOR3 )
+      ) ;
+    }
+    
+  }
+
   
 } ;
+
+
 
 #endif // OBJ_FILE_PARSE_H

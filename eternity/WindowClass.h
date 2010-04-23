@@ -14,6 +14,7 @@
 // stl
 #include <vector>
 #include <map>
+#include <stack>
 
 // Graphics
 #include <d3d9.h>      // core direct3d
@@ -69,6 +70,8 @@ protected:
   // Windows
   HINSTANCE hInstance ;
   HWND hwnd ;
+  
+  stack<char*> directories ;
 
 public:
   Window( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
@@ -77,6 +80,15 @@ public:
   virtual bool setSize( int width, int height, bool fullScreen ) ;
   //!! Provide virtual functions getWidth(), getHeight() which
   // get the client area width and height.
+
+
+  /// Takes you back to the directory you were
+  /// in previously (equivalent to "back button"
+  /// in windows explorer.)
+  void cdPop();
+
+  /// Switches you into a working directory
+  void cd( char *path );
 } ;
 
 

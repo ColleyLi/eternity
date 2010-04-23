@@ -71,6 +71,12 @@ Window::Window( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int wind
 Window::~Window()
 {
   // ... clean up and shut down ... 
+
+  while( !directories.empty() )
+  {
+    free( directories.top() ) ;
+    directories.pop() ;
+  }
 }
 
 
@@ -95,4 +101,50 @@ bool Window::setSize( int width, int height, bool fullScreen )
     SWP_NOMOVE | SWP_NOZORDER ) ;
 
   return true ;
+}
+
+/// Takes you back to the directory you were
+/// in previously (equivalent to "back button"
+/// in windows explorer.)
+void Window::cdPop()
+{
+  if( directories.empty() )
+  {
+    error( "You are already at the top level directory" ) ;
+    return ;
+  }
+  
+  if( !SetCurrentDirectoryA( directories.top() ) )
+  {
+    error( "Couldn't switch directory to %s", directories.top() ) ;
+  }
+
+  free( directories.top() ) ;
+  directories.pop() ;
+}
+
+/// Switches you into a working directory
+void Window::cd( char *path )
+{
+  if( !path )
+  {
+    error( "You can't change directory to NULL, nothing done" ) ;
+    return ;
+  }
+
+  // Save the current directory to the stack
+  char *cwd = (char*)malloc( MAX_PATH ) ;
+  GetCurrentDirectoryA( MAX_PATH, cwd ) ;
+  directories.push( cwd ) ;
+  
+  if( !SetCurrentDirectoryA( path ) )
+  {
+    error( "Couldn't switch directory to %s", path ) ;
+  }
+  else
+  {
+    char nowDir[MAX_PATH];
+    GetCurrentDirectoryA( MAX_PATH, nowDir ) ;
+    info( "Current working directory is '%s'", nowDir ) ;
+  }
 }

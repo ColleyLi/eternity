@@ -7,6 +7,7 @@
 class Car
 {
   D3DXVECTOR3 pos ;
+  ObjFile * model ;
 public:
 
   Car()
@@ -19,11 +20,13 @@ public:
   {
   }
 
-  void loadModel( FILE *srcFile )
+  void loadModel( char *filename )
   {
     // REQUIRES:  already opened file,
     // with srcFile POINTING AT START POINT
     // of vertex set
+
+    model = new ObjFile( window, filename ) ;
   }
 
   void update()
@@ -66,6 +69,7 @@ public:
 
     ) ;
     */
+    model->draw() ;
   }
 } ;
 

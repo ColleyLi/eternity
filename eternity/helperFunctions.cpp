@@ -152,6 +152,16 @@ bool FMOD_ErrorCheck( FMOD_RESULT result )
   return true ;
 }
 
+bool argCheck( char *fnName, char* str, int numArgsGot, int numArgsExpected )
+{
+  if( numArgsGot != numArgsExpected )
+  {
+    warning( "%s failed to parse %d args from `%s`, parsed %d", fnName, numArgsExpected, str, numArgsGot ) ;
+    return false ;
+  }
+  else
+    return true ;
+}
 
 int XINPUT_Check( int errCode )
 {
@@ -247,6 +257,14 @@ D3DXMATRIX* D3DXMatrixSetCol( D3DXMATRIX* matrix, int col, D3DXVECTOR3* vec )
   matrix->m[2][col] = vec->z ;
 
   return matrix ;
+}
+
+void setColor( D3DCOLORVALUE *color, float a, float r, float g, float b )
+{
+  color->a = a ;
+  color->r = r ;
+  color->g = g ;
+  color->b = b ;
 }
 
 void addSinewave( short *data, int durationInSamples,
@@ -439,3 +457,4 @@ bool DX_CHECK( HRESULT hr, char * msg )
     return true ;
 
 }
+

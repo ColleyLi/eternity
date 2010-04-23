@@ -67,6 +67,7 @@ bool FMOD_ErrorCheck( FMOD_RESULT result ) ;
 
 int XINPUT_Check( int errCode ) ;
 
+bool argCheck( char *fnName, char* str, int numArgsGot, int numArgsExpected ) ;
 
 // numerical.  A few of these functions
 // can be templated.
@@ -127,6 +128,8 @@ void clamp( T &num, T low, T high )
 }
 */
 
+
+
 /// Rounds x to
 /// nearest integer
 int round( double x ) ;
@@ -138,6 +141,8 @@ D3DXMATRIX* D3DXMatrixSetRow( D3DXMATRIX* matrix, int row, D3DXVECTOR3* vec );
 /// Matrix: Set a column with a vector
 /// (leaves 4th entry as was)
 D3DXMATRIX* D3DXMatrixSetCol( D3DXMATRIX* matrix, int col, D3DXVECTOR3* vec );
+
+void setColor( D3DCOLORVALUE *color, float a, float r, float g, float b ) ;
 
 void addSinewave( short *data, int durationInSamples,
                   int offset, int frequency,
@@ -164,6 +169,12 @@ wchar_t* getUnicode( char* ascii ) ;
 #define cstrcpy(a,b) if(b){a=(char*)malloc( strlen(b)+1 ) ; strcpy(a,b) ;}
 #define cstrfree(str) if(str){free(str);str=0;}
 
+/// Advance your str pointer to the next word
+/// in the string.  If there is no next word,
+/// you will get a NULL
+#define cstrNextWord(str) {str=strchr(str, ' '); if(str){while( (*str) && isspace(*str) ){++str;} if(!(*str)){str=0;}}}
+//                         1. find next ' '      2.  if there was a ' ', adv past all whitespace   3. if nothing but white space null out str
+
 // R S T 0
 // 0 1 2 3
 // len is 3
@@ -172,6 +183,7 @@ wchar_t* getUnicode( char* ascii ) ;
 /// nulls the newline at the end of a string.
 /// we have to use strrchr to make sure its safe
 #define cstrnulllastnl(str) {char* nl=strrchr(str,'\n'); if(nl){*nl=0;}}
+#define cstrnullnextsp(str) {char* nl=strchr(str,' '); if(nl){*nl=0;}}
 
 
 void printRawKeyboard( RAWINPUT * raw ) ;

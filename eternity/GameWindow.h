@@ -169,6 +169,7 @@ public:
   void setByCamera() ;
   // </camera>
 
+  IDirect3DDevice9* getGpu(){ return gpu ; }
 
 } ;
 #endif

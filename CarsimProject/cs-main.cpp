@@ -1,10 +1,10 @@
 #include "cs-main.h"
 GameWindow *window ;
 
+
 #include "SimWorld.h"
 
 #pragma region sprites sounds fonts
-#define ASSET(x) ("../assets/"##x)
 
 enum Sprites
 {
@@ -49,7 +49,7 @@ void Init()
   // Load a CARSIM sim file
   simWorld->LoadCarSimFile( "filename.sim" ) ;
 
-  ObjFile *o = new ObjFile( window, ASSET( "models/porsche.obj" ) ) ;
+  
 }
 
 void Update()
@@ -276,8 +276,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   // Setup a console
   consoleCreate() ;
   consoleWhite() ;
-  consoleMove( 32, 500 ) ;
-  consoleRowsAndCols( 10, 120 ) ;
+  consoleMove( 32, 800 ) ;
+  consoleRowsAndCols( 5, 180 ) ;
 
   // Start up the log.
   logStartup() ;

@@ -122,6 +122,8 @@ public:
 
   D3DXMATRIX getView()
   {
+    error( "The Camera3D::getView function doesn't work" ) ;
+
     // construct the view matrix
     // as simply combination of right, up, fwd vectors
 
@@ -129,6 +131,17 @@ public:
     D3DXMatrixSetRow( &viewMatrix, 0, &right ) ;
     D3DXMatrixSetRow( &viewMatrix, 1, &up ) ;
     D3DXMatrixSetRow( &viewMatrix, 2, &forward ) ;
+
+    // The complete result is to shift the camera
+    // by the eye position
+    D3DXMatrixSetCol( &viewMatrix, 3, &eye ) ;
+
+    //return viewMatrix ;
+
+    //!! This doesn't work.
+    D3DXMatrixIdentity( &viewMatrix ) ;
+    return viewMatrix ;
+
   }
 
   void renormalizeVectors()
