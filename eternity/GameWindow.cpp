@@ -281,14 +281,14 @@ void GameWindow::runCallbacks()
   }
 }
 
-void GameWindow::drawTri( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c )
+void GameWindow::drawTri( VertexC &a, VertexC &b, VertexC &c )
 {
   vertices.push_back( a ) ;
   vertices.push_back( b ) ;
   vertices.push_back( c ) ;
 }
 
-void GameWindow::drawQuad( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c, D3DVertexC &d )
+void GameWindow::drawQuad( VertexC &a, VertexC &b, VertexC &c, VertexC &d )
 {
   vertices.push_back( a ) ;
   vertices.push_back( b ) ;
@@ -321,7 +321,7 @@ void GameWindow::flush3D()
       D3DPT_TRIANGLELIST,
       vertices.size()/3,
       &vertices[0], 
-      sizeof(D3DVertexC)
+      sizeof(VertexC)
     ) ;
 
     DX_CHECK( hr, "flush3D: DrawPrimitive" ) ;

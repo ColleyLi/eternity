@@ -60,68 +60,7 @@ using namespace std ;
 
 // So we'll go with the repeated data approach.
 
-// v
-struct Vertex
-{
-  D3DXVECTOR3 pos ;
-
-  Vertex() { pos.x=pos.y=pos.z=0.0f; }
-
-  // Avoid copy construction
-  // by these ctor's
-  Vertex( const D3DXVECTOR3 &iPos )
-  {
-    pos = iPos ;
-  }
-} ;
-
-// v/t
-struct VertexT
-{
-  D3DXVECTOR3 pos ;
-  D3DXVECTOR2 tex ;
-
-  VertexT(){ pos.x=pos.y=pos.z=tex.x=tex.y=0.0f; }
-
-  VertexT( const D3DXVECTOR3 &iPos, const D3DXVECTOR2 &iTex )
-  {
-    pos = iPos ;
-    tex = iTex ;
-  }
-} ;
-
-// v//n
-struct VertexN
-{
-  D3DXVECTOR3 pos ;
-  D3DXVECTOR3 norm ;
-
-  VertexN() { pos.x=pos.y=pos.z=norm.x=norm.y=norm.z=0.0f; }
-
-  VertexN( const D3DXVECTOR3 &iPos, const D3DXVECTOR3 &iNorm )
-  {
-    pos = iPos ;
-    norm = iNorm ;
-  }
-} ;
-
-// v/t/n
-struct VertexTN
-{
-  D3DXVECTOR3 pos ;
-  D3DXVECTOR2 tex ;
-  D3DXVECTOR3 norm ;
-
-  // Preferred this format over memsets, they are hard to read :
-  VertexTN() { pos.x=pos.y=pos.z=tex.x=tex.y=norm.x=norm.y=norm.z=0.0f; }
-
-  VertexTN( const D3DXVECTOR3 &iPos, const D3DXVECTOR2 &iTex, const D3DXVECTOR3 &iNorm )
-  {
-    pos = iPos ;
-    tex = iTex ;
-    norm = iNorm ;
-  }
-} ;
+#include "D3DVertex.h"
 
 struct Material
 {
@@ -293,9 +232,9 @@ public:
     cstrcpy( textureFilename, iFilename ) ;
   }
 
-  D3DMATERIAL9 getMaterial()
+  D3DMATERIAL9* getMaterial()
   {
-    return d3dmaterial ;
+    return &d3dmaterial ;
   }
 
   ~Material()
@@ -367,8 +306,6 @@ public:
   vector<VertexTN> combinedVerticesVTN ;
 
 
-
-
   /// Each group uses a material,
   /// It is a good assumption that
   /// each group uses only ONE material.
@@ -395,17 +332,27 @@ public:
     cstrcpy( name, iName ) ;
   }
 
-  D3DMATERIAL9 getMaterial()
+  D3DMATERIAL9* getMaterial()
   {
     if( !material )
     {
       // use a default white material instead.
-      return Material::defaultMaterial ;
+      return &Material::defaultMaterial ;
     }
     else
     {
       return material->getMaterial() ;
     }
+  }
+
+  /// The number of faces is
+  /// equal to the number of
+  /// indices divided by 3,
+  /// since every 3 indices together
+  /// produce a face
+  int getNumFaces()
+  {
+    return this->facesVertexIndices.size() / 3 ;
   }
 
   ~Group()
@@ -462,12 +409,9 @@ typedef map<string, int>::iterator /* as simply */ MapStringIntIter ;
 
 class ObjFile
 {
-  /// We need to save vertex declarations
-  static IDirect3DVertexDeclaration9 *v, *vt, *vtn, *vn ;
-
   /// The actual vertex declaration being used by
   /// THIS obj model instance
-  IDirect3DVertexDeclaration9 *vDecl ;
+  D3DWindow::VertexType vType ;
 
 public:
   /// Call this once to initialize the class.
@@ -478,71 +422,6 @@ public:
     setColor( &Material::defaultMaterial.Diffuse,  1.f,  1.f, 1.f, 1.f ) ;
     setColor( &Material::defaultMaterial.Specular, 1.f,  1.f, 1.f, 1.f ) ;
     setColor( &Material::defaultMaterial.Emissive, 0.f,  0.f, 0.f, 0.f ) ;
-
-    IDirect3DDevice9 *gpu = window->getGpu();
-
-    int cOffset = 0 ;
-
-    D3DVERTEXELEMENT9 pos ;
-    pos.Usage = D3DDECLUSAGE_POSITION ;
-    pos.UsageIndex = 0 ;
-    pos.Stream = 0 ;
-    pos.Type = D3DDECLTYPE_FLOAT3 ;
-    pos.Offset = 0 ;
-    pos.Method = D3DDECLMETHOD_DEFAULT ;
-    cOffset += 3*sizeof(float);
-
-    D3DVERTEXELEMENT9 tex ;
-    tex.Usage = D3DDECLUSAGE_TEXCOORD ;
-    tex.UsageIndex = 0 ;
-    tex.Stream = 0 ;
-    tex.Type = D3DDECLTYPE_FLOAT2 ;
-    tex.Offset = cOffset ;
-    tex.Method = D3DDECLMETHOD_DEFAULT ;
-    cOffset += 2*sizeof(float);
-
-    D3DVERTEXELEMENT9 norm ;
-    norm.Usage = D3DDECLUSAGE_NORMAL ;
-    norm.UsageIndex = 0 ;
-    norm.Stream = 0 ;
-    norm.Type = D3DDECLTYPE_FLOAT3 ;
-    norm.Offset = cOffset ;
-    norm.Method = D3DDECLMETHOD_DEFAULT ; 
-
-    
-    D3DVERTEXELEMENT9 end = D3DDECL_END() ;
-    
-    // Vertices only.  Uses a material for color.
-    D3DVERTEXELEMENT9 *vertexElementsV = new D3DVERTEXELEMENT9[2] ;
-    vertexElementsV[ 0 ] = pos ;
-    vertexElementsV[ 1 ] = end ;
-    // CREATE THE DECLARATION
-    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsV, &v ), "CreateVertexDeclaration FAILED v!" ) ;
-
-    // VT
-    // Vertices and textures.
-    D3DVERTEXELEMENT9 *vertexElementsVT = new D3DVERTEXELEMENT9[3] ;
-    vertexElementsVT[ 0 ] = pos ;
-    vertexElementsVT[ 1 ] = tex ;
-    vertexElementsVT[ 2 ] = end ;
-    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVT, &vt ), "CreateVertexDeclaration FAILED vt!" ) ;
-
-    // VTN
-    D3DVERTEXELEMENT9 *vertexElementsVTN = new D3DVERTEXELEMENT9[4] ;
-    vertexElementsVTN[ 0 ] = pos ;
-    vertexElementsVTN[ 1 ] = tex ;
-    vertexElementsVTN[ 2 ] = norm ;
-    vertexElementsVTN[ 3 ] = end ;
-    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVTN, &vtn ), "CreateVertexDeclaration FAILED vtn!" ) ;
-
-    // VN
-    D3DVERTEXELEMENT9 *vertexElementsVN = new D3DVERTEXELEMENT9[3] ;
-    vertexElementsVN[ 0 ] = pos ;
-    norm.Offset = 3*sizeof(float);  // This needed to be updated
-    vertexElementsVN[ 1 ] = norm ;
-    vertexElementsVN[ 2 ] = end ;
-    DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVN, &vn ), "CreateVertexDeclaration FAILED vn!" ) ;
-
   }
 
 private:
@@ -899,13 +778,25 @@ private:
     // Determine what vertex declaration to use
     // based on face mode
     if( (faceSpecMode & FaceSpecMode::Texcoords) && (faceSpecMode & FaceSpecMode::Normals) ) // v/t/n
-      vDecl = vtn ;
+    {
+      vType = D3DWindow::PositionTextureNormal ;
+      info( "Using PositionTextureNormal vertex" ) ;
+    }
     else if( faceSpecMode & FaceSpecMode::Texcoords ) // v/t
-      vDecl = vt ; 
+    {
+      vType = D3DWindow::PositionTexture ;
+      info( "Using PositionTexture vertex" ) ;
+    }
     else if( faceSpecMode & FaceSpecMode::Normals )   // v//n
-      vDecl = vn ;
+    {
+      vType = D3DWindow::PositionNormal ;
+      info( "Using PositionNormal vertex" ) ;
+    }
     else   // v
-      vDecl = v ;
+    {
+      vType = D3DWindow::Position ;
+      info( "Using Position vertex" ) ;
+    }
 
     //!! IF THERE WAS NO MATERIAL FILENAME
     // BY EOF, THEN CREATE A DEFAULT MATERIAL
@@ -1228,13 +1119,6 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertexIndices.size() ) // 4018 needs to go away.
-        {
-          //!! this error really shouldn't happen
-          // and needs to be fixed
-          error("`%s` too big for its britches", group->getName()) ;
-          continue;
-        }
         // always start with 0th vertex.
         group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
 
@@ -1244,10 +1128,20 @@ private:
         // and c'th+1 vertex
         group->facesVertexIndices[ index + i+2 ] = verts[ c+1 ] ;
 
+        //info( "%s - wound face %d %d %d", group->getName(), verts[0], verts[c], verts[c+1] ) ;
+
         // Advance by 3 faces, we just added 3 coords
         i += 3 ;
       }
 
+      /*
+      // DEBUG
+      for( int i = 0 ; i < group->facesVertexIndices.size() ; i+=3 )
+      {
+        info( "FACE: %d %d %d", group->facesVertexIndices[i],
+          group->facesVertexIndices[i+1], group->facesVertexIndices[i+2] ) ;
+      }
+      */
       #pragma endregion
     }
   }
@@ -1290,6 +1184,7 @@ private:
     {
       fgets( buf, 300, f ) ;
       cstrnulllastnl( buf ) ;
+      puts( buf ) ;
 
       if( buf[0] == '#' )
       {
@@ -1337,7 +1232,43 @@ private:
         
         int verticesInFace = countVerts( buf ) ;
         int facesFromVerts = verticesInFace - 2 ;
+        int numVertsAdded = facesFromVerts*3 ; // this is all very
+        // twisted looking, but here's what's going
+        // on in the 3 lines above.
+        // 1. verticesInFace is just a count
+        //    of the number of vertices "VISITED"
+        //    by this face specification.
+        //    f 1 3 2    visits 3 vertices
+        //    f 4 5 9 1  visits 4 vertices.
 
+        // We need to know this because we're going
+        // to triangulate.  That is, f 4 5 9 1 will
+        // be broken into TWO triangles, effectively
+        // TWO face specifications
+        // f 4 5 9
+        // f 4 9 1
+        // So that's what FACESFROMVERTS is.
+        // in the case of f 4 5 9 1,
+        // facesFromVerts = 4 - 2   // meaning
+        // we'll extract __2__ faces from
+        // f 4 5 9 1.
+        // From f 9 5 1 2 8 we'd extract.. 3 faces.
+        // f 9 5 1
+        // f 9 1 2
+        // f 9 2 8
+        // This is "fanning" out or whatever, it
+        // sometimes produces splintery geometry
+        // but it works simply.
+
+        // SO NOW, the NUMBERVERTSADDED variable
+        // is the ACTUAL count of vertices we're adding
+        // based on the number of faces we've decdied to
+        // add after triangulation.  for f 1 3 2 we'd
+        // only add 3 vertices, but for f 4 5 9 1 
+        // we'd add 3*(NUM_FACES)=3*2=6 vertices.
+        
+        // keep track of the number of faces
+        // we're creating here, as a parity check:
         numFacesTOTALSecondPass += facesFromVerts ;
 
 
@@ -1366,7 +1297,10 @@ private:
 
 
           // HERE WE UPDATE "WHAT FACE WE ARE ON"
-          iter->second = iter->second + facesFromVerts ;
+          // This IS NOT a count of the number of faces
+          // added.. rather its a count of the total # VERTICES added.
+          iter->second = iter->second + numVertsAdded ;
+
 
           // BECAUSE FACES CAN BE SPECIFIED IN ANY ORDER,
           // (like, file can weave in and out of different groups)
@@ -1665,11 +1599,16 @@ private:
         // the count of faces for this group
         // is in the map numFacesByGroup
         int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
-        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
+        int numVerticesInGroup = numFacesInGroup*3 ;
+        //!! its impossible for this to happen
+        // since g->getNumFaces() returns
+        // (indexarray)/3, and THAT was
+        // originally set as numFacesInGroup*3
+        if( numFacesInGroup != g->getNumFaces() )
           warning( "Parity error:  number of faces in group `%s` "
           "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
           g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
-        g->combinedVerticesVTN.resize( numFacesInGroup ) ;
+        g->combinedVerticesVTN.resize( numVerticesInGroup ) ;
         
         for( int i = 0 ; i < groupIter->second->facesVertexIndices.size() ; i+=3 )
         {
@@ -1711,11 +1650,12 @@ private:
         // the count of faces for this group
         // is in the map numFacesByGroup
         int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
-        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
+        int numVerticesInGroup = numFacesInGroup*3 ;
+        if( numFacesInGroup != g->getNumFaces() )
           warning( "Parity error:  number of faces in group `%s` "
           "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
           g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
-        g->combinedVerticesVT.resize( numFacesInGroup ) ;
+        g->combinedVerticesVT.resize( numVerticesInGroup ) ;
 
         // Visit each index in the
         // vertices index buffer
@@ -1754,11 +1694,12 @@ private:
         Group *g = groupIter->second ;
 
         int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
-        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
+        int numVerticesInGroup = numFacesInGroup*3 ;
+        if( numFacesInGroup != g->getNumFaces() )
           warning( "Parity error:  number of faces in group `%s` "
           "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
           g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
-        g->combinedVerticesVN.resize( numFacesInGroup*3 ) ;
+        g->combinedVerticesVN.resize( numVerticesInGroup ) ;
 
         // Visit each index in the
         // vertices index buffer
@@ -1799,13 +1740,19 @@ private:
         Group *g = groupIter->second ;
         
         int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
-        if( numFacesInGroup*3 != g->facesVertexIndices.size() )
-          warning( "Parity error:  number of faces in group `%s` "
-          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
-          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
-        g->combinedVerticesV.resize( numFacesInGroup ) ;
 
-        for( int i = 0 ; i < groupIter->second->facesVertexIndices.size() ; i+=3 )
+        int numVerticesInGroup = numFacesInGroup*3 ; // all tris.
+
+        if( numFacesInGroup != g->getNumFaces() )
+          warning( "Parity error:  number of faces in group `%s` "
+          "not matching up:  numFacesInGroup=%d, getNumFaces=%d",
+          g->getName(), numFacesInGroup, g->getNumFaces() ) ;
+
+        // The number of combinedVertices is
+        // 3*numFaces
+        g->combinedVerticesV.resize( numVerticesInGroup ) ;
+
+        for( int i = 0 ; i < g->facesVertexIndices.size() ; i+=3 )
         {
           int vIndex1 = g->facesVertexIndices[ i ] ;
           int vIndex2 = g->facesVertexIndices[ i+1 ] ;
@@ -1840,15 +1787,13 @@ public:
     // first let's draw without vb's
     IDirect3DDevice9 *gpu = window->getGpu() ;
 
-    //printf( "There are %d verts to draw\n", this->vertices.size() ) ;
-  
     // Set up all the render states.
     DX_CHECK( gpu->SetRenderState( D3DRS_COLORVERTEX, TRUE ), "ColorVertex enable" ) ;
     DX_CHECK( gpu->SetRenderState( D3DRS_AMBIENT, D3DCOLOR_XRGB(0,0,0) ), "Turn off ambient color" ) ;
     DX_CHECK( gpu->SetRenderState( D3DRS_SPECULARENABLE, TRUE ), "Specular enable" ) ;
     
     // For materials to work lighting must be on
-    DX_CHECK( gpu->SetRenderState( D3DRS_LIGHTING, TRUE ), "Lighting on" ) ;
+    window->setLighting( TRUE ) ;
 
     // Set up source of ambient, diffuse, specular and
     // emissive vertex colorings to all come from
@@ -1858,70 +1803,72 @@ public:
     DX_CHECK( gpu->SetRenderState( D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL ), "spec d3dmcs_material" ) ;
     DX_CHECK( gpu->SetRenderState( D3DRS_EMISSIVEMATERIALSOURCE, D3DMCS_MATERIAL ), "emissive d3dmcs_material" ) ;
 
-    DX_CHECK( gpu->SetVertexDeclaration( vDecl ), "SetVertexDeclaration FAILED!" ) ;
-    
+    //DX_CHECK( gpu->SetVertexDeclaration( vDecl ), "SetVertexDeclaration FAILED!" ) ;
+    window->setVertexDeclaration( vType ) ;
 
     // It depends on
     // vertex mode..
     if( (faceSpecMode & Texcoords) && (faceSpecMode & Normals) )
     {
       // v/t/n
-      /*
       foreach( GroupMapIter, groupIter, groups )
       {
-        DX_CHECK( gpu->SetMaterial( &groupIter->second->getMaterial() ), "Set material" ) ;
+        Group *g = groupIter->second ;
+        window->setMaterial( g->getMaterial() ) ;
+
         gpu->DrawPrimitiveUP(
-          D3DPT_TRIANGLELIST, 
-          numTriangleFacesTOTAL,
-          &combinedVerticesVTN[0],
+          D3DPT_TRIANGLELIST,
+          g->getNumFaces(),
+          &g->combinedVerticesVTN[0],
           sizeof(VertexTN) ) ;
       }
-      */
     }
     else if(faceSpecMode & Texcoords)
     {
       // v/t
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        Group *g = groupIter->second ;
+        window->setMaterial( g->getMaterial() ) ;
+
+        gpu->DrawPrimitiveUP(
+          D3DPT_TRIANGLELIST,
+          g->getNumFaces(),
+          &g->combinedVerticesVT[0],
+          sizeof(VertexT) ) ;
+      }
     }
     else if(faceSpecMode & Normals)
     {
       // v//n
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        Group *g = groupIter->second ;
+        window->setMaterial( g->getMaterial() ) ;
+
+        gpu->DrawPrimitiveUP(
+          D3DPT_TRIANGLELIST,
+          g->getNumFaces(),
+          &g->combinedVerticesVN[0],
+          sizeof(VertexN) ) ;
+      }
     }
     else
     {
       // v
+      foreach( GroupMapIter, groupIter, groups )
+      {
+        Group *g = groupIter->second ;
+        window->setMaterial( g->getMaterial() ) ;
+
+        gpu->DrawPrimitiveUP(
+          D3DPT_TRIANGLELIST,
+          g->getNumFaces(),
+          &g->combinedVerticesV[0],
+          sizeof(Vertex) ) ;
+      }
     }
-
-    // groupIter is <name,Group*>
-    foreach( GroupMapIter, groupIter, groups )
-    {
-      DX_CHECK( gpu->SetMaterial( &groupIter->second->getMaterial() ), "Set material" ) ;
-
-      
-
-      /*
-      gpu->DrawPrimitiveUP(
-        D3DPT_TRIANGLELIST,
-        0,
-
-        // We only USE facesVertexIndices here, but
-        // we're drawing out of the COMBINED
-        // vertex array.
-
-        //!! THIS MUST BE CHANGED TO COMBINED.
-        groupIter->second->facesVertexIndices.size(),
-        groupIter->second->facesVertexIndices.size()/3,
-        &groupIter->second->facesVertexIndices[0],
-
-        D3DFMT_INDEX32,
-        &combinedVertices[0],
-        sizeof( D3DXVECTOR3 )
-      ) ;
-      */
-    }
-    
   }
-
-  
 } ;
 
 

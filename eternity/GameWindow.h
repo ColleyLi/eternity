@@ -27,7 +27,7 @@ protected:
 
   /// Maintain a vector of vertices
   /// to draw out in 3d
-  vector<D3DVertexC> vertices ;
+  vector<VertexC> vertices ;
 
   /// The vector full of callback functions
   /// to execute, sometime in the future.
@@ -148,14 +148,14 @@ public:
 
   /// the triangle described by 3 vertices
   /// is abc, assuming CCW winding order
-  void drawTri( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c ) ;
+  void drawTri( VertexC &a, VertexC &b, VertexC &c ) ;
 
   /// the rectangle described by 4 vertices
   /// is abc, cda, assuming CCW winding order
   /// b    a
   /// 
   /// c    d
-  void drawQuad( D3DVertexC &a, D3DVertexC &b, D3DVertexC &c, D3DVertexC &d ) ;
+  void drawQuad( VertexC &a, VertexC &b, VertexC &c, VertexC &d ) ;
 
   void flush3D() ;
 

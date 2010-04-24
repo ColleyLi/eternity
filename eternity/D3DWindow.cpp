@@ -87,7 +87,7 @@ bool D3DWindow::initD3D( int width, int height )
 
 
 
-  initVertexDeclaration() ;
+  initVertexDeclarations() ;
 
 
   
@@ -135,70 +135,152 @@ bool D3DWindow::initD3D( int width, int height )
   return true ;
 }
 
-void D3DWindow::initVertexDeclaration()
+void D3DWindow::initVertexDeclarations()
 {
   HRESULT hr ;
-  // w/ texture
-  //hr = gpu->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE | (1 << D3DFVF_TEXCOUNT_SHIFT) ) ;
-
-  hr = gpu->SetFVF( D3DFVF_XYZ | D3DFVF_DIFFUSE ) ;
-  DX_CHECK( hr, "SetFVF" ) ;
-
-  int cumulativeOffset = 0 ;
+  
+  int cOffset = 0 ;
   D3DVERTEXELEMENT9 pos ;
   pos.Usage = D3DDECLUSAGE_POSITION ;
   pos.UsageIndex = 0 ;
   pos.Stream = 0 ;
   pos.Type = D3DDECLTYPE_FLOAT3 ;
-  pos.Offset = cumulativeOffset ;
+  pos.Offset = cOffset ;
   pos.Method = D3DDECLMETHOD_DEFAULT ; 
-  cumulativeOffset += 3*sizeof(float) ;
+  cOffset += 3*sizeof(float) ;
 
-  D3DVERTEXELEMENT9 col;
-  col.Usage = D3DDECLUSAGE_COLOR ;
-  col.UsageIndex = 0 ;
-  col.Stream = 0 ;
-  col.Type = D3DDECLTYPE_D3DCOLOR ;
-  col.Offset = cumulativeOffset ;
-  col.Method = D3DDECLMETHOD_DEFAULT ;
-  cumulativeOffset += sizeof( D3DCOLOR ) ;
+  D3DVERTEXELEMENT9 color ;
+  color.Usage = D3DDECLUSAGE_COLOR ;
+  color.UsageIndex = 0 ;
+  color.Stream = 0 ;
+  color.Type = D3DDECLTYPE_D3DCOLOR ;
+  color.Offset = cOffset ;
+  color.Method = D3DDECLMETHOD_DEFAULT ;
+  cOffset += sizeof( D3DCOLOR ) ;
 
-  /*
-  D3DVERTEXELEMENT9 uv ;
-  uv.Usage = D3DDECLUSAGE_TEXCOORD ;
-  uv.UsageIndex = 0 ;
-  uv.Stream = 0 ;
-  uv.Type = D3DDECLTYPE_FLOAT2 ;
-  uv.Offset = cumulativeOffset ;
-  uv.Method = D3DDECLMETHOD_DEFAULT ;
-  cumulativeOffset += 2*sizeof(float) ;
-  */
+  D3DVERTEXELEMENT9 tex ;
+  tex.Usage = D3DDECLUSAGE_TEXCOORD ;
+  tex.UsageIndex = 0 ;
+  tex.Stream = 0 ;
+  tex.Type = D3DDECLTYPE_FLOAT2 ;
+  tex.Offset = cOffset ;
+  tex.Method = D3DDECLMETHOD_DEFAULT ;
+  cOffset += 2*sizeof(float);
 
-  D3DVERTEXELEMENT9 vertexElements[] =
-  {
-    pos,
-    col,
-
-    D3DDECL_END()
-  } ;
-
+  D3DVERTEXELEMENT9 norm ;
+  norm.Usage = D3DDECLUSAGE_NORMAL ;
+  norm.UsageIndex = 0 ;
+  norm.Stream = 0 ;
+  norm.Type = D3DDECLTYPE_FLOAT3 ;
+  norm.Offset = cOffset ;
+  norm.Method = D3DDECLMETHOD_DEFAULT ; 
+  cOffset += 3*sizeof(float);
   
+  D3DVERTEXELEMENT9 end = D3DDECL_END() ;
 
-  hr = gpu->CreateVertexDeclaration( vertexElements, &vDeclPositionColor ) ;
-  DX_CHECK( hr, "CreateVertexDeclaration" ) ;
+
+  ///
+  // VC  Vertex + Color
+  D3DVERTEXELEMENT9 *vertexElementsVC = new D3DVERTEXELEMENT9[3] ;
+  vertexElementsVC[0] = pos ;
+  color.Offset = 3*sizeof(float);
+  vertexElementsVC[1] = color ;
+  vertexElementsVC[2] = end ;
+  
+  hr = gpu->CreateVertexDeclaration( vertexElementsVC, &vc ) ;
+  DX_CHECK( hr, "CreateVertexDeclaration vc" ) ;
+  delete[] vertexElementsVC ;
+  
+  ///
+  // V:  Vertices only.  Uses a material for color.
+  D3DVERTEXELEMENT9 *vertexElementsV = new D3DVERTEXELEMENT9[2] ;
+  vertexElementsV[ 0 ] = pos ;
+  vertexElementsV[ 1 ] = end ;
+  // CREATE THE DECLARATION
+  DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsV, &v ), "CreateVertexDeclaration FAILED v!" ) ;
+  delete[] vertexElementsV ;
+
+  // VT
+  // Vertices and textures.
+  D3DVERTEXELEMENT9 *vertexElementsVT = new D3DVERTEXELEMENT9[3] ;
+  vertexElementsVT[ 0 ] = pos ;
+  tex.Offset = 3*sizeof(float) ;
+  vertexElementsVT[ 1 ] = tex ;
+  vertexElementsVT[ 2 ] = end ;
+  DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVT, &vt ), "CreateVertexDeclaration FAILED vt!" ) ;
+  delete[] vertexElementsVT ;
+
+  // VTN
+  D3DVERTEXELEMENT9 *vertexElementsVTN = new D3DVERTEXELEMENT9[4] ;
+  vertexElementsVTN[ 0 ] = pos ;
+
+  tex.Offset = 3*sizeof(float);
+  vertexElementsVTN[ 1 ] = tex ;
+
+  norm.Offset = tex.Offset + 2*sizeof(float);
+  vertexElementsVTN[ 2 ] = norm ;
+  vertexElementsVTN[ 3 ] = end ;
+  DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVTN, &vtn ), "CreateVertexDeclaration FAILED vtn!" ) ;
+  delete[] vertexElementsVTN ;
+
+  // VN
+  D3DVERTEXELEMENT9 *vertexElementsVN = new D3DVERTEXELEMENT9[3] ;
+  vertexElementsVN[ 0 ] = pos ;
+  norm.Offset = 3*sizeof(float);  // This needed to be updated
+  vertexElementsVN[ 1 ] = norm ;
+  vertexElementsVN[ 2 ] = end ;
+  DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVN, &vn ), "CreateVertexDeclaration FAILED vn!" ) ;
+  delete[] vertexElementsVN ;
 
   // After constructing it, set it as the one to use by default
-  setDefaultVertexDeclaration() ;
+  setVertexDeclaration( VertexType::PositionColor ) ;
 }
 
-void D3DWindow::setDefaultVertexDeclaration()
+void D3DWindow::setVertexDeclaration( VertexType vType )
 {
-  DX_CHECK( gpu->SetVertexDeclaration( vDeclPositionColor ), "setDefaultVertexDeclaration" ) ;
+  IDirect3DVertexDeclaration9 * vdecl = NULL ;
+
+  switch( vType )
+  {
+  case Position:
+    vdecl = v ;
+    break;
+
+  case PositionTexture:
+    vdecl = vt ;
+    break;
+
+  case PositionNormal:
+    vdecl = vn ;
+    break;
+
+  case PositionTextureNormal:
+    vdecl = vtn ;
+    break;
+
+  case PositionColor:
+  default:
+    vdecl = vc ;
+  }
+
+  DX_CHECK( gpu->SetVertexDeclaration( vdecl ), "setDefaultVertexDeclaration" ) ;
+  
+}
+
+void D3DWindow::setLight( int index, D3DLIGHT9* light )
+{
+  DX_CHECK( gpu->SetLight( index, light ), "SetLight" ) ;
+  DX_CHECK( gpu->LightEnable( index, TRUE ), "LightEnable" ) ;
 }
 
 void D3DWindow::setLighting( BOOL on )
 {
   DX_CHECK( gpu->SetRenderState( D3DRS_LIGHTING, on ), "Lighting state" ) ;
+}
+
+void D3DWindow::setMaterial( D3DMATERIAL9* material )
+{
+  DX_CHECK( gpu->SetMaterial( material ), "Set material" ) ;
 }
 
 void D3DWindow::d3dLoseDevice()

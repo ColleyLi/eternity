@@ -74,6 +74,16 @@ protected:
   DrawingMode drawingMode ;
 
 
+public:
+  enum VertexType
+  {
+    Position,
+    PositionColor,
+    PositionTexture,
+    PositionNormal,
+    PositionTextureNormal
+  } ;
+private:
   /// v:   position only
   /// vc:  position and color
   /// vt:  position texture
@@ -88,11 +98,13 @@ public:
 
 private:
   bool initD3D( int width, int height ) ;
-  void initVertexDeclaration() ;
+  void initVertexDeclarations() ;
 
 public:
+  void setLight( int index, D3DLIGHT9* light ) ;
   void setLighting( BOOL on ) ;
-  void setDefaultVertexDeclaration() ;
+  void setMaterial( D3DMATERIAL9* material ) ;
+  void setVertexDeclaration( VertexType vType ) ;
 
 private:
   void d3dLoseDevice() ;

@@ -7,6 +7,7 @@
 class Car
 {
   D3DXVECTOR3 pos ;
+  double steeringAngle ;
   ObjFile * model ;
 public:
 
@@ -14,10 +15,13 @@ public:
   {
     // zero out pos
     pos.x=pos.y=pos.z=0;
+    steeringAngle = 0 ;
+    model = NULL ;
   }
 
   ~Car()
   {
+    if( model ) delete model ;
   }
 
   void loadModel( char *filename )
@@ -51,6 +55,12 @@ public:
 
     D3DXMATRIX mat ;
     D3DXMatrixTranslation( &mat, pos.x, pos.y, pos.z ) ;
+    D3DXMatrixRotationY( &mat, steeringAngle ) ;
+
+    // World matrix translate
+    window->setWorld( &mat ) ;
+
+
 
     // EEK!! I have to rotate the car in y then x,
     // depending on its native positioning.  If orget
@@ -58,8 +68,6 @@ public:
     // now, this is where i !!left off!!
     //D3DXMatrixRotationY
 
-    // World matrix translate
-    //window->setWorld( mat ) ;
     
     // Roof
     /*

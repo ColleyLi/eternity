@@ -645,19 +645,19 @@ int SpriteMan::getNextSpriteId()
 
 void SpriteMan::drawAxes( float LEN )
 {
-  static D3DVertexC axis[] = {
+  static VertexC axis[] = {
 
     // x-axis is red
-    D3DVertexC( -LEN, 0, 0, 255, 0, 0 ),
-    D3DVertexC( +LEN, 0, 0, 255, 0, 0 ),
+    VertexC( -LEN, 0, 0, 255, 0, 0 ),
+    VertexC( +LEN, 0, 0, 255, 0, 0 ),
 
     // y-axis green
-    D3DVertexC( 0, -LEN, 0, 0, 255, 0 ),
-    D3DVertexC( 0, +LEN, 0, 0, 255, 0 ),
+    VertexC( 0, -LEN, 0, 0, 255, 0 ),
+    VertexC( 0, +LEN, 0, 0, 255, 0 ),
 
     // z-axis blue
-    D3DVertexC( 0, 0, -LEN, 0, 0, 255 ),
-    D3DVertexC( 0, 0, +LEN, 0, 0, 255 )
+    VertexC( 0, 0, -LEN, 0, 0, 255 ),
+    VertexC( 0, 0, +LEN, 0, 0, 255 )
 
   } ;
 
@@ -665,7 +665,7 @@ void SpriteMan::drawAxes( float LEN )
   HRESULT hr = lgpu->SetTexture( 0, NULL ) ;
   DX_CHECK( hr, "unset the SetTexture" ) ;
   
-  hr = lgpu->DrawPrimitiveUP( D3DPT_LINELIST, 3, axis, sizeof( D3DVertexC ) ) ;
+  hr = lgpu->DrawPrimitiveUP( D3DPT_LINELIST, 3, axis, sizeof( VertexC ) ) ;
   DX_CHECK( hr, "DrawPrimitiveUP FAILED!" ) ;
 
   static float pointSize = 8.0f ;
@@ -673,13 +673,13 @@ void SpriteMan::drawAxes( float LEN )
   lgpu->SetRenderState( D3DRS_POINTSIZE, CAST_AS_DWORD( pointSize ) ) ;
 
   // Draw points at end of axis.
-  static D3DVertexC points[] = {
-    D3DVertexC( LEN, 0, 0, 255, 0, 0 ),
-    D3DVertexC( 0, LEN, 0, 0, 255, 0 ),
-    D3DVertexC( 0, 0, LEN, 0, 0, 255 ),
+  static VertexC points[] = {
+    VertexC( LEN, 0, 0, 255, 0, 0 ),
+    VertexC( 0, LEN, 0, 0, 255, 0 ),
+    VertexC( 0, 0, LEN, 0, 0, 255 ),
   } ;
 
-  hr = lgpu->DrawPrimitiveUP( D3DPT_POINTLIST, 3, points, sizeof( D3DVertexC ) ) ;
+  hr = lgpu->DrawPrimitiveUP( D3DPT_POINTLIST, 3, points, sizeof( VertexC ) ) ;
   DX_CHECK( hr, "DrawPrimitiveUP FAILED!" ) ;
 
 

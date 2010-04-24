@@ -439,14 +439,12 @@
   - OBJ loader has progressed
   - Added functions to change current directory,
     WindowClass.h, cd() and cdPop()
-  
+  - Fixed up D3DVertex declarations (just v, vc, vt, vn, vtn)
 
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in
       WindowClass.h with the .cpp file
-    - Delete unused objects and classes
-      - DO WE REALLY NEED D3DVertex
     - thought about adding feature to cancel
       a callback.  maybe later.
     - pch

@@ -86,6 +86,23 @@ void Update()
     window->getCamera()->stepSide( -speed*increment ) ;
   }
 
+  if( window->keyJustPressed( '4' ) )
+  {
+    DWORD fillMode ;
+    DWORD nextFillMode = D3DFILL_SOLID ;
+
+    window->getGpu()->GetRenderState( D3DRS_FILLMODE, &fillMode ) ;
+    if( fillMode == D3DFILL_SOLID )
+      nextFillMode = D3DFILL_WIREFRAME ;
+    else if( fillMode == D3DFILL_WIREFRAME ) 
+      nextFillMode = D3DFILL_POINT ;
+    else if( fillMode == D3DFILL_POINT )
+      nextFillMode = D3DFILL_SOLID ;
+
+    window->getGpu()->SetRenderState( D3DRS_FILLMODE, nextFillMode )  ;
+
+  }
+
   if( window->mouseJustPressed( Mouse::Right ) )
   {
     // toggle the cam mode
@@ -97,8 +114,8 @@ void Update()
     {
       window->getCamera()->setCamMode( Camera3D::Fly ) ;
     }
-    
   }
+
 
   window->setByCamera() ;
   #pragma endregion
@@ -116,7 +133,7 @@ void Draw()
   window->setDrawingMode( D3 ) ; // 3d
   
 
-  window->setDefaultVertexDeclaration() ;
+  window->setVertexDeclaration( D3DWindow::PositionColor ) ;
   window->setLighting( false ) ;
   window->drawAxes( 50.0f ) ;
 
@@ -279,8 +296,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   // Setup a console
   consoleCreate() ;
   consoleWhite() ;
-  consoleMove( 32, 800 ) ;
-  consoleRowsAndCols( 5, 180 ) ;
+  consoleMove( 32, 510 ) ;
+  consoleRowsAndCols( 10, 120 ) ;
 
   // Start up the log.
   logStartup() ;
@@ -300,7 +317,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   // Setup the window
   window = new GameWindow( hInstance, TEXT( "eternity engine base" ),
      32, 32, // x pos, y pos
-     1024, 768 // width, height
+     640, 480 // width, height
   ) ;
 
   // After the window comes up, we call Init

@@ -10,6 +10,7 @@ class SimWorld
 {
   Car * car ;
   Track * track ;
+  D3DLIGHT9 light0, light1 ;
 
 public:
   SimWorld()
@@ -20,10 +21,22 @@ public:
 
     // Change to the assets/models directory.
     window->cd( ASSET( "models" ) ) ;
-    car->loadModel( "porsche.obj" ) ;
+    car->loadModel( "f-16.obj" ) ;
     window->cdPop() ;
 
     track = new Track() ;
+
+
+    /////
+    // Set up a couple of lights
+    memset( &light0, 0, sizeof( D3DLIGHT9 ) ) ;
+    memset( &light1, 0, sizeof( D3DLIGHT9 ) ) ;
+
+    setColor( &light0.Ambient, 1.0f, 1.0f, 1.0f, 1.0f ) ;
+    setColor( &light0.Diffuse, 1.0f, 1.0f, 1.0f, 1.0f ) ;
+    light0.Direction = D3DXVECTOR3( 0, -1, 0 ) ;
+
+    window->setLight( 0, &light0 ) ;
   }
   ~SimWorld()
   {
@@ -48,7 +61,9 @@ public:
   void Draw()
   {
     #pragma region Draw the ground plane
-    int limits = 500 ;
+
+    /*
+    int limits = 1 ;
 
     // * | *
     //   |
@@ -57,16 +72,18 @@ public:
     // * | * (limits, 0, limits)
     //   v
     //    z
-   
+    window->setVertexDeclaration( D3DWindow::PositionColor ) ;
     window->drawQuad(
 
-      D3DVertexC( limits, 0,  limits, 128, 128, 128 ),
-      D3DVertexC( limits, 0, -limits, 128, 128, 128 ),
-      D3DVertexC(-limits, 0, -limits, 128, 128, 128 ),
-      D3DVertexC(-limits, 0,  limits,  78,  78,  78 )
+      VertexC( limits, 0,  limits, 128, 128, 128 ),
+      VertexC( limits, 0, -limits, 128, 128, 128 ),
+      VertexC(-limits, 0, -limits, 128, 128, 128 ),
+      VertexC(-limits, 0,  limits,  78,  78,  78 )
 
     ) ;
+    */
     #pragma endregion
+
 
 
     // Draw the track.

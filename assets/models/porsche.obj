@@ -9492,7 +9492,6 @@ vn -1.000000 0.000000 0.000000
 
 # 5380 normals
 
-#!! this must be a mistake.
 g glass tireA rimA
 usemtl glass
 f 696//1 878//1 163//1
