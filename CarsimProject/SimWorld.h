@@ -21,7 +21,7 @@ public:
 
     // Change to the assets/models directory.
     window->cd( ASSET( "models" ) ) ;
-    car->loadModel( "f-16.obj" ) ;
+    car->loadModel( "porsche.obj" ) ;
     window->cdPop() ;
 
     track = new Track() ;

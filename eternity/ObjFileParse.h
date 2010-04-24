@@ -289,6 +289,21 @@ public:
 
   /// Texture coordinate lookup
   vector<int> facesTextureIndices ;
+
+
+  /// indexCount*:  A running tally of the total number
+  /// of indices that will be in 
+  /// each of facesVertexIndices, facesNormalIndices, facesTextureIndices
+  /// when the parse is complete.
+  int indexCountPass1 ;
+  int indexCountPass2 ;
+
+  /// vertCount*:  A running tally of the total number
+  /// of vertices that will be in
+  /// (combinedVerticesV | combinedVerticesVN..)
+  /// when the parse is complete
+  int vertCountPass1 ;
+  int vertCountPass2 ;
   #pragma endregion
 
 
@@ -316,6 +331,11 @@ public:
     name = NULL ;
     parentFile = parent ;
     material = NULL ;
+
+    indexCountPass1 = 0 ;
+    indexCountPass2 = 0 ;
+    vertCountPass1 = 0 ;
+    vertCountPass2 = 0 ;
   }
 
   char* getName()
@@ -446,10 +466,6 @@ private:
   /// textures..
   vector<D3DXVECTOR2> texCoords ;
 
-  // Count up the number of faces
-  // stored in each group.
-  MapStringInt numFacesByGroup ;
-
   /// How faces are specified in this file.
   /// It can be any combination of these 3
   enum FaceSpecMode
@@ -555,6 +571,7 @@ private:
 
     string currentGroupName = ""; // we must know what
     // group we're on at all times.
+    Group *currentGroup ;
 
     char buf[ 300 ] ;
 
@@ -643,65 +660,55 @@ private:
         // into (VERTS-2) faces.
         int verticesInFace = countVerts( buf ) ;
         int facesFromVerts = verticesInFace - 2 ;
+        int numVertsAdded = facesFromVerts*3 ;
 
         numTriangleFacesTOTAL += facesFromVerts ;
 
-        // Increase the numFaces count
+        // Increase the numVerts count
         // FOR THE CURRENT GROUP
 
-        // if currentGroup has a value
-        // then it will already have been
-        // inserted into the `numFacesByGroup`
-        // map
-        MapStringIntIter iter = numFacesByGroup.find( currentGroupName ) ;
-        if( iter == numFacesByGroup.end() )
+        if( !currentGroup )
         {
           error( "Obj file parse pass #1:  face specified "
-            "to join a group that doesn't exist `%s`", currentGroupName.c_str() ) ;
+            "to join a group that doesn't exist `%s`", currentGroup->getName() ) ;
         }
         else
         {
-          // The group name exists already, so increment face count
-          iter->second = iter->second + facesFromVerts ;
+          // Increment the total number
+          // that should be in group->facesVertexIndices
+          currentGroup->indexCountPass1 += verticesInFace ;
+
+          // Increment the total number
+          // that should be in group->combinedVerticesV
+          currentGroup->vertCountPass1 += numVertsAdded ;
         }
       }
       else if( buf[0] == 'g' && IS_WHITE(buf[1]) )
       {
-        // Count DISTINCT groups, which'll just be groups.size() when
-        // this is all done
-
         // A group.  Create it now, unless it already exists
 
-        // Get the name
         char *groupName = buf+2 ; // pass "g ", name goes to end of line
 
         // If there's a long name with spaces just cut off the extra names
         // this puts it in the same group as the first name.
-        cstrnullnextsp( groupName ) ;
+        cstrnullnextsp( groupName ) ;  // reason for this is
+        // when a file has "more than one name" in the group name string.
+        // I'm not sure whta this means either, but it
+        // creates a "group" that has a unique name
+        // FIXED by cutoff.
+
 
         currentGroupName = groupName ;
 
-        //!! two problems here to do with file anomolies.
-        // 1 Sometimes files contain an EMPTY "g",
+        // Sometimes files contain an EMPTY "g",
         // usually at the very top of the file.
+        //
         // I'm not sure what this means but its
         // an empty group.. and the "g" statements
         // aren't usually followed by a material name either.
-        // 2 The second problem is when a file has
-        // "more than one name" in the group name string.
-        // I'm not sure whta this means either, but it
-        // ends up creating a "group" that has a unique name
-        // (in this implemenation!).  FIXED by cutoff.
-
-        // instead of being a combination...
-        // I'm going to leave it that way since it doesn't
-        // seem to make sense to define groups of faces
-        // that belong to more than just one group..
-        // (although in Maya I think you CAN do this..)
-
-
-        Group *group = getGroup( groupName ) ;
-        if( group )
+        
+        currentGroup = getGroup( groupName ) ;
+        if( currentGroup )
         {
           // The group exists
           // so skip.
@@ -709,17 +716,14 @@ private:
         else
         {
           // create the group and add it to the groups collection
-          Group * g = new Group( this ) ;
-          g->setName( groupName ) ;
+          currentGroup = new Group( this ) ;
+          currentGroup->setName( groupName ) ;
 
-          //!! I think I should wrap groupName in string(groupName)
-          // but I haven't here.
           groups.insert( make_pair(
-            groupName, g
+            groupName, currentGroup
           ) ) ;
 
-          // Initialize numFaces @ 0
-          numFacesByGroup.insert( make_pair( currentGroupName, 0 ) ) ;
+          // Vert counts will be init to 0 in ctor.
         }
       }
       else if( !strncmp( buf, MTL_LIBRARY, MTL_LIBRARY_LEN ) )
@@ -749,29 +753,22 @@ private:
 
     // faces are divided up into the different groups,
     // so we can't really say right now faces.resize()..
-    foreach( MapStringIntIter, iter, numFacesByGroup )
+    foreach( GroupMapIter, groupIter, groups )
     {
-      int faces = iter->second ;
-      info( "Group `%s` has %d faces", iter->first.c_str(), faces ) ;
+      Group *g = groupIter->second ;
 
       // Allocate enough space in each group object
-      // to hold that many faces.
-      
-      // Make sure the group exists
-      GroupMapIter groupIter = groups.find( iter->first ) ;
-      if( groupIter == groups.end() )
-      {
-        // NOT FOUND!
-        // This shouldn't ever happen if the parse code is correct
-        error( "Group `%s` doesn't exist in the `groups` collection", iter->first.c_str() ) ;
-      }
-      else
-      {
-        // Every face takes __3__ indices to specify it.
-        groupIter->second->facesVertexIndices.resize( 3*faces ) ;
-        groupIter->second->facesNormalIndices.resize( 3*faces ) ;
-        groupIter->second->facesTextureIndices.resize( 3*faces ) ;
-      }
+      // to hold this many vertex indexes
+      // g->getNumFaces() WILL READ 0 HERE
+
+      // g->vertCountPass1 is used because
+      // it is a count of the total # vertices
+      // in the model AFTER triangulation.
+      groupIter->second->facesVertexIndices.resize( g->vertCountPass1 ) ;
+      groupIter->second->facesNormalIndices.resize( g->vertCountPass1 ) ;
+      groupIter->second->facesTextureIndices.resize( g->vertCountPass1 ) ;
+
+      info( "Group `%s` has %d vertices, %d faces", g->getName(), g->getNumFaces() ) ;
     }
 
 
@@ -797,14 +794,10 @@ private:
       vType = D3DWindow::Position ;
       info( "Using Position vertex" ) ;
     }
-
-    //!! IF THERE WAS NO MATERIAL FILENAME
-    // BY EOF, THEN CREATE A DEFAULT MATERIAL
   }
 
   int countVerts( char *buf )
   {
-    
     int count = 0 ;
     char *line = buf+2 ;
 
@@ -913,8 +906,10 @@ private:
     return argCheck( "parseTexcoord", buf, res, 2 ) ;
   }
 
-  void extractFaces( char *buf, int numVerts, Group *group, int index )
+  void extractFaces( char *buf, int numVerts, Group *group )
   {
+    int index = group->vertCountPass2 ;
+
     // We know how many vertices to expect,
     // so we're going to save each in a temporary buffer
     // The reason for the temporary buffer
@@ -963,13 +958,6 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertexIndices.size() )
-        {
-          //!! this error really shouldn't happen
-          // and needs to be fixed
-          error("`%s` too big for its britches", group->getName()) ;
-          continue;
-        }
         // always start with 0th vertex.
         group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
         group->facesTextureIndices[ index + i ] = texcoords[ 0 ] ;
@@ -1023,13 +1011,6 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertexIndices.size() )
-        {
-          //!! this error really shouldn't happen
-          // and needs to be fixed
-          error("`%s` too big for its britches", group->getName()) ;
-          continue;
-        }
         // always start with 0th vertex.
         group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
         group->facesNormalIndices[ index + i ] = normals[ 0 ] ;
@@ -1072,13 +1053,6 @@ private:
       i = 0 ;
       for( int c = 1 ; c < (numVerts-1) ; c++ )
       {
-        if( index +i+2 >= (int)group->facesVertexIndices.size() )
-        {
-          //!! this error really shouldn't happen
-          // and needs to be fixed
-          error("`%s` too big for its britches", group->getName()) ;
-          continue;
-        }
         // always start with 0th vertex.
         group->facesVertexIndices[ index + i ] = verts[ 0 ] ;
         group->facesTextureIndices[ index + i ] = texcoords[ 0 ] ;
@@ -1164,13 +1138,6 @@ private:
     // its the same as numTriangleFacesTOTAL
     int numFacesTOTALSecondPass=0 ;
     
-
-    MapStringInt facesByGroupCount ;  // this is parallel to numFacesByGroup.
-    // By the end of the second pass they will match
-    // exactly, but facesByGroupCount needs to TALLY
-    // up the faces as they come in so we know what
-    // entry in the arrays to index as we're adding faces.
-
     string currentGroupName = ""; // we must know what
     // group we're on at all times.
 
@@ -1184,7 +1151,6 @@ private:
     {
       fgets( buf, 300, f ) ;
       cstrnulllastnl( buf ) ;
-      puts( buf ) ;
 
       if( buf[0] == '#' )
       {
@@ -1271,51 +1237,25 @@ private:
         // we're creating here, as a parity check:
         numFacesTOTALSecondPass += facesFromVerts ;
 
-
-        MapStringIntIter iter = facesByGroupCount.find( currentGroupName ) ;
-        if( iter == facesByGroupCount.end() )
+        // Save the face in the current group
+        if( !currentGroup )
         {
-          error( "Obj file parse pass #2:  face specified "
-            "to join a group that doesn't exist `%s`", currentGroupName.c_str() ) ;
+          error( "I can't save this face because there is no current group defined" ) ;
         }
         else
         {
-          // The group name exists already,
-          // which is good as we are second pass.
-
-         
-          // Save the face in the current group
-          if( !currentGroup )
-          {
-            error( "I can't save this face because there is no current group defined" ) ;
-          }
-          else
-          {
-            // Now, parse off the face values.
-            extractFaces( buf, verticesInFace, currentGroup, iter->second ) ;
-          }
-
+          // Now, parse off the face values.
+          extractFaces( buf, verticesInFace, currentGroup ) ;
 
           // HERE WE UPDATE "WHAT FACE WE ARE ON"
           // This IS NOT a count of the number of faces
           // added.. rather its a count of the total # VERTICES added.
-          iter->second = iter->second + numVertsAdded ;
-
-
+          currentGroup->vertCountPass2 += numVertsAdded ;
           // BECAUSE FACES CAN BE SPECIFIED IN ANY ORDER,
           // (like, file can weave in and out of different groups)
           // You really have to be careful about 
           // keeping this number up to date.
-
-          /*
-          if( iter->second > numFacesByGroup[ iter->first ] )
-          {
-            error( "Really weird error, face count exceeds what first pass got" ) ;
-          }
-          */
-          
         }
-
         #pragma endregion
       }
       else if( buf[0] == 'g' && IS_WHITE(buf[1]) )
@@ -1338,19 +1278,6 @@ private:
           // This shouldn't happen, it means we missed
           // creating a group in the first pass
           error( "Obj file parse pass #2:  group `%s` doesn't exist!", groupName ) ;
-        }
-
-        
-        // on the second pass we only need
-        // to keep `facesByGroupCount` updated
-        // If its the first time encountering
-        // this group, then create it and init
-        // its face count to 0.
-        MapStringIntIter iter = facesByGroupCount.find( currentGroupName ) ;
-        if( iter == facesByGroupCount.end() )
-        {
-          // Initialize numFaces @ 0
-          facesByGroupCount.insert( make_pair( currentGroupName, 0 ) ) ;
         }
       }
       else if( !strncmp( buf, OBJ_CHANGE_MATERIAL, OBJ_CHANGE_MATERIAL_LEN ) )
@@ -1416,20 +1343,6 @@ private:
     else
     {
       return groupEntry->second ;
-    }
-  }
-
-  int getNumFacesInGroup( string groupName )
-  {
-    MapStringIntIter countEntry = numFacesByGroup.find( groupName ) ;
-    if( countEntry == numFacesByGroup.end() )
-    {
-      warning( "getNumFaces: Group %s doesn't exist, you get 0", groupName.c_str() ) ;
-      return 0 ;
-    }
-    else
-    {
-      return countEntry->second ;
     }
   }
 
@@ -1595,22 +1508,9 @@ private:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-
-        // the count of faces for this group
-        // is in the map numFacesByGroup
-        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
-        int numVerticesInGroup = numFacesInGroup*3 ;
-        //!! its impossible for this to happen
-        // since g->getNumFaces() returns
-        // (indexarray)/3, and THAT was
-        // originally set as numFacesInGroup*3
-        if( numFacesInGroup != g->getNumFaces() )
-          warning( "Parity error:  number of faces in group `%s` "
-          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
-          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
-        g->combinedVerticesVTN.resize( numVerticesInGroup ) ;
+        g->combinedVerticesVTN.resize( g->vertCountPass2 ) ;
         
-        for( int i = 0 ; i < groupIter->second->facesVertexIndices.size() ; i+=3 )
+        for( int i = 0 ; i < g->vertCountPass2 ; i+=3 )
         {
           int vIndex1 = g->facesVertexIndices[ i ] ;
           int vIndex2 = g->facesVertexIndices[ i+1 ] ;
@@ -1646,21 +1546,12 @@ private:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-
-        // the count of faces for this group
-        // is in the map numFacesByGroup
-        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
-        int numVerticesInGroup = numFacesInGroup*3 ;
-        if( numFacesInGroup != g->getNumFaces() )
-          warning( "Parity error:  number of faces in group `%s` "
-          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
-          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
-        g->combinedVerticesVT.resize( numVerticesInGroup ) ;
+        g->combinedVerticesVT.resize( g->vertCountPass2 ) ;
 
         // Visit each index in the
         // vertices index buffer
         // using numerical indexing..
-        for( int i = 0 ; i < groupIter->second->facesVertexIndices.size() ; i+=3 )
+        for( int i = 0 ; i < g->vertCountPass2 ; i+=3 )
         {
           int vIndex1 = g->facesVertexIndices[ i ] ;
           int vIndex2 = g->facesVertexIndices[ i+1 ] ;
@@ -1692,19 +1583,12 @@ private:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-
-        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
-        int numVerticesInGroup = numFacesInGroup*3 ;
-        if( numFacesInGroup != g->getNumFaces() )
-          warning( "Parity error:  number of faces in group `%s` "
-          "not matching up:  numFacesInGroup*3=%d, facesVertexIndices=%d",
-          g->getName(), numFacesInGroup*3, g->facesVertexIndices.size() ) ;
-        g->combinedVerticesVN.resize( numVerticesInGroup ) ;
+        g->combinedVerticesVN.resize( g->vertCountPass2 ) ;
 
         // Visit each index in the
         // vertices index buffer
         // using numerical indexing..
-        for( int i = 0 ; i < numFacesInGroup ; i+=3 )
+        for( int i = 0 ; i < g->vertCountPass2 ; i+=3 )
         {
           
           int vIndex1 = g->facesVertexIndices[ i ] ;
@@ -1738,21 +1622,9 @@ private:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-        
-        int numFacesInGroup = getNumFacesInGroup( g->getName() ) ;
+        g->combinedVerticesV.resize( g->vertCountPass2 ) ;
 
-        int numVerticesInGroup = numFacesInGroup*3 ; // all tris.
-
-        if( numFacesInGroup != g->getNumFaces() )
-          warning( "Parity error:  number of faces in group `%s` "
-          "not matching up:  numFacesInGroup=%d, getNumFaces=%d",
-          g->getName(), numFacesInGroup, g->getNumFaces() ) ;
-
-        // The number of combinedVertices is
-        // 3*numFaces
-        g->combinedVerticesV.resize( numVerticesInGroup ) ;
-
-        for( int i = 0 ; i < g->facesVertexIndices.size() ; i+=3 )
+        for( int i = 0 ; i < g->vertCountPass2 ; i+=3 )
         {
           int vIndex1 = g->facesVertexIndices[ i ] ;
           int vIndex2 = g->facesVertexIndices[ i+1 ] ;
