@@ -251,6 +251,14 @@ public:
 
 class ObjFile ;
 
+enum FaceSpecMode
+{
+  Vertices  = 1 << 0,
+  Normals   = 1 << 1,
+  Texcoords = 1 << 2
+} ;
+
+
 /// Groups are not just
 /// vertices -- instead
 /// they are collections
@@ -268,6 +276,27 @@ private:
 
 public:
   
+  /// How faces are specified in this file.
+  /// It can be any combination of these 3
+  FaceSpecMode faceSpecMode ;
+  // FaceSpecMode used to be an attribute of
+  // the entire model file, until model files
+  // were discovered that had v//n format for
+  // some groups but v/t/n format for other groups,
+  // in the same file.
+
+  /// Tells you if this group is
+  /// in a specific FaceSpecMode.
+  bool isFaceSpecMode( int queryFSM )
+  {
+    // its just straight equals.
+    return faceSpecMode == queryFSM ;
+  }
+  
+  /// The actual vertex declaration being used by
+  /// THIS obj model instance
+  D3DWindow::VertexType vType ;
+
   /// The parent file, which
   /// contains the actual vertices
   /// referred to by facesVertexIndices,
@@ -341,6 +370,9 @@ public:
     indexCountPass2 = 0 ;
     vertCountPass1 = 0 ;
     vertCountPass2 = 0 ;
+
+    // Initialize face spec mode to nothing
+    faceSpecMode = (FaceSpecMode)0 ;
   }
 
   char* getName()
@@ -439,9 +471,6 @@ typedef map<string, int>::iterator /* as simply */ MapStringIntIter ;
 
 class ObjFile
 {
-  /// The actual vertex declaration being used by
-  /// THIS obj model instance
-  D3DWindow::VertexType vType ;
 
 public:
   /// Call this once to initialize the class.
@@ -476,15 +505,6 @@ private:
   /// textures..
   vector<D3DXVECTOR2> texCoords ;
 
-  /// How faces are specified in this file.
-  /// It can be any combination of these 3
-  enum FaceSpecMode
-  {
-    Vertices  = 1 << 0,
-    Normals   = 1 << 1,
-    Texcoords = 1 << 2
-  } ;
-  FaceSpecMode faceSpecMode ;
 
   /// This is the total # triangular faces
   /// in the model, after triangulation.
@@ -531,15 +551,13 @@ public:
     // Save off the reference
     window = gameWindow ;
 
-    // Initialize face spec mode to nothing
-    faceSpecMode = (FaceSpecMode)0 ;
-
     if( !objFilename )
     {
       error( "I can't open a NULL pointer filename!" ) ;
       return ;
     }
 
+    info( "*** PARSING %s ***", objFilename ) ;
     originalObjFilename = objFilename ;
 
     // Try and open the file
@@ -581,7 +599,7 @@ private:
 
     string currentGroupName = ""; // we must know what
     // group we're on at all times.
-    Group *currentGroup ;
+    Group *currentGroup = NULL ;
 
     char buf[ 300 ] ;
 
@@ -633,23 +651,42 @@ private:
       }
       else if( buf[0] == 'f' && IS_WHITE(buf[1]) )
       {
-        // Actually, ALWAYS detect to see if
+        if( !currentGroup )
+        {
+          warning( "Obj file parse pass #1:  face specified before any group declarations. "
+            "Creating and adding a \"default\" group" ) ;
+
+          // create the group and add it to the groups collection
+          currentGroup = new Group( this ) ;
+          currentGroup->setName( "__DEFAULT_GROUP__" ) ;
+
+          groups.insert( make_pair(
+            "__DEFAULT_GROUP__", currentGroup
+          ) ) ;
+        }
+        
+        // Now currentGroup is always defined here.
+
+
+        // ALWAYS detect faceSpecMode to see if
         // there are any anomolies.
         FaceSpecMode fsm = (FaceSpecMode)getFaceSpecMode( buf ) ;
-        if( fsm != faceSpecMode )
+
+        if( fsm != currentGroup->faceSpecMode )
         {
-          if( !faceSpecMode )
+          if( !currentGroup->faceSpecMode )
           {
-            info( "FaceSpecMode is `%s`", getFaceSpecModeString( fsm ) ) ;
+            info( "FaceSpecMode is `%s` for group `%s`", getFaceSpecModeString( fsm ), currentGroup->getName() ) ;
           }
           else
           {
-            warning( "Anomaly detected, facespecmode changed from %s to %s",
-               getFaceSpecModeString( faceSpecMode ),
-               getFaceSpecModeString( fsm ) ) ;
+            warning( "Anomaly detected, facespecmode changed from %s to %s while in group %s",
+               getFaceSpecModeString( currentGroup->faceSpecMode ),
+               getFaceSpecModeString( fsm ),
+               currentGroup->getName() ) ;
           }
           
-          faceSpecMode = fsm ;
+          currentGroup->faceSpecMode = fsm ;
         }
 
         // face. just keep track of total, this
@@ -677,21 +714,13 @@ private:
         // Increase the numVerts count
         // FOR THE CURRENT GROUP
 
-        if( !currentGroup )
-        {
-          error( "Obj file parse pass #1:  face specified "
-            "to join a group that doesn't exist `%s`", currentGroup->getName() ) ;
-        }
-        else
-        {
-          // Increment the total number
-          // that should be in group->facesVertexIndices
-          currentGroup->indexCountPass1 += verticesInFace ;
+        // Increment the total number
+        // that should be in group->facesVertexIndices
+        currentGroup->indexCountPass1 += verticesInFace ;
 
-          // Increment the total number
-          // that should be in group->combinedVerticesV
-          currentGroup->vertCountPass1 += numVertsAdded ;
-        }
+        // Increment the total number
+        // that should be in group->combinedVerticesV
+        currentGroup->vertCountPass1 += numVertsAdded ;
       }
       else if( buf[0] == 'g' && IS_WHITE(buf[1]) )
       {
@@ -744,7 +773,7 @@ private:
         // on the first pass.
         loadMtlFile( buf+(MTL_LIBRARY_LEN+1) ) ;
       }
-    }
+    } // END OF FILE parse
     #pragma endregion
 
     info( "verts=%d, normals=%d, texCoords=%d, "
@@ -774,35 +803,42 @@ private:
       // g->vertCountPass1 is used because
       // it is a count of the total # vertices
       // in the model AFTER triangulation.
-      groupIter->second->facesVertexIndices.resize( g->vertCountPass1 ) ;
-      groupIter->second->facesNormalIndices.resize( g->vertCountPass1 ) ;
-      groupIter->second->facesTextureIndices.resize( g->vertCountPass1 ) ;
+
+      if( g->faceSpecMode & Vertices )  // it MUST be!
+        g->facesVertexIndices.resize( g->vertCountPass1 ) ;
+      else
+        warning( "Anomoly:  no vertices" ) ;
+
+      if( g->faceSpecMode & Normals )
+        groupIter->second->facesNormalIndices.resize( g->vertCountPass1 ) ;
+      if( g->faceSpecMode & Texcoords )
+        groupIter->second->facesTextureIndices.resize( g->vertCountPass1 ) ;
 
       info( "Group `%s` has %d vertices, %d faces", g->getName(), g->vertCountPass1, g->getNumFaces() ) ;
-    }
 
 
-    // Determine what vertex declaration to use
-    // based on face mode
-    if( (faceSpecMode & FaceSpecMode::Texcoords) && (faceSpecMode & FaceSpecMode::Normals) ) // v/t/n
-    {
-      vType = D3DWindow::PositionTextureNormal ;
-      info( "Using PositionTextureNormal vertex" ) ;
-    }
-    else if( faceSpecMode & FaceSpecMode::Texcoords ) // v/t
-    {
-      vType = D3DWindow::PositionTexture ;
-      info( "Using PositionTexture vertex" ) ;
-    }
-    else if( faceSpecMode & FaceSpecMode::Normals )   // v//n
-    {
-      vType = D3DWindow::PositionNormal ;
-      info( "Using PositionNormal vertex" ) ;
-    }
-    else   // v
-    {
-      vType = D3DWindow::Position ;
-      info( "Using Position vertex" ) ;
+      // Determine what vertex declaration to use
+      // based on face mode
+      if( g->isFaceSpecMode(Vertices|Texcoords|Normals) ) // v/t/n
+      {
+        g->vType = D3DWindow::PositionTextureNormal ;
+        info( "Group %s using PositionTextureNormal vertex", g->getName() ) ;
+      }
+      else if( g->isFaceSpecMode(Vertices|Texcoords) ) // v/t
+      {
+        g->vType = D3DWindow::PositionTexture ;
+        info( "Group %s using PositionTexture vertex", g->getName() ) ;
+      }
+      else if( g->isFaceSpecMode(Vertices|Normals) )   // v//n
+      {
+        g->vType = D3DWindow::PositionNormal ;
+        info( "Group %s using PositionNormal vertex", g->getName() ) ;
+      }
+      else   // v
+      {
+        g->vType = D3DWindow::Position ;
+        info( "Group %s using Position vertex", g->getName() ) ;
+      }
     }
   }
 
@@ -845,15 +881,22 @@ private:
     return count ;
   }
 
+  #pragma region face spec mode stuff
+  // These functions stay in ObjFile class
+  // because they have to do with PARSING
+  // the obj file, and aren't really related
+  // to Group, (altough FaceSpecMode is defined
+  // in Group)
   char* getFaceSpecModeString( FaceSpecMode fsm )
   {
-    if( (fsm & Vertices) && (fsm & Normals) && (fsm & Texcoords) )
+    //if( (fsm & Vertices) && (fsm & Normals) && (fsm & Texcoords) )
+    if( fsm == (Vertices|Normals|Texcoords) )
       return "v/t/n" ;
-    else if( (fsm & Vertices) && (fsm & Texcoords) )
+    else if( fsm == (Vertices|Texcoords) )
       return "v/t";
-    else if( (fsm & Vertices) && (fsm & Normals) )
+    else if( fsm == (Vertices|Normals) )
       return "v//n";
-    else if( fsm & Vertices )
+    else if( fsm == Vertices )
       return "v" ;
     else
       return "INVALID FaceSpecMode" ;
@@ -870,7 +913,7 @@ private:
         // Check if we have a slash right next to it,
         ++pos ;
         if( *pos == '/' )
-          return FaceSpecMode::Vertices | FaceSpecMode::Normals ;  // "v//n"
+          return Vertices | Normals ;  // "v//n"
 
         // If we didn't have a slash right next to it,
         // it'll either be DIGITS then white space (v/t)
@@ -880,13 +923,13 @@ private:
         while( !isspace(*pos) )
         {
           if( *pos == '/' )
-            return FaceSpecMode::Vertices | FaceSpecMode::Texcoords | FaceSpecMode::Normals ; // "v/t/n"
+            return Vertices | Texcoords | Normals ; // "v/t/n"
           ++pos ;
         }
 
         // if it WAS a space next (before
         // hitting a /) then we have v/t
-        return FaceSpecMode::Vertices | FaceSpecMode::Texcoords ; //"v/t"
+        return Vertices | Texcoords ; //"v/t"
       }
 
       // next char.
@@ -895,9 +938,11 @@ private:
     
     // If didn't return above, means hit space
     // before hitting slash at all
-    return FaceSpecMode::Vertices ; // "v"
+    return Vertices ; // "v"
   }
+  #pragma endregion
 
+  #pragma region parse vertex and extract faces
   bool parseVertex( char *buf, D3DXVECTOR3 *v )
   {
     int res = sscanf( buf, "v %f %f %f", &v->x, &v->y, &v->z ) ;
@@ -1130,6 +1175,8 @@ private:
     }
   }
 
+
+  #pragma endregion
   void secondPass( FILE* f )
   {
     // In the second pass we actually
@@ -1250,22 +1297,26 @@ private:
         // Save the face in the current group
         if( !currentGroup )
         {
-          error( "I can't save this face because there is no current group defined" ) ;
+          // Create
+          warning( "Faces added before any groups were defined, "
+            "adding faces to the \"default\" group" ) ;
+          
+          currentGroup = getGroup( "__DEFAULT_GROUP__" ) ;
         }
-        else
-        {
-          // Now, parse off the face values.
-          extractFaces( buf, verticesInFace, currentGroup ) ;
 
-          // HERE WE UPDATE "WHAT FACE WE ARE ON"
-          // This IS NOT a count of the number of faces
-          // added.. rather its a count of the total # VERTICES added.
-          currentGroup->vertCountPass2 += numVertsAdded ;
-          // BECAUSE FACES CAN BE SPECIFIED IN ANY ORDER,
-          // (like, file can weave in and out of different groups)
-          // You really have to be careful about 
-          // keeping this number up to date.
-        }
+        // currentGroup will be defined here.
+        
+        // Now, parse off the face values.
+        extractFaces( buf, verticesInFace, currentGroup ) ;
+
+        // HERE WE UPDATE "WHAT FACE WE ARE ON"
+        // This IS NOT a count of the number of faces
+        // added.. rather its a count of the total # VERTICES added.
+        currentGroup->vertCountPass2 += numVertsAdded ;
+        // BECAUSE FACES CAN BE SPECIFIED IN ANY ORDER,
+        // (like, file can weave in and out of different groups)
+        // You really have to be careful about 
+        // keeping this number up to date.
         #pragma endregion
       }
       else if( buf[0] == 'g' && IS_WHITE(buf[1]) )
@@ -1509,15 +1560,19 @@ private:
     IDirect3DDevice9 *gpu = window->getGpu() ;
 
     // Combine all the groups..
-    #pragma region VTN
-    if( (faceSpecMode & Normals) && (faceSpecMode & Texcoords) )
-    {
-      // v/t/n
-      info( "VB as v/t/n" ) ;
 
-      foreach( GroupMapIter, groupIter, groups )
+    // This is massively loop unrolled, but
+    // it probably doesn't have to be.
+    foreach( GroupMapIter, groupIter, groups )
+    {
+      Group *g = groupIter->second ;
+
+      #pragma region VTN
+      if( g->isFaceSpecMode( Vertices|Normals|Texcoords) )
       {
-        Group *g = groupIter->second ;
+        // v/t/n
+        info( "Group %s as v/t/n", g->getName() ) ;
+
         g->combinedVerticesVTN.resize( g->vertCountPass2 ) ;
         
         for( int i = 0 ; i < g->vertCountPass2 ; i+=3 )
@@ -1545,17 +1600,12 @@ private:
           g->combinedVerticesVTN[ i+2 ] = v3 ;
         }
       }
-    }
-    #pragma endregion
-    #pragma region VT
-    else if( faceSpecMode & Texcoords )
-    {
-      // v/t
-      info( "VB as v/t" ) ;
-      
-      foreach( GroupMapIter, groupIter, groups )
+      #pragma endregion
+      #pragma region VT
+      else if( g->isFaceSpecMode(Vertices|Texcoords) )
       {
-        Group *g = groupIter->second ;
+        // v/t
+        info( "Group %s as v/t", g->getName() ) ;
         g->combinedVerticesVT.resize( g->vertCountPass2 ) ;
 
         // Visit each index in the
@@ -1582,16 +1632,13 @@ private:
           g->combinedVerticesVT[ i+2 ] = v3 ;
         }
       }
-    }
-    #pragma endregion
-    #pragma region VN
-    else if( faceSpecMode & Normals )
-    {
-      // v//n
-      info( "VB as v//n" ) ;
-      
-      foreach( GroupMapIter, groupIter, groups )
+      #pragma endregion
+      #pragma region VN
+      else if( g->isFaceSpecMode(Vertices|Normals) )
       {
+        // v//n
+        info( "Group %s as v//n", g->getName() ) ;
+        
         Group *g = groupIter->second ;
         g->combinedVerticesVN.resize( g->vertCountPass2 ) ;
 
@@ -1620,17 +1667,14 @@ private:
           g->combinedVerticesVN[ i+2 ] = v3 ;
         }
       }
-    }
-    #pragma endregion
-    #pragma region V
-    else
-    {
-      // v
-      info( "VB as v" ) ;
-      
-      // groupIter is <name,Group*>
-      foreach( GroupMapIter, groupIter, groups )
+      #pragma endregion
+      #pragma region V
+      else
       {
+        // v
+        info( "Group %s as v", g->getName() ) ;
+        
+        // groupIter is <name,Group*>
         Group *g = groupIter->second ;
         g->combinedVerticesV.resize( g->vertCountPass2 ) ;
 
@@ -1654,14 +1698,18 @@ private:
           g->combinedVerticesV[ i+2 ] = v3 ;
         }
       }
-    }
-    #pragma endregion
+      #pragma endregion
+
+    } // END FOREACH GROUP
   }
   
 public:
   void computeNormals()
   {
     // Computes normals on loaded vertex set
+    warning( "!! computeNormals() not implemented yet" ) ;
+    // Should also take into acct (s) smoothing groups
+    // in the obj file.
   }
 
   void draw()
@@ -1684,77 +1732,54 @@ public:
     DX_CHECK( gpu->SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL ), "diff d3dmcs_material" );
     DX_CHECK( gpu->SetRenderState( D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL ), "spec d3dmcs_material" ) ;
     DX_CHECK( gpu->SetRenderState( D3DRS_EMISSIVEMATERIALSOURCE, D3DMCS_MATERIAL ), "emissive d3dmcs_material" ) ;
-
-    //DX_CHECK( gpu->SetVertexDeclaration( vDecl ), "SetVertexDeclaration FAILED!" ) ;
-    window->setVertexDeclaration( vType ) ;
-
-    // It depends on
-    // vertex mode..
-    if( (faceSpecMode & Texcoords) && (faceSpecMode & Normals) )
+    
+    // v/t/n
+    foreach( GroupMapIter, groupIter, groups )
     {
-      // v/t/n
-      foreach( GroupMapIter, groupIter, groups )
-      {
-        Group *g = groupIter->second ;
-        window->setMaterial( g->getD3DMaterial() ) ;
+      Group *g = groupIter->second ;
 
+      window->setVertexDeclaration( g->vType ) ;
+      window->setMaterial( g->getD3DMaterial() ) ;
+
+      // Texcoords on, turn on the texture
+      if( g->faceSpecMode & Texcoords )
+      {
         Material *mat = g->getMaterial() ;
-        
         // set the texture if it's been set up.
         if( mat && mat->getSpriteId() ) // order matters!
-            window->setActiveTexture( mat->getSpriteId() ) ;  
+          window->setActiveTexture( mat->getSpriteId() ) ;  
+      }
 
+      // ACTUALLY DRAW
+      if( g->isFaceSpecMode(Vertices|Texcoords|Normals) )
+      {
+        // v/t/n
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,
           g->getNumFaces(),
           &g->combinedVerticesVTN[0],
           sizeof(VertexTN) ) ;
       }
-    }
-    else if(faceSpecMode & Texcoords)
-    {
-      // v/t
-      foreach( GroupMapIter, groupIter, groups )
+      else if( g->isFaceSpecMode(Vertices|Texcoords) )
       {
-        Group *g = groupIter->second ;
-        window->setMaterial( g->getD3DMaterial() ) ;
-        
-        Material *mat = g->getMaterial() ;
-        
-        // set the texture if it's been set up.
-        if( mat && mat->getSpriteId() ) // order matters!
-            window->setActiveTexture( mat->getSpriteId() ) ;  
-
+        // v/t
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,
           g->getNumFaces(),
           &g->combinedVerticesVT[0],
           sizeof(VertexT) ) ;
       }
-    }
-    else if(faceSpecMode & Normals)
-    {
-      // v//n
-      foreach( GroupMapIter, groupIter, groups )
+      else if( g->isFaceSpecMode(Vertices|Normals) )
       {
-        Group *g = groupIter->second ;
-        window->setMaterial( g->getD3DMaterial() ) ;
-
+        // v//n
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,
           g->getNumFaces(),
           &g->combinedVerticesVN[0],
           sizeof(VertexN) ) ;
       }
-    }
-    else
-    {
-      // v
-      foreach( GroupMapIter, groupIter, groups )
+      else // v
       {
-        Group *g = groupIter->second ;
-        window->setMaterial( g->getD3DMaterial() ) ;
-
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,
           g->getNumFaces(),

@@ -441,6 +441,34 @@
     WindowClass.h, cd() and cdPop()
   - Fixed up D3DVertex declarations (just v, vc, vt, vn, vtn)
 
++ Apr 23 / 2010 v0.1.7-obj-robust
+  - Some OBJ files have really bad anomolies, like
+    this .OBJ that has v//n format, then v/t/n format.
+	The solution is to to allow vertex format to change
+	BY GROUP, which just means in the TIE-TOGETHER _AND_
+	render code, we have to check the vertex format
+	BY GROUP.
+  - This will slow down the code __a lot__ vs
+    the efficiency we get without having to check this,
+	but if its how models are specified, there's nothing
+	we can do about it.
+  - The other option is to use a WHITE PIXEL texture
+    when rendering the seconds of the model that
+	have no texture applied to them.
+	- This still means we have to check vertex format
+	  BY GROUP instead of on a per-model basis.
+	- Logically we _should_ have to do this since
+	  really in Maya you can texture one surface but
+	  not the other.
+
++ Apr 24 / 2010 v0.1.7-obj-robust
+  - Its working now, obj file loading with textures and all
+    Its very robust, can handle obj files that mix v/t/n and v//n
+	and v/t formats, correctly handles textures etc.
+	Just remember to FLIP the texture vertically if
+	it was intended for use with OpenGL as it IS inverted
+	texture coordinates from OpenGL in D3D.
+  
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in

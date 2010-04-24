@@ -8,11 +8,12 @@
 /// Simulated world class
 class SimWorld
 {
+public:
+
   Car * car ;
   Track * track ;
   D3DLIGHT9 light0, light1 ;
 
-public:
   SimWorld()
   {
     info( "Constructing simworld.." ) ;
@@ -20,8 +21,24 @@ public:
     car = new Car() ;
 
     // Change to the assets/models directory.
-    window->cd( ASSET( "models/3D_shape_files_CS/vehicles/Sports_car" ) ) ;
+    window->cd( ASSET( "models/3D_shape_files_CS/vehicles/european_sedan" ) ) ;
     car->loadModel( "body.obj" ) ;
+    car->loadModel( "brakes_on.obj" ) ;
+    car->loadModel( "details.obj" ) ;
+    car->loadModel( "interior_trim.obj" ) ;
+    car->loadModel( "seats.obj" ) ;
+    car->loadModel( "steering_wheel.obj" ) ;
+    //car->loadModel( "windows.obj" ) ;
+    window->cdPop() ;
+
+    // Get some tires
+    window->cd( ASSET( "models/3D_shape_files_CS/tires/205_70R15" ) ) ;
+    //car->loadModel( "rotor.obj" ) ;
+    //car->loadModel( "stripe.obj" ) ;
+    car->loadTireModel( "tire.obj" ) ;
+    car->loadTireModel( "wheel.obj" ) ;
+    //!! this is only one tire and its located
+    // at the origin.
     window->cdPop() ;
 
     track = new Track() ;
@@ -35,7 +52,7 @@ public:
     light0.Type = D3DLIGHT_DIRECTIONAL ;  // believe it or not forgetting to set this
     // gives D3DERR_INTERNAL
     light0.Direction = D3DXVECTOR3( 0, -1, 0 ) ;
-    setColor( &light0.Ambient, 0.0f, 0.0f, 0.0f, 0.0f ) ;
+    setColor( &light0.Ambient, 0.5f, 0.5f, 0.5f, 0.5f ) ;
     setColor( &light0.Diffuse, 1.0f, 1.0f, 1.0f, 1.0f ) ;
     
     window->setLight( 0, &light0 ) ;

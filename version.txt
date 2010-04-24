@@ -1,4 +1,4 @@
-This is eternity engine version 0.1.6
+This is eternity engine version 0.1.7
 
 change log
 ==========
@@ -30,3 +30,7 @@ v0.1.5
   
 v0.1.6
   - obj model loading
+
+v0.1.7
+  - robust obj model loading
+

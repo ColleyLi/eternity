@@ -7,6 +7,6 @@ Ks  0.9 0.9 0.9
 d  1
 Ns  0
 illum 2
-map_Kd baked.tga
+map_Kd baked.png
 #
 # EOF

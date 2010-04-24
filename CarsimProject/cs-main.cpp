@@ -121,6 +121,18 @@ void Update()
   #pragma endregion
 
 
+  if( window->keyIsPressed( VK_UP ) )
+    simWorld->car->pos.z += 0.5f ; // move forward
+  if( window->keyIsPressed( VK_DOWN ) )
+    simWorld->car->pos.z -= 0.5f ; // move forward
+  
+  if( window->keyIsPressed( VK_RIGHT ) )
+    simWorld->car->steeringAngle -= 0.01f ;
+  if( window->keyIsPressed( VK_LEFT ) )
+    simWorld->car->steeringAngle += 0.01f ;
+
+
+
   if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", true ) ;
 }
 
@@ -128,8 +140,12 @@ void Update()
 // DO ALL DRAWING HERE.
 void Draw()
 {
-  // Draw the game, happens 60 times a second
+  // Reset the world xform
+  D3DXMATRIX identity ;
+  D3DXMatrixIdentity( &identity ) ;
+  window->setWorld( &identity ) ;
 
+  
   window->setDrawingMode( D3 ) ; // 3d
   
 
