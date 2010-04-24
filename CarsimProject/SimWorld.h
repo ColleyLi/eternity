@@ -20,8 +20,8 @@ public:
     car = new Car() ;
 
     // Change to the assets/models directory.
-    window->cd( ASSET( "models" ) ) ;
-    car->loadModel( "porsche.obj" ) ;
+    window->cd( ASSET( "models/3D_shape_files_CS/vehicles/Sports_car" ) ) ;
+    car->loadModel( "body.obj" ) ;
     window->cdPop() ;
 
     track = new Track() ;
@@ -32,10 +32,12 @@ public:
     memset( &light0, 0, sizeof( D3DLIGHT9 ) ) ;
     memset( &light1, 0, sizeof( D3DLIGHT9 ) ) ;
 
-    setColor( &light0.Ambient, 1.0f, 1.0f, 1.0f, 1.0f ) ;
-    setColor( &light0.Diffuse, 1.0f, 1.0f, 1.0f, 1.0f ) ;
+    light0.Type = D3DLIGHT_DIRECTIONAL ;  // believe it or not forgetting to set this
+    // gives D3DERR_INTERNAL
     light0.Direction = D3DXVECTOR3( 0, -1, 0 ) ;
-
+    setColor( &light0.Ambient, 0.0f, 0.0f, 0.0f, 0.0f ) ;
+    setColor( &light0.Diffuse, 1.0f, 1.0f, 1.0f, 1.0f ) ;
+    
     window->setLight( 0, &light0 ) ;
   }
   ~SimWorld()

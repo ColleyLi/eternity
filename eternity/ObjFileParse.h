@@ -218,6 +218,11 @@ public:
     spriteId = iSpriteId ;
   }
 
+  int getSpriteId()
+  {
+    return spriteId ;
+  }
+
   char* getTextureFilename()
   {
     if( textureFilename )
@@ -232,7 +237,7 @@ public:
     cstrcpy( textureFilename, iFilename ) ;
   }
 
-  D3DMATERIAL9* getMaterial()
+  D3DMATERIAL9* getD3DMaterial()
   {
     return &d3dmaterial ;
   }
@@ -352,7 +357,7 @@ public:
     cstrcpy( name, iName ) ;
   }
 
-  D3DMATERIAL9* getMaterial()
+  D3DMATERIAL9* getD3DMaterial()
   {
     if( !material )
     {
@@ -361,8 +366,13 @@ public:
     }
     else
     {
-      return material->getMaterial() ;
+      return material->getD3DMaterial() ;
     }
+  }
+
+  Material* getMaterial()
+  {
+    return material ;
   }
 
   /// The number of faces is
@@ -768,7 +778,7 @@ private:
       groupIter->second->facesNormalIndices.resize( g->vertCountPass1 ) ;
       groupIter->second->facesTextureIndices.resize( g->vertCountPass1 ) ;
 
-      info( "Group `%s` has %d vertices, %d faces", g->getName(), g->getNumFaces() ) ;
+      info( "Group `%s` has %d vertices, %d faces", g->getName(), g->vertCountPass1, g->getNumFaces() ) ;
     }
 
 
@@ -838,7 +848,7 @@ private:
   char* getFaceSpecModeString( FaceSpecMode fsm )
   {
     if( (fsm & Vertices) && (fsm & Normals) && (fsm & Texcoords) )
-      return "v/t/n/" ;
+      return "v/t/n" ;
     else if( (fsm & Vertices) && (fsm & Texcoords) )
       return "v/t";
     else if( (fsm & Vertices) && (fsm & Normals) )
@@ -939,7 +949,7 @@ private:
       char *pos = line ;
       int vReadCount = 0 ;
 
-      while( *pos ) // while we haven't reached the null terminator yet
+      while( pos ) // while we haven't reached the null terminator yet
       {
         int res = sscanf( pos, "%d/%d/%d", &v, &t, &n ) ;
         
@@ -1686,7 +1696,13 @@ public:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-        window->setMaterial( g->getMaterial() ) ;
+        window->setMaterial( g->getD3DMaterial() ) ;
+
+        Material *mat = g->getMaterial() ;
+        
+        // set the texture if it's been set up.
+        if( mat && mat->getSpriteId() ) // order matters!
+            window->setActiveTexture( mat->getSpriteId() ) ;  
 
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,
@@ -1701,7 +1717,13 @@ public:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-        window->setMaterial( g->getMaterial() ) ;
+        window->setMaterial( g->getD3DMaterial() ) ;
+        
+        Material *mat = g->getMaterial() ;
+        
+        // set the texture if it's been set up.
+        if( mat && mat->getSpriteId() ) // order matters!
+            window->setActiveTexture( mat->getSpriteId() ) ;  
 
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,
@@ -1716,7 +1738,7 @@ public:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-        window->setMaterial( g->getMaterial() ) ;
+        window->setMaterial( g->getD3DMaterial() ) ;
 
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,
@@ -1731,7 +1753,7 @@ public:
       foreach( GroupMapIter, groupIter, groups )
       {
         Group *g = groupIter->second ;
-        window->setMaterial( g->getMaterial() ) ;
+        window->setMaterial( g->getD3DMaterial() ) ;
 
         gpu->DrawPrimitiveUP(
           D3DPT_TRIANGLELIST,

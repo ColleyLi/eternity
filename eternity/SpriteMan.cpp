@@ -449,13 +449,7 @@ void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float h
 
 void SpriteMan::drawSprite( int spriteId, float x, float y, float width, float height, float angle, D3DCOLOR modulatingColor, SpriteCentering centering )
 {
-  Sprite *sprite = defaultSprite ;
-  SpriteMapIter spriteEntry = sprites.find( spriteId ) ;
-
-  if( spriteEntry != sprites.end() )
-    sprite = spriteEntry->second ;
-  else
-    warning( "Sprite %d not loaded, using default sprite instead", spriteId ) ;
+  Sprite *sprite = getSprite( spriteId ) ;
   
   // There was a very subtle bug here
   // when someone tries to scale
@@ -719,3 +713,15 @@ void SpriteMan::addFont( int fontId, ID3DXFont* font )
   fonts.insert( make_pair( fontId, font ) ) ;
 }
 
+void SpriteMan::setActiveTexture( int spriteId )
+{
+  if( !spriteId )
+  {
+    // Understood to mean you want to turn off texturing
+    lgpu->SetTexture( 0, 0 ) ;
+    return ;
+  }
+
+  Sprite *sprite = getSprite( spriteId ) ;
+  lgpu->SetTexture( 0, sprite->getTexture() ) ;
+}

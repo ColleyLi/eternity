@@ -276,7 +276,9 @@ public:
 
   void addFont( int fontId, ID3DXFont* font ) ;
 
-  
+  /// Send 0 to turn off texturing
+  void setActiveTexture( int spriteId ) ;
+
 
 } ;
 
