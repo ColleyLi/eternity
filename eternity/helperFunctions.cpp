@@ -284,6 +284,28 @@ D3DXMATRIX* D3DXMatrixPointTowards( D3DXMATRIX *mat, D3DXVECTOR3 *fwd, D3DXVECTO
   return mat ;
 }
 
+D3DXVECTOR3* D3DXVec3SetMagnitude( D3DXVECTOR3 *vec, float mag )
+{
+  D3DXVec3Normalize( vec, vec ) ;
+  *vec = (*vec)*mag ;
+  return vec ;
+}
+
+D3DXVECTOR3* D3DXVec3Truncate( D3DXVECTOR3 *vec, float minMag, float maxMag )
+{
+  float mag2 = D3DXVec3LengthSq( vec ) ;
+
+  if( mag2 > maxMag*maxMag )
+  {
+    // Needs correction
+    return D3DXVec3SetMagnitude( vec, maxMag ) ;
+  }
+  else if( mag2 < minMag*minMag )
+  {
+    return D3DXVec3SetMagnitude( vec, minMag ) ;
+  }
+}
+
 /*
 D3DXMATRIX lookAt( D3DXVECTOR3 eye, D3DXVECTOR3 look, D3DXVECTOR3 up )
 {

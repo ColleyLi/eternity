@@ -7,4 +7,7 @@ extern GameWindow *window ;  // the main window object
 
 #define ASSET(x) ("../assets/"##x)
 
+
+#include "enums.h"
+
 #endif

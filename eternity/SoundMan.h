@@ -53,6 +53,10 @@ private:
   // not from a file.
 
 
+  //!! Needs to be wrapped better
+  FMOD_DSP* dspPITCHSHIFT ;
+
+
 protected:
 
   SoundMan() ;
@@ -75,23 +79,33 @@ public:
   /// torch/fire crackle) and FMOD_CREATESTREAM
   /// for longer sounds (like a 5 minute background
   /// music song).
-  void loadSound( int id, char * filename, int options = 0 ) ;
+  void loadSound( int soundId, char * filename, int options = 0 ) ;
+
+  /// Gets you the FMOD_SOUND* pointer
+  /// in case you want it
+  FMOD_SOUND* getSound( int soundId ) ;
 
   /// Plays a previously loaded sound by
   /// the same ID you passed to loadSound
-  void playSound( int id ) ;
+  void playSound( int soundId ) ;
+
+  /// Plays a sound with desired dsp effect
+  /// 
+  void playSoundWithDSP( int soundId, FMOD_DSP* dsp ) ;
+
+  void loopSoundWithDSP( int soundId, FMOD_DSP* dsp, int loopCount ) ;
 
   /// Stops playback of ALL sounds
   /// by id.
   /// Really most useful for stopping
   /// one kind of background music
   /// and starting another.
-  void stopSound( int id ) ;
+  void stopSound( int soundId ) ;
 
   /// Loop a sound `loopCount` times,
   /// set `loopCount` to FMOD_LOOP_FOREVER
   /// to loop a sound infinitely
-  void loopSound( int id, int loopCount = FMOD_LOOP_FOREVER ) ;
+  void loopSound( int soundId, int loopCount = FMOD_LOOP_FOREVER ) ;
 
   /// Channel callback
   static FMOD_RESULT F_CALLBACK channelEndCallback(
@@ -134,6 +148,11 @@ public:
     return FMOD_OK ;
 
   }
+
+  // !! TEMPORARY FUNCTION
+  void createPitchShift() ;
+
+  void setPitchShift( float amount ) ;
 
   ~SoundMan() ;
 } ;

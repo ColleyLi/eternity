@@ -145,6 +145,10 @@ D3DXMATRIX* D3DXMatrixSetCol( D3DXMATRIX* matrix, int col, D3DXVECTOR3* vec );
 // ASSUMES YOUR VECTORS ARE ALREADY NORMALIZED
 D3DXMATRIX* D3DXMatrixPointTowards( D3DXMATRIX *mat, D3DXVECTOR3 *fwd, D3DXVECTOR3 *up, D3DXVECTOR3 *eye ) ;
 
+D3DXVECTOR3* D3DXVec3SetMagnitude( D3DXVECTOR3 *vec, float mag ) ;
+
+D3DXVECTOR3* D3DXVec3Truncate( D3DXVECTOR3 *vec, float minMag, float maxMag ) ;
+
 inline void ZeroVector(D3DXVECTOR3 &vec)
 {
   vec.x=vec.y=vec.z=0.0f;

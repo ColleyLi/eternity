@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\enums.h"
+				>
+			</File>
+			<File
 				RelativePath=".\SimWorld.h"
 				>
 			</File>

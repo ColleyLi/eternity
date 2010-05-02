@@ -389,16 +389,22 @@ public:
   }
 
 
-  void follow( D3DXVECTOR3 pos, D3DXVECTOR3 dir, D3DXVECTOR3 offset )
+  void follow( D3DXVECTOR3 pos, D3DXVECTOR3 heading, float back, float height )
   {
-    // to follow something @ pos, going dir, offset from pos
+    // to follow something @ pos, going heading
+    // we want, offset from pos
 
-    eye = pos + offset ;
-    D3DXVECTOR3 eyeToLookDirection = dir - eye ;
-    D3DXVec3Normalize( &forward, &eyeToLookDirection ) ;
+    // Set the eye of the camera to being
+    // @ (pos+offset)
     
-    printf( "eye:  %.2f %.2f %.2f\n", eye.x, eye.y, eye.z ) ;
-    printf( "look:  %.2f %.2f %.2f\n", forward.x, forward.y, forward.z ) ;
+    
+    eye = pos - (back*heading) ;
+    eye.z += height ;
+
+    // Set the fwd of the camera as just
+    // being equal to the passed in `heading' vector
+    forward = heading ;
+    
   }
 
 

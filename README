@@ -478,6 +478,12 @@
 	[  up         0  ]
 	[  trans      1  ]
   
++ May 2 / 2010 v0.1.8-carsim
+  - started addition of DSP effects from FMOD
+  - abandoned effort to quickly add a pitch shift.
+    It's not working for some reason
+	
+  
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in
@@ -493,3 +499,9 @@
         cloning the underlying texture for efficiency
     - BOOST can be removed from the /eternity folder,
       since its installation is required anyways
+    - message queue wiht messages that go away
+      after 5 seconds or so
+    - FMOD DSP EFFECT WRAPPERS
+    - particle engine
+    - physics from havok
+    

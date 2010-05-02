@@ -185,7 +185,7 @@ void SoundMan::soundUnpause()
     FMOD_Channel_SetPaused( channelIter->second, FALSE ) ;
   }
 }
-void SoundMan::loadSound( int id, char * filename, int options )
+void SoundMan::loadSound( int soundId, char * filename, int options )
 {
   FMOD_SOUND *newSound ;
   
@@ -201,10 +201,10 @@ void SoundMan::loadSound( int id, char * filename, int options )
   // File loaded, ok, now
   // check if a sound by that ID already exists.
   // If it does, unload and destroy it
-  SoundMapIter soundEntry = sounds.find( id ) ;
+  SoundMapIter soundEntry = sounds.find( soundId ) ;
   if( soundEntry != sounds.end() )
   {
-    warning( "Sound id=%d already existed, destroying and overwriting with %s.", id, filename ) ;
+    warning( "Sound id=%d already existed, destroying and overwriting with %s.", soundId, filename ) ;
     FMOD_SOUND *oldSound = NULL ;
     oldSound = soundEntry->second ;
     FMOD_Sound_Release( oldSound ) ;
@@ -214,18 +214,31 @@ void SoundMan::loadSound( int id, char * filename, int options )
   }
 
   // Now save it by its id in the map
-  sounds.insert( make_pair( id, newSound ) ) ;
+  sounds.insert( make_pair( soundId, newSound ) ) ;
 }
 
-void SoundMan::playSound( int id )
+FMOD_SOUND* SoundMan::getSound( int soundId )
 {
-  FMOD_SOUND *sound = defaultSound ;
-  SoundMapIter soundEntry = sounds.find( id ) ;
+  FMOD_SOUND *sound = NULL ;
+  SoundMapIter soundEntry = sounds.find( soundId ) ;
   
   if( soundEntry != sounds.end() )
     sound = soundEntry->second ;
   else
-    warning( "Sound id=%d doesn't exist", id ) ;
+    warning( "Sound id=%d doesn't exist, you get NULL", soundId ) ;
+
+  return sound ;
+}
+
+void SoundMan::playSound( int soundId )
+{
+  FMOD_SOUND *sound = defaultSound ;
+  SoundMapIter soundEntry = sounds.find( soundId ) ;
+  
+  if( soundEntry != sounds.end() )
+    sound = soundEntry->second ;
+  else
+    warning( "Sound id=%d doesn't exist", soundId ) ;
 
   FMOD_CHANNEL* channel ;
 
@@ -238,7 +251,7 @@ void SoundMan::playSound( int id )
   //FMOD_CHANNEL_CALLBACK( channel, FMOD_CHANNEL_CALLBACKTYPE_END, 0, 0 ) ;
   FMOD_Channel_SetCallback( channel, channelEndCallback ) ;
   
-  fmodChannels.insert( make_pair( id, channel ) ) ;
+  fmodChannels.insert( make_pair( soundId, channel ) ) ;
   
   int numChannelsPlaying ;
   FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
@@ -246,7 +259,70 @@ void SoundMan::playSound( int id )
   //info( "There are %d channels playing right now", numChannelsPlaying ) ;
 }
 
-void SoundMan::stopSound( int id )
+void SoundMan::playSoundWithDSP( int soundId, FMOD_DSP* dsp )
+{
+  FMOD_SOUND *sound = getSound( soundId ) ;
+  if( !sound )
+  {
+    warning( "Sound id=%d doesn't exist", soundId ) ;
+    sound = defaultSound ;
+  }
+  
+  FMOD_CHANNEL* channel ;
+
+  // Play this sound on any available free channel
+  FMOD_ErrorCheck(
+    FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel )
+  ) ;
+
+
+  // Set the dsp effect on the channel
+  //!!! TEST:  using the pitch shift dsp always for now
+  FMOD_Channel_AddDSP( channel, dspPITCHSHIFT, 0 ) ;
+
+  // Register a callback on the channel
+  //FMOD_CHANNEL_CALLBACK( channel, FMOD_CHANNEL_CALLBACKTYPE_END, 0, 0 ) ;
+  FMOD_Channel_SetCallback( channel, channelEndCallback ) ;
+  
+  fmodChannels.insert( make_pair( soundId, channel ) ) ;
+  
+  int numChannelsPlaying ;
+  FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
+}
+
+void SoundMan::loopSoundWithDSP( int soundId, FMOD_DSP* dsp, int loopCount )
+{
+  FMOD_SOUND *sound = getSound( soundId ) ;
+  if( !sound )
+  {
+    warning( "Sound id=%d doesn't exist", soundId ) ;
+    return ;
+  }
+
+  FMOD_ErrorCheck( FMOD_Sound_SetLoopCount( sound, loopCount ) ) ;
+
+  FMOD_ErrorCheck( FMOD_Sound_SetMode( sound, FMOD_LOOP_NORMAL ) ) ;
+
+  FMOD_CHANNEL* channel ;
+  FMOD_ErrorCheck(
+    FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel )
+  ) ;
+
+  // Set the dsp effect on the channel
+  //!!! TEST:  using the pitch shift dsp always for now
+  FMOD_Channel_AddDSP( channel, dspPITCHSHIFT, 0 ) ;
+
+  // Register a callback on the channel
+  //FMOD_CHANNEL_CALLBACK( channel, FMOD_CHANNEL_CALLBACKTYPE_END, 0, 0 ) ;
+  FMOD_Channel_SetCallback( channel, channelEndCallback ) ;
+  
+  fmodChannels.insert( make_pair( soundId, channel ) ) ;
+  
+  int numChannelsPlaying ;
+  FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
+}
+
+void SoundMan::stopSound( int soundId )
 {
   // Retrieve all channels playing
   // this sound id.
@@ -254,9 +330,9 @@ void SoundMan::stopSound( int id )
 
   while( channelIter != fmodChannels.end() )
   {
-    if( channelIter->first == id )
+    if( channelIter->first == soundId )
     {
-      info( "Stopping %d", id ) ;
+      info( "Stopping %d", soundId ) ;
       FMOD_Channel_Stop( channelIter->second ) ;
 
       ChannelMultimapIter toErase = channelIter ;
@@ -288,16 +364,13 @@ void SoundMan::stopSound( int id )
 // loadSound( HumanMusic, "sounds/loopingSoundEffect.mp3", FMOD_CREATESTREAM ) ;
 //
 // otherwise it will loop forever
-void SoundMan::loopSound( int id, int loopCount )
+void SoundMan::loopSound( int soundId, int loopCount )
 {
-  FMOD_SOUND *sound = defaultSound ;
-  SoundMapIter soundEntry = sounds.find( id ) ;
+  FMOD_SOUND *sound = getSound( soundId ) ;
   
-  if( soundEntry != sounds.end() )
-    sound = soundEntry->second ;
-  else
+  if( !sound )
   {
-    warning( "Sound id=%d doesn't exist, not looping anything", id ) ;
+    warning( "Sound id=%d doesn't exist, not looping anything", soundId ) ;
     
     // We're returning here, because there's no use
     // in looping the error sound
@@ -314,7 +387,7 @@ void SoundMan::loopSound( int id, int loopCount )
   if( notContainsFlag( fmodSoundMode, (FMOD_SOFTWARE|FMOD_CREATESTREAM) ) )
   {
     warning( "Sound %d was not created with FMOD_SOFTWARE "
-      "or FMOD_CREATESTREAM, this sound will loop forever.", id ) ;
+      "or FMOD_CREATESTREAM, this sound will loop forever.", soundId  ) ;
   }
 
   FMOD_ErrorCheck( FMOD_Sound_SetLoopCount( sound, loopCount ) ) ;
@@ -326,7 +399,7 @@ void SoundMan::loopSound( int id, int loopCount )
     FMOD_System_PlaySound( fmodSys, FMOD_CHANNEL_FREE, sound, false, &channel )
   ) ;
 
-  fmodChannels.insert( make_pair( id, channel ) ) ;
+  fmodChannels.insert( make_pair( soundId, channel ) ) ;
 
   // Now unset the loop, so that
   // the sound is unaffected for future plays
@@ -336,6 +409,49 @@ void SoundMan::loopSound( int id, int loopCount )
   // sounds
 
 }
+
+
+//!! TEMPORARY FUNCTION
+void SoundMan::createPitchShift()
+{
+  //!! INCOMPLETE
+  /// must add map of DSP effects for each sound
+  // so each isn't doubled-up
+
+  // set up piutch shift dsp
+  if( !FMOD_ErrorCheck( FMOD_System_CreateDSPByType( fmodSys, FMOD_DSP_TYPE_PITCHSHIFT, &dspPITCHSHIFT ) ) )
+    system("pause") ;
+  if( !FMOD_ErrorCheck( FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0) ) )
+    system("pause") ;
+
+  // set fft quality of pitch shift
+  if( !FMOD_ErrorCheck( FMOD_DSP_SetParameter( dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_FFTSIZE, 4096 ) ) )
+    system("pause") ;
+  if( !FMOD_ErrorCheck( FMOD_DSP_SetParameter( dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, 1.5f ) ) )
+    system("pause") ;
+
+
+  if( !FMOD_ErrorCheck( FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0) ) )
+    system("pause") ;
+
+  int active ;
+  
+  FMOD_ErrorCheck( FMOD_DSP_GetActive( dspPITCHSHIFT, &active) ) ;
+  if( active )
+    puts ("YES");
+  else
+  {
+    puts("NOOOOOOOOOOO");
+    system("pause");
+  }
+  
+}
+
+void SoundMan::setPitchShift( float amount )
+{
+  FMOD_ErrorCheck( FMOD_DSP_SetParameter( dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, amount ) ) ;
+}
+
 
 SoundMan::~SoundMan()
 {

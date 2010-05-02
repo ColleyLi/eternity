@@ -4,26 +4,6 @@ GameWindow *window ;
 
 #include "SimWorld.h"
 
-#pragma region sprites sounds fonts
-
-enum Sprites
-{
-  Mario = 1,
-  SixteenCounter
-} ;
-
-enum Sounds
-{
-  
-} ;
-
-enum Fonts
-{
-  Arial16,
-  TimesNewRoman24
-} ;
-
-#pragma endregion
 
 void Init()
 {
@@ -33,6 +13,22 @@ void Init()
 
   // Animated sprite
   window->loadSprite( SixteenCounter, ASSET("sprites/16counter.png"), 0, 32, 32, 16, 0.5f ) ;
+
+  window->loadSound( Screech, ASSET("sounds/Generic-Tire-01_Skid-01.wav") ) ;
+
+  window->loadSound( EngineLowIn, ASSET("sounds/Generic_Engine_01_L4_2.4L_0.0_Load_02_Low_RPM.WAV") ) ;
+  window->loadSound( EngineLowOut, ASSET("sounds/Generic_Engine_01_L4_2.4L_1.0_Load_02_Low_RPM.WAV") ) ;
+  
+  window->loadSound( EngineMidIn, ASSET("sounds/Generic_Engine_02_L4_2.4L_0.0_Load_03_Mid_RPM.WAV") ) ;
+  window->loadSound( EngineMidOut, ASSET("sounds/Generic_Engine_02_L4_2.4L_1.0_Load_03_Mid_RPM.WAV") ) ;
+
+  // !! pitch shift does not work.
+  //set up pitch shift
+  //window->createPitchShift() ;
+  //window->loopSound( EngineMidIn,  1000 ) ;
+  
+
+
 
   // Set the background clearing color to dk blue-gray
   window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
@@ -45,6 +41,11 @@ void Init()
 
   // Rest of init
   simWorld = new SimWorld() ;
+
+
+
+
+
 
   // Load a CARSIM sim file
   simWorld->LoadCarSimFile( "filename.sim" ) ;
@@ -102,9 +103,12 @@ void Update()
   else // not freeCam, followCam
   {
     // FollowCam
-    static D3DXVECTOR3 offset( 0, 2, -10 ) ; // offset is "behind" the car
-    D3DXVECTOR3 forwardToCar = simWorld->car->pos + simWorld->car->vel ;
-    window->getCamera()->follow( simWorld->car->pos, forwardToCar, offset ) ;
+    window->getCamera()->follow(
+      simWorld->car->pos,
+      simWorld->car->fwd, 
+      8, // 8 units back
+      2  // 2 units up
+    ) ;
 
   }
 
@@ -165,6 +169,23 @@ void Draw()
   D3DXMATRIX identity ;
   D3DXMatrixIdentity( &identity ) ;
   window->setWorld( &identity ) ;
+
+
+  window->setDrawingMode( D2 ) ; // 2d
+  char buf[300];
+  
+  int y = 20 ;
+  sprintf( buf, "Heading: %.2f %.2f %.2f", simWorld->car->fwd.x, simWorld->car->fwd.y, simWorld->car->fwd.z ) ;
+  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
+
+  sprintf( buf, "pos: %.2f %.2f %.2f", simWorld->car->pos.x, simWorld->car->pos.y, simWorld->car->pos.z ) ;
+  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
+
+  sprintf( buf, "vel: %.2f %.2f %.2f", simWorld->car->vel.x, simWorld->car->vel.y, simWorld->car->vel.z ) ;
+  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
+
+  sprintf( buf, "acc: %.2f %.2f %.2f", simWorld->car->accelForce.x, simWorld->car->accelForce.y, simWorld->car->accelForce.z ) ;
+  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
 
   
   window->setDrawingMode( D3 ) ; // 3d

@@ -3,6 +3,9 @@
 
 #include "cs-main.h"
 
+typedef vector<ObjFile*> /* as simply */ VectorObj ;
+typedef vector<ObjFile*>::iterator /* as simply */ VectorObjIter ;
+
 /// Represents a carsim car
 class Car
 {
@@ -11,23 +14,29 @@ public:
   D3DXVECTOR3 fwd ; // the forward vector to the vehicle
   D3DXVECTOR3 up ;  // the vehicle's up vector may change
   // as it goes up inclines, etc.
-  
+
   D3DXVECTOR3 vel ; // actual vehicle motion velocity.  not necessarily aligned with fwd.
-  
+
   D3DXVECTOR3 accelForce ; // the accelerating force
   // on the vehicle.  It is ideally in the direction the tires
   // are facing, with a force from the motor.
 
-  
-  float motorForce ; // engine power
+  // two signals to say how much he's on the gas and brake
+  // each between 0 and 1
+  float onGas, onBrake ;
+
+  // the analog control stick lets us control this
+
+  // engine power, braking power, steering power from wheels due to friction
+  float forceMotor, forceBrake, forceSteer ; 
   float mass ; // vehicle mass
   float speed ; // a lot of thigns use the magnitude of
   // the velocity, so cache the value here every frame
-  
+
   float frontWheelAngle ; // angle front wheels are rotated at wrt their axes of rotation
 
-  vector<ObjFile *> models ;
-  vector<ObjFile *> tireModels ;
+  VectorObj models ;
+  VectorObj tireModels ;
 
   Car()
   {
@@ -38,8 +47,8 @@ public:
     ZeroVector( vel ) ;
     ZeroVector( accelForce ) ;
 
-    // up is +y  
-    up.y = 1 ;
+    // up is +z
+    up.z = 1 ;
 
     // when the models load,
     // fwd is +x.
@@ -48,19 +57,22 @@ public:
     pos.x = -5 ; // start it "back" 5m
     vel.x = 0.2f ;  // velocity slowly rolling fwd
 
-    motorForce = 120 ;
+    forceMotor = 5 ;
+    forceBrake = 5 ;
+    forceSteer = 8 ;
+
     mass = 1000 ; // 1000 kg mass
 
-
+    onGas = onBrake = 0.0f ;
     frontWheelAngle = 0 ;
   }
 
   ~Car()
   {
-    foreach( vector<ObjFile*>::iterator, iter, models )
+    foreach( VectorObjIter, iter, models )
       delete( *iter ) ;
 
-    foreach( vector<ObjFile*>::iterator, iter, tireModels )
+    foreach( VectorObjIter, iter, tireModels )
       delete( *iter ) ;
   }
 
@@ -93,23 +105,42 @@ public:
 
   void userControlUpdate()
   {
-    if( window->keyIsPressed( VK_UP ) )
-      vel.x += 0.05f ;
-    if( window->keyIsPressed( VK_DOWN ) )
-      vel.x -= 0.05f ;
-   
+    const static float incrGas = 0.05f, incrBrake=0.04f, incrSteer = 0.02f ;
 
-    if( window->keyIsPressed( VK_RIGHT ) )
-      frontWheelAngle -= 0.01f ;
-    else if( window->keyIsPressed( VK_LEFT ) )
-      frontWheelAngle += 0.01f ;
+    if( window->keyIsPressed( VK_UP ) )
+    {
+      // make engine sound, pitch proporitonal to speed
+      onGas += incrGas ;
+    }
     else
     {
-      // bring the wheel towards 0
+      // make idle sound, pitch proporitonal to speed
+      onGas = 0 ;
+    }
+
+    if( window->keyIsPressed( VK_DOWN ) )
+      onBrake += incrBrake ;
+    else
+      onBrake = 0 ;
+
+    clamp( onGas, 0.0f, 1.0f ) ;
+    clamp( onBrake, 0.0f, 1.0f ) ;
+
+    // Steer right is - angle.  left is + angle
+    if( window->keyIsPressed( VK_RIGHT ) || window->keyIsPressed( VK_LEFT ) )
+    {
+      if( window->keyIsPressed( VK_RIGHT ) )
+        frontWheelAngle -= incrSteer ;
+      else
+        frontWheelAngle += incrSteer ;
+    }
+    else //not moving the wheel, so bring to center
+      frontWheelAngle *= 0.85f ; // bring the wheel towards 0
       // this rate could be made 
       // proportional to velocity but we didn't here
-      frontWheelAngle *= 0.75f ;
-    }
+
+    clamp( frontWheelAngle, -D3DX_PI/4, D3DX_PI/4 ) ;
+    
   }
 
   void update( double timeSinceLastFrame )
@@ -118,15 +149,103 @@ public:
 
     // User control
     userControlUpdate() ;
+
+
+    // Now, the magnitude of participation of accelSteerForce
+    // depends on the sin() of the angle
+    //float forceSteerNow = speed * forceSteer * fabsf(sinf( frontWheelAngle ) ); // if angle is 0,
+    // then the force is 0.  fabsf because it "turns around" the vector
+    // 180 degrees if its steering to the right / left.  + to left, - to right.
+    
+    
+
+    // (onModifier)*(maxForce)*directionvector
+    D3DXVECTOR3 accelFwdForce = onGas * forceMotor * fwd ;  // if not on gas, this goes to 0.
+    D3DXVECTOR3 accelBrakeForce = onBrake * forceBrake * -fwd ; // if not on brake, this goes to 0
+    D3DXVECTOR3 steerDir = fwd ;
+
+    // accelSteerForce is in the direction of
+    // -FWD ROTATED ABOUT UP by frontWheelAngle radians.
+    D3DXMATRIX rotM ;
+    D3DXMatrixIdentity( &rotM ) ;
+    D3DXMatrixRotationAxis( &rotM, &up, frontWheelAngle ) ;
+
+    //D3DXVECTOR4 accelSteerForce4 ;
+    //D3DXVec3Transform( &accelSteerForce4, &accelSteerForce, &rotM ) ;
+    //accelSteerForce = D3DXVECTOR3( accelSteerForce4 ) ;
+
+    // !! DOUBLE CHECK THIS WORKS EXACTLY AS D3DXVec3Transform()
+    D3DXVec3TransformNormal( &steerDir, &steerDir, &rotM ) ;
+
+    // Now the force due to steering is perpendicular
+    // it is steerDir x UP
+
+    D3DXVECTOR3 accelSteerForce ;
+    D3DXVec3Cross( &accelSteerForce, &steerDir, &up ) ;
+
+    // Now, the magnitude of the force then
+    // is proportional to sin(steeringAngle).
+    // when steering angle is 0, there is no
+    // accelSteerForce.
+    accelSteerForce *= -(sinf( frontWheelAngle )) * forceSteer ;
+
+    
+
+
+
+
+
+
+
+    // Compute cumulative acceleration force
+    accelForce = accelFwdForce + accelBrakeForce + accelSteerForce ;
+
+
+    // Sum of acceleration forces exerted by vehicle
+    // limited by the capabilities of the vehicles tires
+    
+    float maxMag = 5.0f ;
+
+    float mag2 = D3DXVec3LengthSq( &accelForce ) ;
+
+    if( mag2 > maxMag*maxMag )
+    {
+      // can't exert more than this much force
+      // This is that "circle" model that paper was talking about
+      // Slippage
+      // !!make sound if slippage is occurring. etc
+      window->playSound( Sounds::Screech ) ;
+      D3DXVec3SetMagnitude( &accelForce, maxMag ) ;
+    }
+    else
+    {
+      // stop the screech
+      window->stopSound( Sounds::Screech ) ;
+    }
+
+
+
+
+    // The accelerating force
+    // alters the velocity of the vehicle
+    // Change velocity
+    vel += accelForce * timeSinceLastFrame ;
+    pos += vel*timeSinceLastFrame ;
+
+    // The vehicle has to "try" to
+    // make its forward vector
+    // line up with its velocity vector.
+    fwd += vel ;
+    D3DXVec3Normalize( &fwd, &fwd ) ;
+
     // Update position from Carsim,
 
-    // apply fwdForce to change velocity
 
-    // F = ma
-    // v2 = v1 + a*t*t
 
-    // !!make sound if slippage is occurring etc
-    pos += vel*timeSinceLastFrame ;
+
+
+
+    
 
     // UPDATE CARSIM
     // Compute what impetus should be
@@ -159,78 +278,46 @@ public:
     // to where they are.
     D3DXMATRIX trans ;
     D3DXMatrixTranslation( &trans, pos.x, pos.y, pos.z ) ;
-    
-    
+
+
     // Rotate the vehicle to face
     // in the direction of its .. forward angle.
     // !!A vehicle can slip, so this needs to be fixed
 
-    float steeringAngle = 0 ;
-
     // compute the facing angle
     // using the look at formula
-    //D3DXVECTOR3 e( -10, 0, 0 ), look( 0, 0, 0 ), u( 1, 0, 0 ) ;
+    D3DXMATRIX cRot ;
 
-    //D3DXMATRIX fMat ;
-    
-    //D3DXMatrixLookAtRH( &fMat, &pos, &look, &u ) ;
-    //fMat = lookAt( e, look, up ) ;
-    //D3DXMATRIX concat = fMat ;
 
-    
-    D3DXMATRIX rotZ ;
-    D3DXMatrixRotationZ( &rotZ, steeringAngle ) ;
-    
-    // Matrix mults applied in order they appear left to right.
-    // ROTATE first, then translate
-    //D3DXMATRIX concat = rotZ * trans ;
 
-    // Try setting right, up
-
-    D3DXMATRIX concat ;
-    D3DXMatrixIdentity( &concat ) ;
-
-    fwd = D3DXVECTOR3( 1, 1, 0 ) ;
-    D3DXVec3Normalize( &fwd, &fwd ) ;
-
-    up = D3DXVECTOR3( 0, 0, 1 ) ;
-    D3DXVec3Normalize( &up, &up ) ;
-
-    D3DXVECTOR3 right = getRight() ;
-    D3DXVec3Normalize( &right, &right ) ;
-    
-    
-
-    /*
-    D3DXVECTOR3 r(right), u(up), f(fwd) ;
-    float d = D3DXVec3Dot( &up, &fwd ) ;
-    u = up - d*fwd ;
-    D3DXVec3Normalize( &u, &u ) ;
-
-    D3DXVec3Cross( &r, &u, &f ) ;
-
-    // An article lists this matrix as being
-
-    // right
-    // up
-    // fwd
-
-    // but that didn't actually work correctly.
-    D3DXMatrixSetRow( &concat, 0, &f ) ;
-    D3DXMatrixSetRow( &concat, 1, &r ) ;
-    D3DXMatrixSetRow( &concat, 2, &u ) ;
-    D3DXMatrixSetRow( &concat, 3, &pos ) ; // bottom row is translation
-    */
-    D3DXMatrixPointTowards( &concat, &fwd, &up, &pos ) ;
+    D3DXMatrixPointTowards( &cRot, &fwd, &up, &pos ) ;
 
     // Use it
-    window->setWorld( &concat ) ;
+    window->setWorld( &cRot ) ;
 
     // Draw the whole model with this matrix set
-    foreach( vector<ObjFile*>::iterator, iter, models )
+    foreach( VectorObjIter, iter, models )
     {
       (*iter)->draw() ;
     }
+
+
+
+    // Now for the tires, we'll have to compute
+    // a different matrix
+
+
+    // 1.  rotate in +y for forward velocity
+    // 2.  (if front wheel) rotate about vehicle UP vector to take into acct steering direction
+    // 3.  translate fromCar
+
+    // THen, the rest: (apply cRot)
+    // 4.  rotate to get with vehicle direction
+    // 5.  translate by eye
+
+
+    D3DXMATRIX concat ;
+    D3DXMatrixIdentity( &concat ) ;
 
 
     // The tires are translated further out
@@ -246,27 +333,25 @@ public:
     // Front wheel rotation is an additional
     // rotation about up vector really
     D3DXMATRIX frontWheelRot, wheelSpeedRot ;
-    D3DXMatrixRotationZ( &frontWheelRot, frontWheelAngle ) ;
+    D3DXMatrixRotationZ( &frontWheelRot, frontWheelAngle ) ;// this is still done
+    // in the Z-axis because the vehicle hasn't been
+    // pitched yet.  the cRot matrix will take care of all of that.
 
     // The change to the vehicle wheel will be
     // the rotational distance travelled
     //   - assuming 17" tires, in metres this is 0.43 m.
-    //   radsRot = arcRot / r
-    
-    // arcLen travelled on tires is proportional to vel
-    D3DXVECTOR3 velStep = vel*timeSinceLastFrame ;
-    float arcLenTravelled = D3DXVec3Length( &velStep ) ;
+    //     radsRot = arcRot / r
+
+    // arcLen travelled on tires (outer circle) is proportional to vel
+    D3DXVECTOR3 distStep = vel*timeSinceLastFrame ; // distance wheel travelled on outer circle
+    float arcLenTravelled = D3DXVec3Length( &distStep ) ;
     float radsRot = arcLenTravelled / 0.43f ; // just keep it @ 0.43
 
     static float wheelSpeedAngle = 0.0f ;
     wheelSpeedAngle += radsRot ;
     D3DXMatrixRotationY( &wheelSpeedRot, wheelSpeedAngle ) ;
 
-    D3DXMatrixIdentity( &concat ) ;
-    //D3DXMatrixIdentity( &rotZ ) ;  // rotZ remains the same to start.
-    //D3DXMatrixIdentity( &trans ) ; // trans remains the same to start.
-
-    /// Remmeber, vehicle points in +x
+    /// Remember, vehicle points in +x
     //   ^ +y
     //   |
     //  o| o
@@ -292,37 +377,31 @@ public:
     // Left front.  Only needs to move left, which is +y for stock model.
     fromCar._42 += track ;  // +y translation entry.
 
-    // 1.  rotate in +y for forward velocity
-    // 2.  (if front wheel) rotate to take into acct steering direction
-    // 3.  translate fromCar
-    // 4.  rotate to get with vehicle direction
-    // 5.  translate by eye
-    
-    concat = wheelSpeedRot* frontWheelRot* fromCar *rotZ* trans ;
+    concat = wheelSpeedRot* frontWheelRot* fromCar *cRot ;
     window->setWorld( &concat ) ;
 
     // Draw a tire.
-    foreach( vector<ObjFile*>::iterator, iter, tireModels )
+    foreach( VectorObjIter, iter, tireModels )
       (*iter)->draw() ;
 
     ////////
     // LEFT REAR
     // from front left, move back (which is -x)
     fromCar._41 -= wheelbase ;  // -x translation entry.
-    
-    concat = wheelSpeedRot* fromCar *rotZ* trans ;
+
+    concat = wheelSpeedRot* fromCar *cRot ;
     window->setWorld( &concat ) ;
-    foreach( vector<ObjFile*>::iterator, iter, tireModels )
+    foreach( VectorObjIter, iter, tireModels )
       (*iter)->draw() ;
 
     ///////
     // RIGHT REAR
     // from left back, move over -y 2*track
     fromCar._42 -= 2*track ;  // -y translation entry.
-    
-    concat = wheelSpeedRot* fromCar *rotZ* trans ;
+
+    concat = wheelSpeedRot* fromCar *cRot ;
     window->setWorld( &concat ) ;
-    foreach( vector<ObjFile*>::iterator, iter, tireModels )
+    foreach( VectorObjIter, iter, tireModels )
       (*iter)->draw() ;
 
 
@@ -330,13 +409,13 @@ public:
     // RIGHT FRONT
     // from right rear, move forward (+x) wheelbase
     fromCar._41 += wheelbase ;  // +x translation entry.
-    
-    concat = wheelSpeedRot* frontWheelRot* fromCar *rotZ* trans ;
+
+    concat = wheelSpeedRot* frontWheelRot* fromCar *cRot ;
     window->setWorld( &concat ) ;
-    foreach( vector<ObjFile*>::iterator, iter, tireModels )
+    foreach( VectorObjIter, iter, tireModels )
       (*iter)->draw() ;
-    
-    
+
+
   }
 } ;
 
