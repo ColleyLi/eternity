@@ -1,4 +1,3 @@
-
 #ifndef CONSOLE_COLORS_H
 #define CONSOLE_COLORS_H
 

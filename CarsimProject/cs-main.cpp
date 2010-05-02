@@ -59,33 +59,63 @@ void Update()
 
 
   #pragma region camera motion
-  float increment = 0.005f ;
-
-  // move the camera by dy and dx
-  window->getCamera()->stepPitch( - increment*window->getMouseDy() ) ;
-  window->getCamera()->stepYaw( - increment*window->getMouseDx() ) ;
-
-  float speed = 100 ;
-  if( window->keyIsPressed( 'W' ) )
+  if( simWorld->camMode == SimWorld::FreeCam )
   {
-    window->getCamera()->stepForward( speed*increment ) ;
+    float increment = 0.005f ;
+
+    // move the camera by dy and dx
+    window->getCamera()->stepPitch( - increment*window->getMouseDy() ) ;
+    window->getCamera()->stepYaw( - increment*window->getMouseDx() ) ;
+
+    float speed = 100 ;
+    if( window->keyIsPressed( 'W' ) )
+    {
+      window->getCamera()->stepForward( speed*increment ) ;
+    }
+
+    if( window->keyIsPressed( 'S' ) )
+    {
+      window->getCamera()->stepForward( -speed*increment ) ;
+    }
+
+    if( window->keyIsPressed( 'D' ) ) 
+    {
+      window->getCamera()->stepSide( speed*increment ) ;
+    }
+
+    if( window->keyIsPressed( 'A' ) ) 
+    {
+      window->getCamera()->stepSide( -speed*increment ) ;
+    }
+    
+    // Swithc to grounded mode.  grounded mode
+    // is still freeCam, its just you can't FLY
+    if( window->mouseJustPressed( Mouse::Right ) )
+    {
+      // toggle the cam mode
+      if( window->getCamera()->getCamMode() == Camera3D::Fly )
+        window->getCamera()->setCamMode( Camera3D::Grounded ) ;
+      else
+        window->getCamera()->setCamMode( Camera3D::Fly ) ;
+    }
+  }
+  else // not freeCam, followCam
+  {
+    // FollowCam
+    static D3DXVECTOR3 offset( 0, 2, -10 ) ; // offset is "behind" the car
+    D3DXVECTOR3 forwardToCar = simWorld->car->pos + simWorld->car->vel ;
+    window->getCamera()->follow( simWorld->car->pos, forwardToCar, offset ) ;
+
   }
 
-  if( window->keyIsPressed( 'S' ) )
-  {
-    window->getCamera()->stepForward( -speed*increment ) ;
-  }
+  // set the window's view by whatever the camera's doing
+  window->setByCamera() ;
 
-  if( window->keyIsPressed( 'D' ) ) 
-  {
-    window->getCamera()->stepSide( speed*increment ) ;
-  }
 
-  if( window->keyIsPressed( 'A' ) ) 
-  {
-    window->getCamera()->stepSide( -speed*increment ) ;
-  }
 
+
+
+  // Change fill mode
   if( window->keyJustPressed( '4' ) )
   {
     DWORD fillMode ;
@@ -100,31 +130,32 @@ void Update()
       nextFillMode = D3DFILL_SOLID ;
 
     window->getGpu()->SetRenderState( D3DRS_FILLMODE, nextFillMode )  ;
-
   }
 
-  if( window->mouseJustPressed( Mouse::Right ) )
+  // change camera mode
+  if( window->keyJustPressed( '5' ) )
   {
-    // toggle the cam mode
-    if( window->getCamera()->getCamMode() == Camera3D::Fly )
-    {
-      window->getCamera()->setCamMode( Camera3D::Grounded ) ;
-    }
+    if( simWorld->camMode == SimWorld::FreeCam )
+      simWorld->camMode = SimWorld::FollowCam ;
     else
-    {
-      window->getCamera()->setCamMode( Camera3D::Fly ) ;
-    }
+      simWorld->camMode = SimWorld::FreeCam ;
   }
 
 
-  window->setByCamera() ;
+
+  
+
+
+
   #pragma endregion
 
 
+
+  simWorld->car->update( window->getTimeElapsedSinceLastFrame() ) ;
   if( window->keyIsPressed( VK_UP ) )
-    simWorld->car->pos.z += 0.5f ; // move forward
+    simWorld->car->vel.x += 0.05f ;
   if( window->keyIsPressed( VK_DOWN ) )
-    simWorld->car->pos.z -= 0.5f ; // move forward
+    simWorld->car->vel.x -= 0.05f ;
   
   if( window->keyIsPressed( VK_RIGHT ) )
     simWorld->car->steeringAngle -= 0.01f ;
@@ -133,7 +164,7 @@ void Update()
 
 
 
-  if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", true ) ;
+  if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", false ) ;
 }
 
 

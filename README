@@ -468,6 +468,10 @@
 	Just remember to FLIP the texture vertically if
 	it was intended for use with OpenGL as it IS inverted
 	texture coordinates from OpenGL in D3D.
+
++ May 1 / 2010 master
+  - Some work on the CarSim project only.
+  
   
   - TODO:
     - DOXYGEN-ATE all files

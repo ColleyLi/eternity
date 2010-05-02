@@ -14,10 +14,21 @@ public:
   Track * track ;
   D3DLIGHT9 light0, light1 ;
 
+  // Freecam is flying cam, not free
+  // means follow
+  enum CamMode
+  {
+    FreeCam,  // free to move using WASD
+    FollowCam // follow the car
+  }
+  camMode ;
+
   SimWorld()
   {
     info( "Constructing simworld.." ) ;
     
+    camMode = FreeCam ; // defaults to FreeCam mode
+
     car = new Car() ;
 
     // Change to the assets/models directory.

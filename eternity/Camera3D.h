@@ -66,11 +66,11 @@ public:
   Camera3D()
   {
     // ASSUMES RIGHT-HANDED COORDINATE SYSTEM
-    right = D3DXVECTOR3( 1, 0, 0 ) ;
-    up = D3DXVECTOR3( 0, 1, 0 ) ;
-    forward = D3DXVECTOR3( 0, 0, -1 ) ;
+    right = D3DXVECTOR3( 0, -1, 0 ) ;
+    up = D3DXVECTOR3( 0, 0, 1 ) ; // CARSIM.
+    forward = D3DXVECTOR3( 1, 0, 0 ) ;
 
-    eye = D3DXVECTOR3( 4, 2, 25 ) ;
+    eye = D3DXVECTOR3( -25, 13, 2 ) ;
 
 
     trackFwdSpeed = trackRotSpeed = trackPitchSpeed = 0.01f ;
@@ -358,10 +358,10 @@ public:
       // y-axis.
 
       // reset the UP vector to being
-      // (0,1,0)
+      // (0,0,1)
       up.x = 0 ;
-      up.y = 1 ;
-      up.z = 0 ;
+      up.y = 0 ;
+      up.z = 1 ; // CARSIM
     }
     else if( camMode != Fly && newCamMode == Fly )
     {
@@ -373,7 +373,17 @@ public:
   }
 
 
+  void follow( D3DXVECTOR3 pos, D3DXVECTOR3 dir, D3DXVECTOR3 offset )
+  {
+    // to follow something @ pos, going dir, offset from pos
 
+    eye = pos + offset ;
+    D3DXVECTOR3 eyeToLookDirection = dir - eye ;
+    D3DXVec3Normalize( &forward, &eyeToLookDirection ) ;
+    
+    printf( "eye:  %.2f %.2f %.2f\n", eye.x, eye.y, eye.z ) ;
+    printf( "look:  %.2f %.2f %.2f\n", forward.x, forward.y, forward.z ) ;
+  }
 
 
 
