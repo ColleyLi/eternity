@@ -466,6 +466,8 @@ void D3DWindow::setCamera( D3DXVECTOR3 &newEye, D3DXVECTOR3 &newLook, D3DXVECTOR
   up = newUp ;
   D3DXMATRIX viewx ;
   D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
+
+  //printMat( viewx ) ;
   hr = gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
 
   DX_CHECK( hr, "setCamera, setting viewing xform" ) ;

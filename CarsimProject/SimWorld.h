@@ -44,8 +44,8 @@ public:
 
     // Get some tires
     window->cd( ASSET( "models/3D_shape_files_CS/tires/205_70R15" ) ) ;
-    //car->loadModel( "rotor.obj" ) ;
-    //car->loadModel( "stripe.obj" ) ;
+    //car->loadTireModel( "rotor.obj" ) ;// I don't like the rotor its like a hubcap
+    car->loadTireModel( "stripe.obj" ) ; // stripe helps see how fast tire's moving
     car->loadTireModel( "tire.obj" ) ;
     car->loadTireModel( "wheel.obj" ) ;
     //!! this is only one tire and its located
@@ -120,7 +120,7 @@ public:
     track->draw() ;
 
     // Draw the vehicle
-    car->draw() ;
+    car->draw( window->getTimeElapsedSinceLastFrame() ) ;
   }
 
 } ;

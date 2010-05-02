@@ -339,6 +339,10 @@ void GameWindow::setWorld( D3DXMATRIX *world )
 void GameWindow::setByCamera()
 {
   setCamera( camera.getEye(), camera.getLook(), camera.getUp() ) ;
+
+  
+
+  
   //D3DXMATRIX view = camera.getView() ;
   //HRESULT hr = gpu->SetTransform( D3DTS_VIEW, &view ) ;
   //DX_CHECK( hr, "set view by cam" ) ;

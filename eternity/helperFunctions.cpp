@@ -245,7 +245,10 @@ int round( double x )
 D3DXMATRIX* D3DXMatrixSetRow( D3DXMATRIX* matrix, int row, D3DXVECTOR3* vec )
 {
   // We'll do this using a memcpy.
-  memcpy( &(matrix->m[row][0]), vec, sizeof(D3DXVECTOR3) ) ;
+  //memcpy( &(matrix->m[row][0]), vec, sizeof(D3DXVECTOR3) ) ;
+  matrix->m[row][0] = vec->x ; 
+  matrix->m[row][1] = vec->y ; 
+  matrix->m[row][2] = vec->z ;
 
   return matrix ;
 }
@@ -258,6 +261,59 @@ D3DXMATRIX* D3DXMatrixSetCol( D3DXMATRIX* matrix, int col, D3DXVECTOR3* vec )
 
   return matrix ;
 }
+
+D3DXMATRIX* D3DXMatrixPointTowards( D3DXMATRIX *mat, D3DXVECTOR3 *fwd, D3DXVECTOR3 *up, D3DXVECTOR3 *eye )
+{
+  D3DXMatrixIdentity( mat ) ;
+
+  float d = D3DXVec3Dot( up, fwd ) ;
+  D3DXVECTOR3 u2 = *up - d*(*fwd) ;
+  D3DXVec3Normalize( &u2, &u2 ) ;
+
+  D3DXVECTOR3 right ;
+  D3DXVec3Cross( &right, &u2, fwd ) ;
+
+  // An article lists this matrix as being
+
+  // but that didn't actually work correctly.
+  D3DXMatrixSetRow( mat, 0, fwd ) ;
+  D3DXMatrixSetRow( mat, 1, &right ) ;
+  D3DXMatrixSetRow( mat, 2, &u2 ) ;
+  D3DXMatrixSetRow( mat, 3, eye ) ; // bottom row is translation
+
+  return mat ;
+}
+
+/*
+D3DXMATRIX lookAt( D3DXVECTOR3 eye, D3DXVECTOR3 look, D3DXVECTOR3 up )
+{
+  D3DXVECTOR3 xaxis, yaxis, zaxis ;
+
+  zaxis = eye - look ;
+  D3DXVec3Normalize( &zaxis, &zaxis ) ;
+
+  D3DXVec3Cross( &xaxis, &up, &zaxis ) ;
+  D3DXVec3Normalize( &xaxis, &xaxis ) ;
+
+  D3DXVec3Cross( &yaxis, &zaxis, &xaxis ) ;
+
+  D3DXVECTOR3 dots ;
+  dots.x = - D3DXVec3Dot( &xaxis, &eye ) ;
+  dots.y = - D3DXVec3Dot( &yaxis, &eye ) ;
+  dots.z = - D3DXVec3Dot( &zaxis, &eye ) ;
+
+  D3DXMATRIX ret(
+
+    zaxis.x,   yaxis.x,  -xaxis.x,  0,
+    zaxis.y,   yaxis.y,  -xaxis.y,  0,
+    zaxis.z,   yaxis.z,  -xaxis.z,  0,
+   
+    
+    -dots.z,    -dots.y,   -dots.x,    1 ) ;
+
+  return ret ;
+}
+*/
 
 void setColor( D3DCOLORVALUE *color, float a, float r, float g, float b )
 {

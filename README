@@ -471,7 +471,12 @@
 
 + May 1 / 2010 master
   - Some work on the CarSim project only.
-  
+  - Added ability to rotate a body
+    in any direction using a matrix:
+	[  forward    0  ]
+	[  right      0  ]
+	[  up         0  ]
+	[  trans      1  ]
   
   - TODO:
     - DOXYGEN-ATE all files

@@ -151,19 +151,9 @@ void Update()
 
 
 
+
   simWorld->car->update( window->getTimeElapsedSinceLastFrame() ) ;
-  if( window->keyIsPressed( VK_UP ) )
-    simWorld->car->vel.x += 0.05f ;
-  if( window->keyIsPressed( VK_DOWN ) )
-    simWorld->car->vel.x -= 0.05f ;
   
-  if( window->keyIsPressed( VK_RIGHT ) )
-    simWorld->car->steeringAngle -= 0.01f ;
-  if( window->keyIsPressed( VK_LEFT ) )
-    simWorld->car->steeringAngle += 0.01f ;
-
-
-
   if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", false ) ;
 }
 

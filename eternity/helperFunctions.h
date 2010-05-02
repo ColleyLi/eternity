@@ -142,6 +142,28 @@ D3DXMATRIX* D3DXMatrixSetRow( D3DXMATRIX* matrix, int row, D3DXVECTOR3* vec );
 /// (leaves 4th entry as was)
 D3DXMATRIX* D3DXMatrixSetCol( D3DXMATRIX* matrix, int col, D3DXVECTOR3* vec );
 
+// ASSUMES YOUR VECTORS ARE ALREADY NORMALIZED
+D3DXMATRIX* D3DXMatrixPointTowards( D3DXMATRIX *mat, D3DXVECTOR3 *fwd, D3DXVECTOR3 *up, D3DXVECTOR3 *eye ) ;
+
+inline void ZeroVector(D3DXVECTOR3 &vec)
+{
+  vec.x=vec.y=vec.z=0.0f;
+}
+
+inline void printMat( D3DXMATRIX mat )
+{
+  plain( "%.2f %.2f %.2f %.2f\n"
+    "%.2f %.2f %.2f %.2f\n"
+    "%.2f %.2f %.2f %.2f\n"
+    "%.2f %.2f %.2f %.2f\n",
+    mat._11, mat._12, mat._13, mat._14,
+    mat._21, mat._22, mat._23, mat._24,
+    mat._31, mat._32, mat._33, mat._34,
+    mat._41, mat._42, mat._43, mat._44 ) ;
+}
+
+D3DXMATRIX lookAt( D3DXVECTOR3 eye, D3DXVECTOR3 look, D3DXVECTOR3 up ) ;
+
 void setColor( D3DCOLORVALUE *color, float a, float r, float g, float b ) ;
 
 void addSinewave( short *data, int durationInSamples,

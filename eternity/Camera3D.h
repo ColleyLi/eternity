@@ -122,19 +122,35 @@ public:
 
   D3DXMATRIX getView()
   {
-    error( "The Camera3D::getView function doesn't work" ) ;
-
+    
     // construct the view matrix
     // as simply combination of right, up, fwd vectors
 
     // First row is set by RIGHT
-    D3DXMatrixSetRow( &viewMatrix, 0, &right ) ;
-    D3DXMatrixSetRow( &viewMatrix, 1, &up ) ;
-    D3DXMatrixSetRow( &viewMatrix, 2, &forward ) ;
+    /*
+    D3DXMatrixSetCol( &viewMatrix, 0, &right ) ;
+    D3DXMatrixSetCol( &viewMatrix, 1, &up ) ;
+    D3DXMatrixSetCol( &viewMatrix, 2, &forward ) ;
+    */
 
+    // doens't work either.
+    D3DXVECTOR3 r( 0, -1, 0 ), u( 0, 1, 0 ), f( 1, 0, 0 );
+    D3DXMatrixSetRow( &viewMatrix, 0, &r ) ;
+    D3DXMatrixSetRow( &viewMatrix, 1, &u ) ;
+    D3DXMatrixSetRow( &viewMatrix, 2, &f ) ;
+
+
+    
     // The complete result is to shift the camera
     // by the eye position
-    D3DXMatrixSetCol( &viewMatrix, 3, &eye ) ;
+    D3DXMatrixSetRow( &viewMatrix, 3, &eye ) ;
+
+    viewMatrix._44 = 1 ;// MUST set this to 1.
+
+    // Whoops d3d is transpsed
+    //D3DXMatrixTranspose( &viewMatrix, &viewMatrix ) ;
+
+    //printMat( viewMatrix ) ;
 
     //return viewMatrix ;
 
