@@ -1,8 +1,14 @@
 #ifndef VS_DEFTYPES_H
 #define VS_DEFTYPES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // VehicleSim header file and prototypes for these function 
 // VS types and definitions
+
+
 
 // Floating point and boolean types
 typedef double vs_real;
@@ -149,5 +155,9 @@ typedef struct
   void (*func) (char *); // pointer to function name
 } vs_func1;
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // VS_DEFTYPES_H

@@ -483,6 +483,7 @@
   - abandoned effort to quickly add a pitch shift.
     It's not working for some reason
 	
+  - Brought CarSim DLL exports into CarsimProject
   
   - TODO:
     - DOXYGEN-ATE all files

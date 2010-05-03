@@ -5,8 +5,6 @@ GameWindow *window ;
 #include "SimWorld.h"
 
 
-
-// don't move this.  magic.
 #include "carsimLinkHeader.h"
 
 
@@ -34,6 +32,8 @@ int carsimInit( char *simfile )
 
   if( vs_error_occurred() ) 
     return 1;
+
+  return 0 ;
 }
 
 // Close Carsim
@@ -61,6 +61,8 @@ int carsimUpdate()
   //vs_bar_graph_update( &ibarg ) ; // update bar graph?
 
   //puts( vs_get_output_message() ) ;
+
+  return 0 ;
 }
 
 void carsimSetup()
@@ -266,7 +268,17 @@ void Update()
 
   simWorld->car->update( window->getTimeElapsedSinceLastFrame() ) ;
   
-  if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", false ) ;
+
+
+  if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", true ) ;
+
+  if( window->keyJustPressed( 'R' ) )
+  {
+    // reset the camera
+    info( "Camera reset" ) ;
+    simWorld->camMode = SimWorld::FreeCam ;
+    window->getCamera()->reset() ;
+  }
 }
 
 

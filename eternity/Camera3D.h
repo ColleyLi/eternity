@@ -65,6 +65,11 @@ private:
 public:
   Camera3D()
   {
+    reset() ;
+  }
+
+  void reset()
+  {
     // ASSUMES RIGHT-HANDED COORDINATE SYSTEM
     right = D3DXVECTOR3( 0, -1, 0 ) ;
     up = D3DXVECTOR3( 0, 0, 1 ) ; // CARSIM.

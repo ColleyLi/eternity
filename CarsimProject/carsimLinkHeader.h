@@ -9,6 +9,10 @@ Mar 12, 07. M. Sayers. Released CarSim 7.0.
 Dec 20, 06. M. Sayers. Created.
 */
 
+// Carsim is a C api,
+// so it must be included
+// as a set of C-functions
+
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -20,10 +24,11 @@ extern "C"{
 #include <stdlib.h>
 #include <windows.h>
 
-
 #include "vs_deftypes.h"
 
-#include "vs_api.h"
+#include "vs_function_pointers.h"
+
+#include "vs_get_api.h"
 
 #include "carsim_external.h"
 

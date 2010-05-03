@@ -173,6 +173,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\Car.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\cs-main.cpp"
 				>
 			</File>
@@ -180,6 +184,22 @@
 				RelativePath=".\SimWorld.cpp"
 				>
 			</File>
+			<Filter
+				Name="CarSim"
+				>
+				<File
+					RelativePath=".\carsim_external.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\vs_function_pointers.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\vs_get_api.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -188,14 +208,6 @@
 			>
 			<File
 				RelativePath=".\Car.h"
-				>
-			</File>
-			<File
-				RelativePath=".\carsim_external.h"
-				>
-			</File>
-			<File
-				RelativePath=".\carsimLinkHeader.h"
 				>
 			</File>
 			<File
@@ -214,14 +226,30 @@
 				RelativePath=".\Track.h"
 				>
 			</File>
-			<File
-				RelativePath=".\vs_api.h"
+			<Filter
+				Name="CarSim"
 				>
-			</File>
-			<File
-				RelativePath=".\vs_deftypes.h"
-				>
-			</File>
+				<File
+					RelativePath=".\carsim_external.h"
+					>
+				</File>
+				<File
+					RelativePath=".\carsimLinkHeader.h"
+					>
+				</File>
+				<File
+					RelativePath=".\vs_deftypes.h"
+					>
+				</File>
+				<File
+					RelativePath=".\vs_function_pointers.h"
+					>
+				</File>
+				<File
+					RelativePath=".\vs_get_api.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

@@ -6,7 +6,7 @@ PARSFILE
 TITLE Baseline <* * Quick Start Guide Example>
 
 ! Input File: Run248_all.par
-! Run was made 20:02 on May. 02, 2010
+! Run was made 22:04 on May. 02, 2010
 
 !-----------------------------------------------------------------------------------
 ! SYSTEM PARAMETERS (SIMULATION AND MODEL OPTIONS)
@@ -15,7 +15,7 @@ IPRINT             25 ! Print increment: Output time step = TSTEP*IPRINT
 NIMPORT             0 ! CALC -- Number of imported variables
 NOUT_ANI_LIVE      88 ! CALC -- Number of variables sent live to RT animators
 NOUT_EXPORT         0 ! CALC -- Number of exported output variables
-NOUT_WRITE        753 ! CALC -- Number of variables written to ERD/BIN file
+NOUT_WRITE        755 ! CALC -- Number of variables written to ERD/BIN file
 OPT_ALL_WRITE       1 ! Write everything to ERD file? 1 -> all, 0 -> only
                       !   specified outputs. Reset outputs whenever this is
                       !   changed.
@@ -538,6 +538,10 @@ Y_S(3)              0 ! Y coord. of SM sensor 3 (mm)
 Y_S(4)              0 ! Y coord. of SM sensor 4 (mm)
 Y_S(5)              0 ! Y coord. of SM sensor 5 (mm)
 Y_S(6)              0 ! Y coord. of SM sensor 6 (mm)
+L_FORWARD          20 ! Distance preview point is forward of vehicle CG (m)
+LAT_TRACK -1.600000024 ! Lateral offset (to driver's left) for target (m)
+GAIN_STEER_CTRL    10 ! Control parameter: steering angle per meter of lateral
+                      !   offset (deg/m)
 
 !-----------------------------------------------------------------------------------
 ! TABULAR DATA

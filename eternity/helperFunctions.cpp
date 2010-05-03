@@ -304,6 +304,8 @@ D3DXVECTOR3* D3DXVec3Truncate( D3DXVECTOR3 *vec, float minMag, float maxMag )
   {
     return D3DXVec3SetMagnitude( vec, minMag ) ;
   }
+
+  return vec ;
 }
 
 /*
