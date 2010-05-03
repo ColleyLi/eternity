@@ -191,6 +191,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\carsim_external.h"
+				>
+			</File>
+			<File
+				RelativePath=".\carsimLinkHeader.h"
+				>
+			</File>
+			<File
 				RelativePath=".\cs-main.h"
 				>
 			</File>
@@ -204,6 +212,14 @@
 			</File>
 			<File
 				RelativePath=".\Track.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vs_api.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vs_deftypes.h"
 				>
 			</File>
 		</Filter>

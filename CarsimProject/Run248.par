@@ -1,0 +1,59 @@
+PARSFILE
+#FullDataName CarSim Run Control`Baseline`* * Quick Start Guide Example
+#VehicleCode Ind_Ind
+
+OPT_ALL_WRITE 0
+IOBJECT 0
+OPT_INT_METHOD 2
+PARSFILE Animator\Cameras\Camera151.par
+#BlueLink0 Animator: Camera Setup`3 deg. Azimuth, Veh. Ref.` Vehicle Reference` , Animator camera
+
+#CheckBox0 1    
+#CheckBox1 0    
+#CheckBox2 0    
+#CheckBox3 0    
+#CheckBox4 0    
+#CheckBox5 0    
+#CheckBox6 0    
+#CheckBox7 0    
+#CheckBox8 0    
+#CheckBox9 1    
+
+#RingCtrl0 4
+#RingCtrl1 0
+#RingCtrl3 0
+#RingCtrl6 0
+*RUN_COLOR 0.8 0 0
+
+FLAG_10 248
+#RingCtrl4 off
+RT_WINDOW_CLOSE off
+#RingCtrl5 0
+LIVE_SERVER_MAX_CONNECTIONS 0
+PARSFILE Vehicles\Assembly\Vehicle121.par
+#BlueLink2 Vehicle: Assembly`C-Class, Hatchback` CS C-Class` , Vehicle configuration
+
+PARSFILE Procedures\Proc106.par
+#BlueLink28 Procedures`DLC @ 120 km/h` Handling Testing` , Procedure
+
+
+*IMAGE_TYPE PASS_THROUGH
+*IMAGE_LINK Animator: Vehicles and Sensor Targets`C-Class, Hatchback` C-Class Vehicles`
+*IMAGE_PASS_THROUGH Animator\Vehicles\AniVeh103.png
+
+OPT_ALL_WRITE 1
+WRITE_SENSOR_DETECT
+Title Baseline <* * Quick Start Guide Example>
+CATEGORY * * Quick Start Guide Example 
+DATASET_TITLE Baseline
+
+LOG_ENTRY Used Dataset: CarSim Run Control; { * * Quick Start Guide Example } Baseline
+#Library : CarSim Run Control
+#DataSet : Baseline
+#Category: * * Quick Start Guide Example
+#FileID  : Run248
+#Product : CarSim Version 8, July 2009
+#Last update: 07-07-2009 15:08:00
+#VehCode Run
+
+END

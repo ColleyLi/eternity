@@ -5,6 +5,114 @@ GameWindow *window ;
 #include "SimWorld.h"
 
 
+
+// don't move this.  magic.
+#include "carsimLinkHeader.h"
+
+
+
+
+
+
+
+
+double t ; // global sense of time
+
+// Start Carsim up
+int carsimInit( char *simfile )
+{
+  // Initialize VS model
+  t = vs_setdef_and_read(simfile, NULL, NULL);
+  if( vs_error_occurred() ) 
+    return 1;
+
+  // Start up carsim
+  vs_initialize( t, NULL, NULL ) ;
+
+  // See if there are any messages
+  puts( vs_get_output_message() ) ;// pointer to text from DLL
+
+  if( vs_error_occurred() ) 
+    return 1;
+}
+
+// Close Carsim
+int carsimShutdown()
+{
+  // Terminate
+  vs_terminate( t, NULL ) ;
+  puts( vs_get_output_message() ) ;
+  vs_free_all() ;
+  return 0 ;
+}
+
+// Run single Carsim time step
+int carsimUpdate()
+{
+  //int ibarg = 0 ;
+
+  // Run. Each loop advances time one full step.
+  //while(!vs_stop_run()) // don't stay locked in here
+  vs_integrate( &t, NULL );
+
+  if( vs_error_occurred() )
+    return 1;
+
+  //vs_bar_graph_update( &ibarg ) ; // update bar graph?
+
+  //puts( vs_get_output_message() ) ;
+}
+
+void carsimSetup()
+{
+  HMODULE vsDLL = NULL; // DLL with VS API
+  char   pathDLL[FILENAME_MAX], simfile[FILENAME_MAX]={"simfile"};
+
+  ///// just paste in a name
+  strcpy( simfile, "simfile" ) ;
+
+  if (vs_get_dll_path(simfile, pathDLL)) return;
+  vsDLL = LoadLibraryA(pathDLL);
+
+  // get standard sets of API functions 
+
+  // basic functions
+  if (vs_get_api_basic(vsDLL, pathDLL))
+    return; 
+
+  // install functions
+  if (vs_get_api_install_external(vsDLL, pathDLL))
+    return;
+
+  // model extension functions
+  if (vs_get_api_extend(vsDLL, pathDLL))
+    return;
+
+  // road-related functions
+  if (vs_get_api_road(vsDLL, pathDLL))
+    return;
+
+
+  // install external C functions
+  vs_install_calc_function (&external_calc);
+  vs_install_echo_function (&external_echo);
+  vs_install_scan_function (&external_scan);
+  vs_install_setdef_function (&external_setdef);
+
+  // Make the run. If run was OK vs_run returns 0.
+  /*
+  if (vs_run (simfile)) 
+  MessageBoxA(NULL, vs_get_error_message(), NULL, MB_ICONERROR);
+  */
+
+  carsimInit( simfile ) ;
+
+  return;
+}
+
+
+
+
 void Init()
 {
   #pragma region asset load
@@ -42,15 +150,13 @@ void Init()
   // Rest of init
   simWorld = new SimWorld() ;
 
-
-
-
-
-
   // Load a CARSIM sim file
-  simWorld->LoadCarSimFile( "filename.sim" ) ;
+  simWorld->LoadCarSimFile( "filename.sim" ) ;  
 
-  
+
+
+  info( "Starting up CarSim . . . " ) ;
+  carsimSetup() ;
 }
 
 void Update()
@@ -155,6 +261,8 @@ void Update()
 
 
 
+  // Update carsim
+  carsimUpdate() ;
 
   simWorld->car->update( window->getTimeElapsedSinceLastFrame() ) ;
   
