@@ -100,6 +100,10 @@ void clamp( int &num, int low, int high ) ;
 /// modifies num
 void clamp( float &num, float low, float high ) ;
 
+/// Clamp for
+/// doubles
+void clamp( double &num, double low, double high ) ;
+
 /// Clamps an integer value
 /// num between low and high
 /// without modifying num

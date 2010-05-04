@@ -106,12 +106,12 @@ bool Window::setSize( int width, int height, bool fullScreen )
 /// Takes you back to the directory you were
 /// in previously (equivalent to "back button"
 /// in windows explorer.)
-void Window::cdPop()
+bool Window::cdPop()
 {
   if( directories.empty() )
   {
     error( "You are already at the top level directory" ) ;
-    return ;
+    return false ;
   }
   
   if( !SetCurrentDirectoryA( directories.top() ) )
@@ -121,6 +121,7 @@ void Window::cdPop()
 
   free( directories.top() ) ;
   directories.pop() ;
+  return true ;
 }
 
 /// Switches you into a working directory
@@ -143,6 +144,7 @@ void Window::cd( char *path )
   }
   else
   {
+    // This verifies the cd command worked
     char nowDir[MAX_PATH];
     GetCurrentDirectoryA( MAX_PATH, nowDir ) ;
     info( "Current working directory is '%s'", nowDir ) ;

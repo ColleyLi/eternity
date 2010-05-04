@@ -215,6 +215,14 @@ void clamp( float &num, float low, float high )
     num = high ;
 }
 
+void clamp( double &num, double low, double high )
+{
+  if( num < low )
+    num = low ;
+  if( num > high )
+    num = high ;
+}
+
 int clampCopy( const int num, int low, int high )
 {
   // Follow same behavior as clamp(),

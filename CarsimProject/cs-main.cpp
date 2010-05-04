@@ -11,6 +11,8 @@ GameWindow *window ;
 
 
 
+bool __RUNNING__ = true ;
+
 
 
 
@@ -20,9 +22,24 @@ double t ; // global sense of time
 int carsimInit( char *simfile )
 {
   // Initialize VS model
-  t = vs_setdef_and_read(simfile, NULL, NULL);
+  t = vs_setdef_and_read( simfile, NULL, NULL ) ;
+
+  // VS
+  /*
+  vs_read_configuration (const char *simfile,
+    int *n_import,
+    int *n_export,
+    double *tstart,
+    double *tstop,
+    double *tstep);
+  */
+
+
   if( vs_error_occurred() ) 
+  {
+    error( vs_get_error_message() ) ;
     return 1;
+  }
 
   // Start up carsim
   vs_initialize( t, NULL, NULL ) ;
@@ -41,7 +58,7 @@ int carsimShutdown()
 {
   // Terminate
   vs_terminate( t, NULL ) ;
-  puts( vs_get_output_message() ) ;
+  info( vs_get_output_message() ) ;
   vs_free_all() ;
   return 0 ;
 }
@@ -53,53 +70,93 @@ int carsimUpdate()
 
   // Run. Each loop advances time one full step.
   //while(!vs_stop_run()) // don't stay locked in here
-  vs_integrate( &t, NULL );
 
+  // CarSim 1000 FPS:  cannot be reduced without
+  // affecting accuracy of simulation.  Run
+  // CarSim 16 times per frame, then.
+  for( int i = 0 ; i < 16; i++ )
+    vs_integrate( &t, NULL );
+
+  /// THIS WAY LETS US SET THE VALUE OF TIME..
+  // !! but it doesn't work either.
+  //vs_integrate_io( window->getTimeElapsedSinceGameStart(), 0, 0 ) ;
+
+
+  //printf( "Time is %f\n", t ) ;
+
+  // Check for errors every time step
   if( vs_error_occurred() )
+  {
+    error( vs_get_error_message() ) ;
+    info( "Last output message was: %s", vs_get_output_message() ) ;
     return 1;
+  }
 
   //vs_bar_graph_update( &ibarg ) ; // update bar graph?
-
   //puts( vs_get_output_message() ) ;
 
   return 0 ;
 }
 
-void carsimSetup()
+/// Starts up CarSim, opening
+/// simfile to know what parsfiles
+/// to load, and what DLL solver to use.
+/// The correct format for SIMFILE's
+/// is documented on PAGE ?? of ???
+void carsimSetup( char* simfile )
 {
-  HMODULE vsDLL = NULL; // DLL with VS API
-  char   pathDLL[FILENAME_MAX], simfile[FILENAME_MAX]={"simfile"};
+  // The DLL to use is loaded
+  // dynamically based on what
+  // solver the SIMFILE wants to use.
+  HMODULE vsDLL = NULL ;
 
-  ///// just paste in a name
-  strcpy( simfile, "simfile" ) ;
+  // Allocate memory for the path of the dll,
+  // which will be retrieved from the simfile
+  char pathDLL[ MAX_PATH ] ;
 
-  if (vs_get_dll_path(simfile, pathDLL)) return;
-  vsDLL = LoadLibraryA(pathDLL);
+  // vs_get_dll_path goes into
+  // simfile and looks for what
+  // 
+  if( vs_get_dll_path( simfile, pathDLL ) )
+  {
+    error( "carsim: vs_get_dll_path: Couldn't get DLL path or something" ) ;
+    return ;// no point in continuing if
+    // couldn't load the dll
+  }
+
+
+  // Load the DLL.
+  vsDLL = LoadLibraryA( pathDLL ) ;
 
   // get standard sets of API functions 
 
   // basic functions
-  if (vs_get_api_basic(vsDLL, pathDLL))
-    return; 
+  if( vs_get_api_basic( vsDLL, pathDLL ) )
+    error( "carsim: vs_get_api_basic: couldn't even load BASIC api functions!" ) ;
 
   // install functions
-  if (vs_get_api_install_external(vsDLL, pathDLL))
-    return;
+  if( vs_get_api_install_external( vsDLL, pathDLL ) )
+    error( "carsim: vs_get_api_install_external: couldn't load api functions!" ) ;
 
   // model extension functions
-  if (vs_get_api_extend(vsDLL, pathDLL))
-    return;
+  if( vs_get_api_extend( vsDLL, pathDLL ) )
+    error( "carsim: vs_get_api_extend: couldn't load api functions!" ) ;  
 
   // road-related functions
-  if (vs_get_api_road(vsDLL, pathDLL))
-    return;
+  if( vs_get_api_road(vsDLL, pathDLL ) )
+    error( "carsim: vs_get_api_road: couldn't load road api functions!" ) ;  
 
 
   // install external C functions
-  vs_install_calc_function (&external_calc);
-  vs_install_echo_function (&external_echo);
-  vs_install_scan_function (&external_scan);
-  vs_install_setdef_function (&external_setdef);
+
+  // calc is where you insert code to run
+  // at start and end of timestep.
+  vs_install_calc_function( &external_calc ) ;
+
+  // echo 
+  vs_install_echo_function( &external_echo ) ;
+  vs_install_scan_function( &external_scan ) ;
+  vs_install_setdef_function( &external_setdef ) ;
 
   // Make the run. If run was OK vs_run returns 0.
   /*
@@ -123,6 +180,8 @@ void Init()
 
   // Animated sprite
   window->loadSprite( SixteenCounter, ASSET("sprites/16counter.png"), 0, 32, 32, 16, 0.5f ) ;
+  window->loadSprite( Road1, ASSET( "sprites/Road1.png" ) ) ;
+  window->loadSprite( Road2, ASSET( "sprites/Road2.png" ) ) ;
 
   window->loadSound( Screech, ASSET("sounds/Generic-Tire-01_Skid-01.wav") ) ;
 
@@ -132,11 +191,16 @@ void Init()
   window->loadSound( EngineMidIn, ASSET("sounds/Generic_Engine_02_L4_2.4L_0.0_Load_03_Mid_RPM.WAV") ) ;
   window->loadSound( EngineMidOut, ASSET("sounds/Generic_Engine_02_L4_2.4L_1.0_Load_03_Mid_RPM.WAV") ) ;
 
-  // !! pitch shift does not work.
-  //set up pitch shift
-  //window->createPitchShift() ;
-  //window->loopSound( EngineMidIn,  1000 ) ;
+
+  window->loopSound( EngineMidIn ) ;
+
+  FMOD_CHANNEL *c = window->getFmodChannel( EngineMidIn ) ;
+
+  window->createPitchShiftToChannel( c ) ;
   
+  
+  
+
 
 
 
@@ -152,26 +216,31 @@ void Init()
   // Rest of init
   simWorld = new SimWorld() ;
 
-  // Load a CARSIM sim file
-  simWorld->LoadCarSimFile( "filename.sim" ) ;  
 
-
-
+  // LOAD AND START UP CARSIM
   info( "Starting up CarSim . . . " ) ;
-  carsimSetup() ;
+
+
+  // change to the carsim data directory
+  window->cd( "D:/CarSim_Data" ) ;
+
+  carsimSetup( "simfile" ) ;
+
+  // revert to root
+  window->cdPop() ;
 }
 
 void Update()
 {
   
-  // CARSIM UPDATE
+  #pragma region camera motion and other ui funcs
 
 
-  #pragma region camera motion
+
+  const static float increment = 0.005f ; 
+
   if( simWorld->camMode == SimWorld::FreeCam )
   {
-    float increment = 0.005f ;
-
     // move the camera by dy and dx
     window->getCamera()->stepPitch( - increment*window->getMouseDy() ) ;
     window->getCamera()->stepYaw( - increment*window->getMouseDx() ) ;
@@ -208,12 +277,21 @@ void Update()
         window->getCamera()->setCamMode( Camera3D::Fly ) ;
     }
   }
-  else // not freeCam, followCam
+  else if( simWorld->camMode == SimWorld::CockpitCam )
+  {
+    window->getCamera()->follow(
+      simWorld->car->getPos(),
+      simWorld->car->getFwd(), 
+      0.2f, // units back
+      0.5f  // units up
+    ) ;
+  }
+  else if( simWorld->camMode == SimWorld::FollowCam )
   {
     // FollowCam
     window->getCamera()->follow(
-      simWorld->car->pos,
-      simWorld->car->fwd, 
+      simWorld->car->getPos(),
+      simWorld->car->getFwd(), 
       8, // 8 units back
       2  // 2 units up
     ) ;
@@ -221,14 +299,16 @@ void Update()
   }
 
   // set the window's view by whatever the camera's doing
-  window->setByCamera() ;
+  window->setViewBYCAMERA() ;
+
+
 
 
 
 
 
   // Change fill mode
-  if( window->keyJustPressed( '4' ) )
+  if( window->keyJustPressed( '`' ) )
   {
     DWORD fillMode ;
     DWORD nextFillMode = D3DFILL_SOLID ;
@@ -245,32 +325,30 @@ void Update()
   }
 
   // change camera mode
+  if( window->keyJustPressed( '4' ) )
+  {
+    simWorld->camMode = SimWorld::FreeCam ;
+    window->getCamera()->reset() ;
+  }
+
   if( window->keyJustPressed( '5' ) )
   {
-    if( simWorld->camMode == SimWorld::FreeCam )
-      simWorld->camMode = SimWorld::FollowCam ;
-    else
-      simWorld->camMode = SimWorld::FreeCam ;
+    simWorld->camMode = SimWorld::CockpitCam ;
+  }
+
+  if( window->keyJustPressed( '6' ) )
+  {
+    simWorld->camMode = SimWorld::FollowCam ;
   }
 
 
+  if( window->keyJustPressed( VK_ESCAPE ) )
+  {
+    // pop to tld
+    while( window->cdPop() ) ;
 
-  
-
-
-
-  #pragma endregion
-
-
-
-  // Update carsim
-  carsimUpdate() ;
-
-  simWorld->car->update( window->getTimeElapsedSinceLastFrame() ) ;
-  
-
-
-  if( window->keyJustPressed( VK_ESCAPE ) )   bail( "simulation ended!", true ) ;
+    __RUNNING__ = false ;
+  }
 
   if( window->keyJustPressed( 'R' ) )
   {
@@ -279,6 +357,25 @@ void Update()
     simWorld->camMode = SimWorld::FreeCam ;
     window->getCamera()->reset() ;
   }
+
+  if( window->keyIsPressed( 'G' ) )
+  {
+    window->getCamera()->goTo( simWorld->car->getPos() ) ;
+  }
+  #pragma endregion
+
+
+
+  // Update carsim.  this steps
+  // the carsim simulator by one frame.
+  carsimUpdate() ;
+
+  //!! DO NOT CALL THIS HERE.
+  // Let CarSim call it.
+  ///simWorld->car->update( window->getTimeElapsedSinceLastFrame() ) ;
+  
+
+
 }
 
 
@@ -291,29 +388,19 @@ void Draw()
   window->setWorld( &identity ) ;
 
 
-  window->setDrawingMode( D2 ) ; // 2d
-  char buf[300];
-  
-  int y = 20 ;
-  sprintf( buf, "Heading: %.2f %.2f %.2f", simWorld->car->fwd.x, simWorld->car->fwd.y, simWorld->car->fwd.z ) ;
-  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
-
-  sprintf( buf, "pos: %.2f %.2f %.2f", simWorld->car->pos.x, simWorld->car->pos.y, simWorld->car->pos.z ) ;
-  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
-
-  sprintf( buf, "vel: %.2f %.2f %.2f", simWorld->car->vel.x, simWorld->car->vel.y, simWorld->car->vel.z ) ;
-  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
-
-  sprintf( buf, "acc: %.2f %.2f %.2f", simWorld->car->accelForce.x, simWorld->car->accelForce.y, simWorld->car->accelForce.z ) ;
-  window->drawString( Fonts::Arial16, buf, D3DCOLOR_ARGB( 255, 255, 255, 255 ), 20, y+=20, 200, 200, DT_LEFT | DT_TOP ) ;
-
   
   window->setDrawingMode( D3 ) ; // 3d
   
 
+  // draw axes, 50 units in length
   window->setVertexDeclaration( D3DWindow::PositionColor ) ;
   window->setLighting( false ) ;
   window->drawAxes( 50.0f ) ;
+
+
+  // Call ThreeDMan's draw function.
+  // This draws the road.
+  window->draw3DObjects() ;
 
 
   simWorld->Draw() ;
@@ -321,8 +408,10 @@ void Draw()
   // draw the mouse cursor with this sprite.
   //window->drawMouseCursor( Mario ) ;
 
-  window->drawFrameCounter(); // erase this if you don't like
+  //window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
+
+  window->drawTimer() ;
 }
 
 
@@ -333,16 +422,12 @@ void Draw()
 
 
 // ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^
-// Your code above.
+// main code above.
 
 
 
 
 
-// VV VV VV VV VV VV VV VV VV VV VV VV VV VV VV
-// Engine code below.  You shouldn't need to
-// code down here, EXCEPT for if you need to read
-// WM_CHAR messages.
 ///////////////////////////////////////////
 // WndProc says:  I AM WHERE "MESSAGES" GET "DISPATCHED" TO,
 // WHEN "EVENTS" "HAPPEN" TO YOUR WINDOW.
@@ -381,7 +466,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam 
   case WM_INPUT: 
     {
       #pragma region pick up the raw input
-      // DO NOT CODE HERE!  use the
+      // NO CODE HERE!  use the
       // window->justPressed(), and 
       // window->mouseJustPressed() functions,
       // in your Update() function.
@@ -437,9 +522,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam 
         // This means the user is "focused" / has highlighted
         // another window other than our window.
 
-        // You should probably pause the game here,
-        // because some apps tend to hijack the input focus
-        // which makes it really annoying.
+        // we should probably pause the simulation here,
         info( "But why would you click away?" ) ;
       }
     }
@@ -447,8 +530,6 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam 
 
   case WM_PAINT:
     {
-      // Let's NOT paint here anymore.
-      // See Draw() function instead.
       HDC hdc ;
       PAINTSTRUCT ps;
       hdc = BeginPaint( hwnd, &ps ) ;
@@ -493,17 +574,17 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
   // Setup the window
-  window = new GameWindow( hInstance, TEXT( "eternity engine base" ),
+  window = new GameWindow( hInstance, TEXT( "carsim project - mohammad elbagoury" ),
      32, 32, // x pos, y pos
      640, 480 // width, height
   ) ;
 
   // After the window comes up, we call Init
-  // to load the game's content
+  // to start up carsim
   Init() ;
 
   MSG message ;
-  while( 1 )
+  while( __RUNNING__ )
   {
     if( PeekMessage( &message, NULL, 0, 0, PM_REMOVE ) )
     {
@@ -528,16 +609,15 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
       {
         Draw() ;
 
-        // Inserting the call to flush3D here..
-        // there might be a better spot for it.
-        window->flush3D() ;
-
         window->endDrawing() ;
       }
     }
   }
 
-  info( "Game over!" ) ;
+  info( "simulation ended!" ) ;
+
+  carsimShutdown() ;
+
   logShutdown() ;
 
   GdiplusShutdown(gdiplusToken);

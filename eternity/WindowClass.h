@@ -85,7 +85,7 @@ public:
   /// Takes you back to the directory you were
   /// in previously (equivalent to "back button"
   /// in windows explorer.)
-  void cdPop();
+  bool cdPop();
 
   /// Switches you into a working directory
   void cd( char *path );

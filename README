@@ -484,6 +484,16 @@
     It's not working for some reason
 	
   - Brought CarSim DLL exports into CarsimProject
+
+  
++ May 4 / 2010 v0.1.8-carsim
+  - got imports working (it was the PARSFILE.. you
+    need to REPLACE IMP_STEERSW in the parsfile)
+  - finished road render and track find
+  - Added hacky- support for rpm sound thru pitch shift
+  
+  
+  
   
   - TODO:
     - DOXYGEN-ATE all files

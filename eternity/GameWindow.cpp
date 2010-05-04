@@ -9,6 +9,7 @@ GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
              windowWidth, windowHeight )
 {
   initSpriteMan( gpu, windowWidth, windowHeight ) ;
+  initThreeDMan( gpu ) ;
 
   // Some coupling..
   // it isn't possible to reach D3DWindow
@@ -281,34 +282,62 @@ void GameWindow::runCallbacks()
   }
 }
 
-void GameWindow::drawTri( VertexC &a, VertexC &b, VertexC &c )
-{
-  vertices.push_back( a ) ;
-  vertices.push_back( b ) ;
-  vertices.push_back( c ) ;
-}
 
-void GameWindow::drawQuad( VertexC &a, VertexC &b, VertexC &c, VertexC &d )
-{
-  vertices.push_back( a ) ;
-  vertices.push_back( b ) ;
-  vertices.push_back( c ) ;
 
-  vertices.push_back( c ) ;
-  vertices.push_back( d ) ;
-  vertices.push_back( a ) ;
-}
+
+// UNFORUTNATLEY I had to putthis function
+// here in GameWindow instead of ThreeDMan.
+// What really happened here is since
+// GameWindow ISN'T accessible to 3d man,
+// but 3dman is aceessible to gw, i coulnd't
+// use VC or VT or VTN from ehre.
+
+// really we need a proper eveyr-where acessible
+// SINGLETON for GameWindow..
 
 // Must call this to actually flush out
-// the 3d draw calls
-void GameWindow::flush3D()
+// the 3d draw calls.  BE SURE to
+// set drawing mode to D3 before calling!
+void GameWindow::draw3DObjects()
 {
   HRESULT hr ;
 
-  setDrawingMode( D3 ) ; 
+  //!! uh, you didn't account for
+  // xform mats.  as it stands
+  // everything sent via drawQuads()
+  // must use the same WORLD matrix.
+  // Which is the identity matrix.
+  // really that's SENSIBLE if you think about it,
+  // but misleading, because someone may try
+  // to change the world matrix before claling
+  // drawQuad(), and get unexpected results.
+
+  // ONE WAY to fix this is to READ THE WOLRD MATRIX,
+  // APPLY THE TRANSFORMATION IN C++ at DRAWQUAD().
+  // Then, that infomration gets stored in the array.
+
+  // I thik thi sis USEFL for speicyfing static
+  // geometry, but it should be made konwnw that..
+  // the array DOESN'T get cleared out each frame,
+  // andonce you drawQuad(), well, it'll be there
+  // forever.
+
+  // drawQuad() should only be used when setting up
+  // massive amoutnts of static geometry
+
+  // ALSO interesting is if you did it as
+  // createQuad(), that has better meaning,
+  // and later it can be used to BOTH create
+  // a collisoin object, and the quad, at the same time.
+
+  // I think a createQuad() function is necessary for na enigne..
+  // b'doy!
+  D3DXMATRIX identity ;
+  D3DXMatrixIdentity( &identity ) ;
+  setWorld( &identity ) ;
 
   // flush triangles
-  if( vertices.size() > 0 )
+  if( !verticesC.empty() )
   {
     //!! really better if we could use a
     // vertex array but that would require..
@@ -317,33 +346,59 @@ void GameWindow::flush3D()
     // being loaded at all, this is only for
     // simple primitives.)
     // Later we can provide a 'model' class..
+
+    // I wanted to use a call to D3DWindow::setVertexDeclaration(),
+    // but 2 things:
+    //   1)  not possible from this class,
+    //       this function would have to move
+    //       to GameWindow
+    //   2)  it interferes with the user's
+    //       current vertex declaration selection.
+    //       if vdecl is reset after a clal to
+    //       this draw function, then its all good
+    //       from that regard.
+    setVertexDeclaration( VertexType::PositionColor ) ;
     hr = gpu->DrawPrimitiveUP(
       D3DPT_TRIANGLELIST,
-      vertices.size()/3,
-      &vertices[0], 
+      verticesC.size()/3,
+      &verticesC[0], 
       sizeof(VertexC)
     ) ;
 
-    DX_CHECK( hr, "flush3D: DrawPrimitive" ) ;
+    DX_CHECK( hr, "flush3D: DrawPrimitiveC" ) ;
+  }
 
-    vertices.clear() ;
+
+  if( !mapVerticesTC.empty() )
+  {
+    setVertexDeclaration( VertexType::PositionTextureColor ) ;
+
+    // Now use the correct texture
+    foreach( MapIntVertexTCIter, iter, mapVerticesTC )
+    {
+      // Set the texture for this one
+      setActiveTexture( iter->first ) ;
+
+      // Now draw all quads in this group that use this texture
+      hr = gpu->DrawPrimitiveUP(
+        D3DPT_TRIANGLELIST,
+        iter->second.size()/3,
+        &iter->second[0], 
+        sizeof(VertexTC)
+      ) ;
+
+      DX_CHECK( hr, "flush3D: DrawPrimitiveTC" ) ;
+
+    }
   }
 }
 
-void GameWindow::setWorld( D3DXMATRIX *world )
+
+void GameWindow::setViewBYCAMERA()
 {
-  HRESULT hr = gpu->SetTransform( D3DTS_WORLD, world ) ;
-  DX_CHECK( hr, "world transformation" ) ;
-}
+  D3DXVECTOR3 eye = camera.getEye() ;
+  D3DXVECTOR3 look = camera.getLook() ;
+  D3DXVECTOR3 up = camera.getUp() ;
 
-void GameWindow::setByCamera()
-{
-  setCamera( camera.getEye(), camera.getLook(), camera.getUp() ) ;
-
-  
-
-  
-  //D3DXMATRIX view = camera.getView() ;
-  //HRESULT hr = gpu->SetTransform( D3DTS_VIEW, &view ) ;
-  //DX_CHECK( hr, "set view by cam" ) ;
+  setCamera( eye, look, up ) ;
 }

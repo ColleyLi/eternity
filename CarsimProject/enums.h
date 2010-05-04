@@ -4,7 +4,9 @@
 enum Sprites
 {
   Mario = 1,
-  SixteenCounter
+  SixteenCounter,
+  Road1,
+  Road2
 } ;
 
 enum Sounds

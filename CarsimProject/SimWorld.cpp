@@ -6,23 +6,23 @@ SimWorld::SimWorld()
 {
   info( "Constructing simworld.." ) ;
 
-  camMode = FreeCam ; // defaults to FreeCam mode
+  camMode =FollowCam ; // defaults to FreeCam mode
 
   car = new Car() ;
 
   // Change to the assets/models directory.
   window->cd( ASSET( "models/3D_shape_files_CS/vehicles/european_sedan" ) ) ;
-  car->loadModel( "body.obj" ) ;
-  car->loadModel( "brakes_on.obj" ) ;
-  car->loadModel( "details.obj" ) ;
-  car->loadModel( "interior_trim.obj" ) ;
-  car->loadModel( "seats.obj" ) ;
-  car->loadModel( "steering_wheel.obj" ) ;
+  car->loadCarModel( "body.obj" ) ;
+  car->loadCarModel( "brakes_on.obj" ) ;
+  car->loadCarModel( "details.obj" ) ;
+  car->loadCarModel( "interior_trim.obj" ) ;
+  car->loadCarModel( "seats.obj" ) ;
+  car->loadCarModel( "steering_wheel.obj" ) ;
   //car->loadModel( "windows.obj" ) ;
   window->cdPop() ;
 
   // Get some tires
-  window->cd( ASSET( "models/3D_shape_files_CS/tires/205_70R15" ) ) ;
+  window->cd( ASSET( "models/3D_shape_files_CS/tires/195_45R16" ) ) ;
   //car->loadTireModel( "rotor.obj" ) ;// I don't like the rotor its like a hubcap
   car->loadTireModel( "stripe.obj" ) ; // stripe helps see how fast tire's moving
   car->loadTireModel( "tire.obj" ) ;
@@ -30,8 +30,6 @@ SimWorld::SimWorld()
   //!! this is only one tire and its located
   // at the origin.
   window->cdPop() ;
-
-  track = new Track() ;
 
 
   /////
@@ -42,63 +40,84 @@ SimWorld::SimWorld()
   light0.Type = D3DLIGHT_DIRECTIONAL ;  // believe it or not forgetting to set this
   // gives D3DERR_INTERNAL
   light0.Direction = D3DXVECTOR3( 0, -1, 0 ) ;
-  setColor( &light0.Ambient, 0.5f, 0.5f, 0.5f, 0.5f ) ;
-  setColor( &light0.Diffuse, 1.0f, 1.0f, 1.0f, 1.0f ) ;
+  setColor( &light0.Ambient, 1.0f, 0.5f, 0.5f, 0.5f ) ;
+  setColor( &light0.Diffuse, 1.0f, 0.25f, 0.25f, 0.25f ) ;
+  setColor( &light0.Specular, 1.0f, 0.35f, 0.35f, 0.35f ) ; // not
+  // too overwhelming specular component
 
-  window->setLight( 0, &light0 ) ;
+  //window->setLight( 0, &light0 ) ;
+
+
+  light1.Type = D3DLIGHT_DIRECTIONAL ;  // believe it or not forgetting to set this
+  
+  // gives D3DERR_INTERNAL
+  D3DXVECTOR3 light1Dir( -1, -1, 0 ) ;
+  D3DXVec3Normalize( &light1Dir, &light1Dir ) ;
+  light1.Direction = light1Dir ;
+
+  setColor( &light1.Ambient, 1.0f, 0.5f, 0.5f, 0.5f ) ;
+  setColor( &light1.Diffuse, 1.0f, 0.25f, 0.25f, 0.25f ) ;
+  setColor( &light1.Specular, 1.0f, 0.35f, 0.35f, 0.35f ) ; // not
+  // too overwhelming specular component
+
+  window->setLight( 1, &light1 ) ;
+
+
+
+
+  // create teh ground plane
+  int limits = 1000 ;
+
+  // This texture is never to appear.. its only
+  // so that you don't think you'r ein the middle
+  // of nowhwere
+  float z = -5 ;// appear below ground
+
+  /* y
+
+  1 | 4
+    |
+  --+--x
+    |
+  2 | 3
+
+  Texcoord 0,0 is top left
+
+  */
+
+
+  window->createQuadVTC(
+
+    Sprites::SixteenCounter,
+    VertexTC(-limits,  limits, z, 0, 0 ),
+    VertexTC(-limits, -limits, z, 0, 1 ),
+    VertexTC( limits, -limits, z, 1, 1 ),
+    VertexTC( limits,  limits, z, 1, 0 )
+
+
+    /*
+    VertexC( limits,  limits, z, 128, 128, 128 ),
+    VertexC(-limits,  limits, z, 128, 128, 128 ),
+    VertexC(-limits, -limits, z, 128, 128, 128 ),
+    VertexC( limits, -limits, z,  78,  78,  78 )
+    */
+  ) ;
+
+
 }
 
 SimWorld::~SimWorld()
 {
   delete car ;
-  delete track ;
 }
-
-void SimWorld::LoadCarSimFile( char* filename )
-{
-  warning( "LoadCarSimFile not implemented yet" ) ;
-
-  // Scan to the point in the file where
-  // the car model is
-
-
-  // Scan to the point in the file where
-  // the TRACK is.
-
-}
-
 
 void SimWorld::Draw()
 {
-#pragma region Draw the ground plane
 
-  /*
-  int limits = 1 ;
+  car->drawStats() ;
 
-  // * | *
-  //   |
-  // --+--> x
-  //   |
-  // * | * (limits, 0, limits)
-  //   v
-  //    z
-  window->setVertexDeclaration( D3DWindow::PositionColor ) ;
-  window->drawQuad(
-
-  VertexC( limits, 0,  limits, 128, 128, 128 ),
-  VertexC( limits, 0, -limits, 128, 128, 128 ),
-  VertexC(-limits, 0, -limits, 128, 128, 128 ),
-  VertexC(-limits, 0,  limits,  78,  78,  78 )
-
-  ) ;
-  */
-#pragma endregion
-
-
-
-  // Draw the track.
-  track->draw() ;
-
-  // Draw the vehicle
-  car->draw( window->getTimeElapsedSinceLastFrame() ) ;
+  // Draw the vehicle, but not if in cockpit mode
+  // (there's no point)
+  if( camMode != CockpitCam )
+    car->draw( window->getTimeElapsedSinceLastFrame() ) ;
 }

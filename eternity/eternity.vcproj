@@ -192,6 +192,10 @@
 					RelativePath=".\SpriteMan.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\ThreeDMan.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Aux_And_Util"
@@ -300,6 +304,10 @@
 				</File>
 				<File
 					RelativePath=".\SpriteMan.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ThreeDMan.h"
 					>
 				</File>
 			</Filter>

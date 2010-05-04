@@ -68,6 +68,11 @@ public:
     reset() ;
   }
 
+  void goTo( D3DXVECTOR3 newPos )
+  {
+    eye = newPos ;
+  }
+
   void reset()
   {
     // ASSUMES RIGHT-HANDED COORDINATE SYSTEM
@@ -75,7 +80,8 @@ public:
     up = D3DXVECTOR3( 0, 0, 1 ) ; // CARSIM.
     forward = D3DXVECTOR3( 1, 0, 0 ) ;
 
-    eye = D3DXVECTOR3( -25, 13, 2 ) ;
+    // No need to reset the eye
+    //eye = D3DXVECTOR3( -25, 13, 2 ) ;
 
 
     trackFwdSpeed = trackRotSpeed = trackPitchSpeed = 0.01f ;
@@ -101,6 +107,11 @@ public:
   D3DXVECTOR3 getLook()
   {
     return (eye + forward) ;
+  }
+
+  D3DXVECTOR3 getRight()
+  {
+    return right ;
   }
 
   void setLook( D3DXVECTOR3 iLook )

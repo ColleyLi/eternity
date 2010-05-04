@@ -210,6 +210,23 @@ void D3DWindow::initVertexDeclarations()
   DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVT, &vt ), "CreateVertexDeclaration FAILED vt!" ) ;
   delete[] vertexElementsVT ;
 
+
+  // VTC
+  // Vertex, texture, color.
+  D3DVERTEXELEMENT9 *vertexElementsVTC = new D3DVERTEXELEMENT9[4] ;
+  vertexElementsVTC[ 0 ] = pos ;
+
+  tex.Offset = 3*sizeof(float) ;
+  vertexElementsVTC[ 1 ] = tex ;
+
+  color.Offset = tex.Offset + 2*sizeof(float) ;
+  vertexElementsVTC[ 2 ] = color ;
+  vertexElementsVTC[ 3 ] = end ;
+  DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVTC, &vtc ),
+    "CreateVertexDeclaration FAILED vtc!" ) ;
+  delete[] vertexElementsVT ;
+
+
   // VTN
   D3DVERTEXELEMENT9 *vertexElementsVTN = new D3DVERTEXELEMENT9[4] ;
   vertexElementsVTN[ 0 ] = pos ;
@@ -248,6 +265,10 @@ void D3DWindow::setVertexDeclaration( VertexType vType )
 
   case PositionTexture:
     vdecl = vt ;
+    break;
+
+  case PositionTextureColor:
+    vdecl = vtc ;
     break;
 
   case PositionNormal:
@@ -461,6 +482,9 @@ void D3DWindow::setCamera( D3DXVECTOR3 &newEye, D3DXVECTOR3 &newLook, D3DXVECTOR
 {
   HRESULT hr ;
 
+  // UPDATE THE STATE VARS FOR THE CAMERA
+  //!! these state vars need to go away
+  // and should be stored in Camera only.
   eye = newEye ;
   look = newLook ;
   up = newUp ;

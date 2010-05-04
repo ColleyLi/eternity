@@ -3,22 +3,21 @@
 
 #include "cs-main.h"
 #include "Car.h"
-#include "Track.h"
 
 /// Simulated world class
 class SimWorld
 {
 public:
   Car * car ;
-  Track * track ;
   D3DLIGHT9 light0, light1 ;
 
   // Freecam is flying cam, not free
   // means follow
   enum CamMode
   {
-    FreeCam,  // free to move using WASD
-    FollowCam // follow the car
+    CockpitCam, // like you're in the seat of the vehicle.
+    FollowCam, // follow the car
+    FreeCam   // free to move using WASD
   } ;
   
   CamMode camMode ;

@@ -26,6 +26,48 @@ void SoundMan::initSoundMan()
   FMOD_ErrorCheck( FMOD_System_Init( fmodSys, fmodMaxChannels, FMOD_INIT_NORMAL, NULL ) ) ;
 
 
+
+
+
+  /*
+  //!! erase me
+  FMOD_DSP* dspPITCHSHIFT ;
+
+  FMOD_RESULT result ;
+  result = FMOD_System_CreateDSPByType(fmodSys, FMOD_DSP_TYPE_PITCHSHIFT, &dspPITCHSHIFT);
+  FMOD_ErrorCheck(result);
+
+  result = FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0);
+  FMOD_ErrorCheck(result);
+
+  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_FFTSIZE, 1024);
+  FMOD_ErrorCheck(result);
+
+  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, 1.2f);
+  FMOD_ErrorCheck(result);
+
+  FMOD_System_Update( fmodSys ) ;
+  Sleep(20) ;
+  int dspPITCHSHIFT_ACTIVE;
+
+  FMOD_DSP_GetActive(dspPITCHSHIFT, &dspPITCHSHIFT_ACTIVE);
+
+  if( !dspPITCHSHIFT_ACTIVE )
+  {
+    puts( "buyt why?" ) ;
+    system("pause" ) ;
+  }
+  */
+
+
+
+
+
+
+
+
+
+
   int numSamples = 8000 ;
   int fs = 44100 ;
   float NTs  = 1.0f/fs ; // sampling interval
@@ -190,7 +232,7 @@ void SoundMan::loadSound( int soundId, char * filename, int options )
   FMOD_SOUND *newSound ;
   
   // Load the sound
-  bool success = FMOD_ErrorCheck( FMOD_System_CreateSound( fmodSys, filename, FMOD_HARDWARE | options, 0, &newSound ) ) ;
+  bool success = FMOD_ErrorCheck( FMOD_System_CreateSound( fmodSys, filename, FMOD_SOFTWARE | options, 0, &newSound ) ) ;
 
   if( !success )
   {
@@ -230,6 +272,33 @@ FMOD_SOUND* SoundMan::getSound( int soundId )
   return sound ;
 }
 
+bool SoundMan::isPlaying( int soundId )
+{
+  ChannelMultimapIter channelIter = fmodChannels.begin();
+
+  while( channelIter != fmodChannels.end() )
+  {
+    if( channelIter->first == soundId )
+    {
+      //!! due to ANOTHER bug which I 
+      // could'nt root out earlier just because
+      // a sound is prsent in this map doesn't/
+      // mean its playing.. also check isPlaying
+      // prpoerty of the channel
+      FMOD_BOOL playing ;
+      FMOD_Channel_IsPlaying( channelIter->second, &playing ) ;
+      if( playing )
+      {
+        return true ; // that's all we needed to know
+      }
+    }
+
+    ++channelIter ;
+  }
+  
+  return false ;
+}
+
 void SoundMan::playSound( int soundId )
 {
   FMOD_SOUND *sound = defaultSound ;
@@ -253,9 +322,8 @@ void SoundMan::playSound( int soundId )
   
   fmodChannels.insert( make_pair( soundId, channel ) ) ;
   
-  int numChannelsPlaying ;
-  FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
-
+  //int numChannelsPlaying ;
+  //FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
   //info( "There are %d channels playing right now", numChannelsPlaying ) ;
 }
 
@@ -286,11 +354,11 @@ void SoundMan::playSoundWithDSP( int soundId, FMOD_DSP* dsp )
   
   fmodChannels.insert( make_pair( soundId, channel ) ) ;
   
-  int numChannelsPlaying ;
-  FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
+  //int numChannelsPlaying ;
+  //FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
 }
 
-void SoundMan::loopSoundWithDSP( int soundId, FMOD_DSP* dsp, int loopCount )
+void SoundMan::loopSoundWithDSP( int soundId, int loopCount, FMOD_DSP* dsp )
 {
   FMOD_SOUND *sound = getSound( soundId ) ;
   if( !sound )
@@ -318,8 +386,8 @@ void SoundMan::loopSoundWithDSP( int soundId, FMOD_DSP* dsp, int loopCount )
   
   fmodChannels.insert( make_pair( soundId, channel ) ) ;
   
-  int numChannelsPlaying ;
-  FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
+  //int numChannelsPlaying ;
+  //FMOD_System_GetChannelsPlaying( fmodSys, &numChannelsPlaying ) ;
 }
 
 void SoundMan::stopSound( int soundId )
@@ -332,7 +400,7 @@ void SoundMan::stopSound( int soundId )
   {
     if( channelIter->first == soundId )
     {
-      info( "Stopping %d", soundId ) ;
+      //info( "Stopping %d", soundId ) ;
       FMOD_Channel_Stop( channelIter->second ) ;
 
       ChannelMultimapIter toErase = channelIter ;
@@ -410,41 +478,64 @@ void SoundMan::loopSound( int soundId, int loopCount )
 
 }
 
+/// !!TEMPORARYAR FUNCTION
+FMOD_CHANNEL* SoundMan::getFmodChannel( int soundId )
+{
+  ChannelMultimapIter channelIter = fmodChannels.begin();
+
+  while( channelIter != fmodChannels.end() )
+  {
+    if( channelIter->first == soundId )
+    {
+      //!! due to ANOTHER bug which I 
+      // could'nt root out earlier just because
+      // a sound is prsent in this map doesn't/
+      // mean its playing.. also check isPlaying
+      // prpoerty of the channel
+      FMOD_BOOL playing ;
+      FMOD_Channel_IsPlaying( channelIter->second, &playing ) ;
+      if( playing )
+      {
+        // this is the channel you wanted 
+        return channelIter->second ;
+      }
+    }
+
+    ++channelIter ;
+  }
+  
+  // no channel
+  return NULL ;
+}
+
 
 //!! TEMPORARY FUNCTION
-void SoundMan::createPitchShift()
+void SoundMan::createPitchShiftToChannel( FMOD_CHANNEL *channel )
 {
   //!! INCOMPLETE
   /// must add map of DSP effects for each sound
   // so each isn't doubled-up
 
+  FMOD_RESULT fr ;
+
   // set up piutch shift dsp
-  if( !FMOD_ErrorCheck( FMOD_System_CreateDSPByType( fmodSys, FMOD_DSP_TYPE_PITCHSHIFT, &dspPITCHSHIFT ) ) )
-    system("pause") ;
-  if( !FMOD_ErrorCheck( FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0) ) )
-    system("pause") ;
+  fr = FMOD_System_CreateDSPByType( fmodSys, FMOD_DSP_TYPE_PITCHSHIFT, &dspPITCHSHIFT ) ;
+  FMOD_ErrorCheck( fr ) ;
+  
+  //fr = FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0) ;
+  //FMOD_ErrorCheck( fr ) ;
+
+
+  fr = FMOD_Channel_AddDSP( channel, dspPITCHSHIFT, NULL ) ;
+  FMOD_ErrorCheck( fr ) ;
 
   // set fft quality of pitch shift
-  if( !FMOD_ErrorCheck( FMOD_DSP_SetParameter( dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_FFTSIZE, 4096 ) ) )
-    system("pause") ;
-  if( !FMOD_ErrorCheck( FMOD_DSP_SetParameter( dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, 1.5f ) ) )
-    system("pause") ;
+  fr = FMOD_DSP_SetParameter( dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_FFTSIZE, 2048 ) ;
+  FMOD_ErrorCheck( fr ) ;
 
+  fr = FMOD_DSP_SetParameter( dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, 1.0 ) ;
+  FMOD_ErrorCheck( fr ) ;
 
-  if( !FMOD_ErrorCheck( FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0) ) )
-    system("pause") ;
-
-  int active ;
-  
-  FMOD_ErrorCheck( FMOD_DSP_GetActive( dspPITCHSHIFT, &active) ) ;
-  if( active )
-    puts ("YES");
-  else
-  {
-    puts("NOOOOOOOOOOO");
-    system("pause");
-  }
-  
 }
 
 void SoundMan::setPitchShift( float amount )

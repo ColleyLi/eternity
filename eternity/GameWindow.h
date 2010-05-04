@@ -7,7 +7,7 @@
 #include "SpriteMan.h"
 #include "InputMan.h"
 #include "Callback.h"
-#include "Camera3D.h"
+#include "ThreeDMan.h"
 
 /*
   __ _  __ _ _ __ ___   ___ 
@@ -18,22 +18,17 @@
 
 */
 
-class GameWindow : public D3DWindow, public SoundMan, public SpriteMan, public InputMan
+class GameWindow : public D3DWindow, public SoundMan, public SpriteMan, public InputMan, public ThreeDMan
 {
 protected:
   
   bool paused ;  /*!< game paused or unpaused. */
   Timer timer ;  /*!< used as timer and frame limiter */
 
-  /// Maintain a vector of vertices
-  /// to draw out in 3d
-  vector<VertexC> vertices ;
-
   /// The vector full of callback functions
   /// to execute, sometime in the future.
   vector<Callback*> callbacks ;
 
-  Camera3D camera ;
 
 public:
   /// Creates a GameWindow instance
@@ -143,33 +138,14 @@ private:
 
 
 public:
-
-  // <3d>
-
-  /// the triangle described by 3 vertices
-  /// is abc, assuming CCW winding order
-  void drawTri( VertexC &a, VertexC &b, VertexC &c ) ;
-
-  /// the rectangle described by 4 vertices
-  /// is abc, cda, assuming CCW winding order
-  /// b    a
-  /// 
-  /// c    d
-  void drawQuad( VertexC &a, VertexC &b, VertexC &c, VertexC &d ) ;
-
-  void flush3D() ;
-
-  void setWorld( D3DXMATRIX* world ) ;
-
-  // </3d>
-
-
-  // <camera>
-  Camera3D* getCamera() { return &camera ; }
-  void setByCamera() ;
-  // </camera>
-
   IDirect3DDevice9* getGpu(){ return gpu ; }
+
+
+  /// Draw all stored vertices in ThreeDMan
+  void draw3DObjects() ;
+
+  void setViewBYCAMERA() ;
+
 
 } ;
 #endif

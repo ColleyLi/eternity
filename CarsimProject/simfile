@@ -1,8 +1,0 @@
-SIMFILE
-INPUT Run248_all.par
-ECHO Run248_echo.par
-FINAL Run248_end.par
-LOGFILE Run248_log.txt
-ERDFILE Run248.erd
-DLLFILE D:\Program Files\CarSim80_Prog\Programs\solvers\Default\i_i.dll
-END

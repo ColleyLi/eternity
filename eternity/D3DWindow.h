@@ -67,6 +67,9 @@ protected:
   
   /// Eye, look, up vectors
   /// really only matters for 3d drawing modes
+  /// These should be moved into Camera3D,
+  /// or Camera3D should be integrated
+  /// into this class.
   D3DXVECTOR3 eye, look, up ;
 
   /// The current drawing mode,
@@ -80,6 +83,7 @@ public:
     Position,
     PositionColor,
     PositionTexture,
+    PositionTextureColor,
     PositionNormal,
     PositionTextureNormal
   } ;
@@ -90,7 +94,7 @@ private:
   /// vn:  position normal
   /// vtn: position texture normal
   /// all of these are in the order they appear
-  IDirect3DVertexDeclaration9 *v, *vc, *vt, *vn, *vtn ;
+  IDirect3DVertexDeclaration9 *v, *vc, *vt, *vtc, *vn, *vtn ;
 
 public:
   D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;

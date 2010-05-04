@@ -85,6 +85,8 @@ public:
   /// in case you want it
   FMOD_SOUND* getSound( int soundId ) ;
 
+  bool isPlaying( int soundId ) ;
+
   /// Plays a previously loaded sound by
   /// the same ID you passed to loadSound
   void playSound( int soundId ) ;
@@ -93,7 +95,7 @@ public:
   /// 
   void playSoundWithDSP( int soundId, FMOD_DSP* dsp ) ;
 
-  void loopSoundWithDSP( int soundId, FMOD_DSP* dsp, int loopCount ) ;
+  void loopSoundWithDSP( int soundId, int loopCount, FMOD_DSP* dsp ) ;
 
   /// Stops playback of ALL sounds
   /// by id.
@@ -106,6 +108,8 @@ public:
   /// set `loopCount` to FMOD_LOOP_FOREVER
   /// to loop a sound infinitely
   void loopSound( int soundId, int loopCount = FMOD_LOOP_FOREVER ) ;
+
+  FMOD_CHANNEL* getFmodChannel( int soundId ) ;
 
   /// Channel callback
   static FMOD_RESULT F_CALLBACK channelEndCallback(
@@ -150,7 +154,7 @@ public:
   }
 
   // !! TEMPORARY FUNCTION
-  void createPitchShift() ;
+  void createPitchShiftToChannel( FMOD_CHANNEL* channel ) ;
 
   void setPitchShift( float amount ) ;
 
