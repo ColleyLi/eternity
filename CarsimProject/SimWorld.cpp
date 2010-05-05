@@ -10,14 +10,26 @@ SimWorld::SimWorld()
 
   car = new Car() ;
 
+  // Loa dthe car's target model
+  window->cd( "models/samples" ) ;
+  car->target = new ObjFile( window, "al.obj" ) ;
+  window->cdPop() ;
+
+
   // Change to the assets/models directory.
   window->cd( ASSET( "models/3D_shape_files_CS/vehicles/european_sedan" ) ) ;
+
+  //window->cd( ASSET( "models/3D_shape_files_CS/vehicles/Sports_car" ) ) ;
   car->loadCarModel( "body.obj" ) ;
   car->loadCarModel( "brakes_on.obj" ) ;
   car->loadCarModel( "details.obj" ) ;
-  car->loadCarModel( "interior_trim.obj" ) ;
+  //car->loadCarModel( "details_convertible.obj" ) ;//s2000
+  //car->loadCarModel( "interior.obj" ) ; //s2000
+  car->loadCarModel( "interior_trim.obj" ) ; // european_sedan
+  //car->loadCarModel( "interior_convertible.obj" ) ; // s2000
   car->loadCarModel( "seats.obj" ) ;
   car->loadCarModel( "steering_wheel.obj" ) ;
+  //car->loadCarModel( "steeringwheel.obj" ) ; // s2000
   //car->loadModel( "windows.obj" ) ;
   window->cdPop() ;
 

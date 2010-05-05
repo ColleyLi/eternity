@@ -100,11 +100,20 @@ public:
   D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
   ~D3DWindow() ;
 
+
 private:
   bool initD3D( int width, int height ) ;
+
+public:
+  void setDefaultRenderStateOptions() ;
+
+private:
   void initVertexDeclarations() ;
 
 public:
+  void screenshot() ;
+
+
   void setLight( int index, D3DLIGHT9* light ) ;
   void setLighting( BOOL on ) ;
   void setMaterial( D3DMATERIAL9* material ) ;

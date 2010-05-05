@@ -30,6 +30,8 @@ protected:
   /// to draw out in 3d
   vector<VertexC> verticesC ;
   map< int, vector<VertexTC> > mapVerticesTC ;
+
+  vector<VertexC> linesC ;
   
   void initThreeDMan( IDirect3DDevice9 *theGpu ) ;
 
@@ -72,6 +74,8 @@ public:
 
 
 
+  void draw3DLine( D3DXVECTOR3 startPoint, D3DCOLOR startColor,
+    D3DXVECTOR3 endPoint, D3DCOLOR endColor ) ;
 
 } ;
 

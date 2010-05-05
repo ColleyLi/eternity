@@ -391,6 +391,27 @@ void GameWindow::draw3DObjects()
 
     }
   }
+
+
+  if( ! linesC.empty() )
+  {
+    // Draw th elines
+    setVertexDeclaration( VertexType::PositionColor ) ;
+
+
+    hr = gpu->DrawPrimitiveUP(
+      D3DPT_LINELIST,
+      linesC.size()/2,
+      &linesC[0], 
+      sizeof(VertexC)
+    ) ;
+
+    DX_CHECK( hr, "flush3D: DrawPrimitiveC" ) ;
+
+    /////
+    // NOW CLEAR THE LINES
+    linesC.clear() ;
+  }
 }
 
 

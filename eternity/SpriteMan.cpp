@@ -662,8 +662,13 @@ void SpriteMan::drawAxes( float LEN )
   hr = lgpu->DrawPrimitiveUP( D3DPT_LINELIST, 3, axis, sizeof( VertexC ) ) ;
   DX_CHECK( hr, "DrawPrimitiveUP FAILED!" ) ;
 
-  static float pointSize = 8.0f ;
+  DWORD oldPtSize ;
+  lgpu->GetRenderState( D3DRS_POINTSIZE, &oldPtSize ) ;
 
+  // One of the rare 'good' uses for reinterpret_cast
+  //float fOldPtSize = reinterpret_cast<float>( oldPtSize ) ;
+
+  static float pointSize = 8.0f ;
   lgpu->SetRenderState( D3DRS_POINTSIZE, CAST_AS_DWORD( pointSize ) ) ;
 
   // Draw points at end of axis.
@@ -676,6 +681,7 @@ void SpriteMan::drawAxes( float LEN )
   hr = lgpu->DrawPrimitiveUP( D3DPT_POINTLIST, 3, points, sizeof( VertexC ) ) ;
   DX_CHECK( hr, "DrawPrimitiveUP FAILED!" ) ;
 
+  lgpu->SetRenderState( D3DRS_POINTSIZE, CAST_AS_DWORD( oldPtSize ) ) ;
 
 }
 

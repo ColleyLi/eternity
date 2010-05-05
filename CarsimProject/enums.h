@@ -6,7 +6,9 @@ enum Sprites
   Mario = 1,
   SixteenCounter,
   Road1,
-  Road2
+  Road2,
+  TachBack,
+  SteeringWheel
 } ;
 
 enum Sounds
@@ -20,6 +22,7 @@ enum Sounds
 
 enum Fonts
 {
+  Arial8,
   Arial16,
   TimesNewRoman24
 } ;

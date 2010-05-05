@@ -420,6 +420,13 @@ public:
     // Set the fwd of the camera as just
     // being equal to the passed in `heading' vector
     forward = heading ;
+
+    // The right vector should be
+    // maintained as well
+    D3DXVec3Cross( &right, &forward, &up ) ;
+
+
+    renormalizeVectors() ;
     
   }
 

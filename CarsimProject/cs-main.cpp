@@ -182,6 +182,8 @@ void Init()
   window->loadSprite( SixteenCounter, ASSET("sprites/16counter.png"), 0, 32, 32, 16, 0.5f ) ;
   window->loadSprite( Road1, ASSET( "sprites/Road1.png" ) ) ;
   window->loadSprite( Road2, ASSET( "sprites/Road2.png" ) ) ;
+  window->loadSprite( TachBack, ASSET( "sprites/tach-back-3.png" ) ) ;
+  window->loadSprite( SteeringWheel, ASSET( "sprites/steering-white.png" ) ) ;
 
   window->loadSound( Screech, ASSET("sounds/Generic-Tire-01_Skid-01.wav") ) ;
 
@@ -208,6 +210,8 @@ void Init()
   window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
 
   // Create a few fonts
+  window->createFont( Fonts::Arial8, "Arial", 8, FW_NORMAL, false ) ;
+
   window->createFont( Fonts::Arial16, "Arial", 16, FW_BOLD, false ) ;
   
   window->createFont( Fonts::TimesNewRoman24, "Times New Roman", 24, FW_BOLD, true ) ;
@@ -228,6 +232,11 @@ void Init()
 
   // revert to root
   window->cdPop() ;
+
+
+  //window->fullScreenInMaxResolution() ;
+  //window->setDefaultRenderStateOptions();
+
 }
 
 void Update()
@@ -308,7 +317,7 @@ void Update()
 
 
   // Change fill mode
-  if( window->keyJustPressed( '`' ) )
+  if( window->keyJustPressed( '9' ) )
   {
     DWORD fillMode ;
     DWORD nextFillMode = D3DFILL_SOLID ;
@@ -325,20 +334,31 @@ void Update()
   }
 
   // change camera mode
-  if( window->keyJustPressed( '4' ) )
-  {
-    simWorld->camMode = SimWorld::FreeCam ;
-    window->getCamera()->reset() ;
-  }
-
-  if( window->keyJustPressed( '5' ) )
+  if( window->keyJustPressed( '1' ) )
   {
     simWorld->camMode = SimWorld::CockpitCam ;
   }
 
-  if( window->keyJustPressed( '6' ) )
+  if( window->keyJustPressed( '2' ) )
   {
     simWorld->camMode = SimWorld::FollowCam ;
+  }
+
+  if( window->keyJustPressed( '3' ) )
+  {
+    simWorld->camMode = SimWorld::FreeCam ;
+    //window->getCamera()->reset() ;
+  }
+
+  if( window->keyJustPressed( 'C' ) )
+  {
+    // hide the car, debug mode
+    simWorld->car->hidden = ! simWorld->car->hidden ;
+  }
+
+  if( window->keyJustPressed( 'P' ) )
+  {
+    window->screenshot() ;
   }
 
 
@@ -411,7 +431,7 @@ void Draw()
   //window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
 
-  window->drawTimer() ;
+  //window->drawTimer() ;
 }
 
 
@@ -574,9 +594,9 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
   // Setup the window
-  window = new GameWindow( hInstance, TEXT( "carsim project - mohammad elbagoury" ),
-     32, 32, // x pos, y pos
-     640, 480 // width, height
+  window = new GameWindow( hInstance, TEXT( "carsim project" ),
+     32, 0, // x pos, y pos
+     800, 600// width, height
   ) ;
 
   // After the window comes up, we call Init

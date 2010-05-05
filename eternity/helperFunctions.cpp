@@ -316,6 +316,31 @@ D3DXVECTOR3* D3DXVec3Truncate( D3DXVECTOR3 *vec, float minMag, float maxMag )
   return vec ;
 }
 
+// same as D3DXVec3AngleBetween, only assumes
+// vectors you pass it are already normalized
+float D3DXVec3AngleBetweenAlreadyNormal( D3DXVECTOR3 *u, D3DXVECTOR3 *v )
+{
+  D3DXVECTOR3 cross ;
+  D3DXVec3Cross( &cross, u, v ) ;
+
+  float magCross = D3DXVec3Length( &cross ) ;
+
+  float angle = asinf( magCross ) ;
+
+  return angle ;
+}
+
+// used cross product to get signed result
+// u X v = |u| |v| sin(t)
+float D3DXVec3AngleBetween( D3DXVECTOR3 *u, D3DXVECTOR3 *v )
+{
+  D3DXVECTOR3 uC, vC ;
+  D3DXVec3Normalize( &uC, u ) ;
+  D3DXVec3Normalize( &vC, v ) ;
+
+  return D3DXVec3AngleBetweenAlreadyNormal( &uC, &vC ) ;
+}
+
 /*
 D3DXMATRIX lookAt( D3DXVECTOR3 eye, D3DXVECTOR3 look, D3DXVECTOR3 up )
 {
@@ -452,6 +477,20 @@ wchar_t* getUnicode( char* ascii )
   wstr[ len ] = 0 ; // add null terminator
 
   return wstr ;
+}
+
+// Prints now into your buffer
+char* sprintNow( char* buf )
+{
+  time_t now ;
+  tm * timeinfo ;
+
+  time( &now ) ;
+  timeinfo = localtime( &now ) ;
+
+  strftime( buf, MAX_PATH, "%Y_%m_%d_%A_%H-%M-%S.png", timeinfo );
+
+  return buf ;
 }
 
 void printRawKeyboard( RAWINPUT * raw )

@@ -484,7 +484,6 @@
     It's not working for some reason
 	
   - Brought CarSim DLL exports into CarsimProject
-
   
 + May 4 / 2010 v0.1.8-carsim
   - got imports working (it was the PARSFILE.. you
@@ -492,7 +491,10 @@
   - finished road render and track find
   - Added hacky- support for rpm sound thru pitch shift
   
-  
++ May 5 / 2010 v0.1.8-carsim
+  - Added ability to take screen captures
+  - Added ability to draw lines
+  - (yesterday) added ability to createQuadVC, VTC
   
   
   - TODO:

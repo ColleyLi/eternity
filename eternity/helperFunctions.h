@@ -153,6 +153,10 @@ D3DXVECTOR3* D3DXVec3SetMagnitude( D3DXVECTOR3 *vec, float mag ) ;
 
 D3DXVECTOR3* D3DXVec3Truncate( D3DXVECTOR3 *vec, float minMag, float maxMag ) ;
 
+float D3DXVec3AngleBetweenAlreadyNormal( D3DXVECTOR3 *u, D3DXVECTOR3 *v ) ;
+
+float D3DXVec3AngleBetween( D3DXVECTOR3 *u, D3DXVECTOR3 *v ) ;
+
 inline void ZeroVector(D3DXVECTOR3 &vec)
 {
   vec.x=vec.y=vec.z=0.0f;
@@ -215,6 +219,7 @@ wchar_t* getUnicode( char* ascii ) ;
 #define cstrnulllastnl(str) {char* nl=strrchr(str,'\n'); if(nl){*nl=0;}}
 #define cstrnullnextsp(str) {char* nl=strchr(str,' '); if(nl){*nl=0;}}
 
+char* sprintNow( char* buf ) ;
 
 void printRawKeyboard( RAWINPUT * raw ) ;
 void printRawMouse( RAWINPUT * raw ) ;

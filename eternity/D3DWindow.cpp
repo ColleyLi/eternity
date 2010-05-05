@@ -90,7 +90,27 @@ bool D3DWindow::initD3D( int width, int height )
   initVertexDeclarations() ;
 
 
-  
+
+  setDefaultRenderStateOptions() ;
+
+
+
+  clearColor = D3DCOLOR_ARGB( 255, 0, 10, 45 ) ;
+
+  // init the eye,look, up, so that
+  // you're not zero'd out at prog start
+  eye = D3DXVECTOR3( 4, 2, 25 ) ;
+  look = D3DXVECTOR3( 0, 0, 0 ) ;
+  up = D3DXVECTOR3( 0, 1, 0 ) ;
+
+
+
+  return true ;
+}
+
+void D3DWindow::setDefaultRenderStateOptions()
+{
+  HRESULT hr ;
 
   hr = gpu->SetRenderState( D3DRS_COLORVERTEX, TRUE ) ;
   DX_CHECK( hr, "SetRenderState( COLORVERTEX )" ) ;
@@ -122,17 +142,21 @@ bool D3DWindow::initD3D( int width, int height )
   hr = gpu->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE ) ;
   DX_CHECK( hr, "alpha blending on" ) ;
   
-  clearColor = D3DCOLOR_ARGB( 255, 0, 10, 45 ) ;
 
-  // init the eye,look, up, so that
-  // you're not zero'd out at prog start
-  eye = D3DXVECTOR3( 4, 2, 25 ) ;
-  look = D3DXVECTOR3( 0, 0, 0 ) ;
-  up = D3DXVECTOR3( 0, 1, 0 ) ;
+}
 
+void D3DWindow::screenshot()
+{
+  char buf[ 300 ] ;
+  sprintNow( buf ) ;
+  IDirect3DSurface9 *surface ;
 
+  gpu->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surface ) ;
 
-  return true ;
+  // svae the surfaace
+  D3DXSaveSurfaceToFileA( buf,
+    D3DXIFF_PNG, surface, NULL, NULL ) ;
+
 }
 
 void D3DWindow::initVertexDeclarations()

@@ -99,3 +99,14 @@ void ThreeDMan::createQuadVTC(
   mapVerticesTC[ spriteId ].push_back( a ) ;
 }
 
+void ThreeDMan::draw3DLine( D3DXVECTOR3 startPoint, D3DCOLOR startColor,
+                          D3DXVECTOR3 endPoint, D3DCOLOR endColor )
+{
+  linesC.push_back( 
+    VertexC( startPoint, startColor )
+  );
+  
+  linesC.push_back(
+    VertexC( endPoint, endColor )
+  ) ;
+}

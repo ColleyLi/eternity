@@ -54,17 +54,19 @@ struct VertexC
    
   }
 
-  VertexC( float x, float y, float z, D3DCOLOR iColor )
+  VertexC( const D3DXVECTOR3 &v, D3DCOLOR iColor ) :
+    pos( v ), color( iColor )
   {
-    pos.x = x ;
-    pos.y = y ;
-    pos.z = z ;
-    color = iColor ;
   }
 
-  VertexC( float x, float y, float z, BYTE r, BYTE g, BYTE b )
+  VertexC( float x, float y, float z, D3DCOLOR iColor ) :
+    pos( x,y,z ), color( iColor )
   {
-    pos.x = x ;  pos.y = y ;  pos.z = z ;
+  }
+
+  VertexC( float x, float y, float z, BYTE r, BYTE g, BYTE b ):
+    pos( x,y,z )
+  {
     color = D3DCOLOR_XRGB( r, g, b ) ;
   }
 } ;

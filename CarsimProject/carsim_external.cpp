@@ -51,17 +51,16 @@ void external_setdef()
   simWorld->car->csV.wheelL1Steer = vs_get_var_ptr( "STEER_L1" ) ;
   simWorld->car->csV.wheelR1Steer = vs_get_var_ptr( "STEER_R1" ) ;
 
+  simWorld->car->csV.wheelL1V = vs_get_var_ptr( "AVY_L1" ) ;
+  simWorld->car->csV.wheelR1V = vs_get_var_ptr( "AVY_R1" ) ;
+  simWorld->car->csV.wheelL2V = vs_get_var_ptr( "AVY_L2" ) ;
+  simWorld->car->csV.wheelR2V = vs_get_var_ptr( "AVY_R2" ) ;
+
   simWorld->car->csV.theirThrottle = vs_get_var_ptr( "THROTTLE" ) ;
   simWorld->car->csV.throttle = vs_get_var_ptr( "IMP_THROTTLE_ENGINE" ) ;
-  simWorld->car->csV.brake = vs_get_var_ptr( "IMP_BK_BOOST" ) ;
-  simWorld->car->csV.brakeStat = vs_get_var_ptr( "IMP_BK_STAT" ) ;
-  simWorld->car->csV.brakePedalForce = vs_get_var_ptr( "IMP_FBK_PDL" ) ;
-  simWorld->car->csV.brakeBoosterForce = vs_get_var_ptr( "IMP_FBK_BSTIN" ) ;
-  
-  simWorld->car->csV.IMP_MYBK_L1 = vs_get_var_ptr( "IMP_MYBK_L1" ) ; 
-  simWorld->car->csV.IMP_MYBK_L2 = vs_get_var_ptr( "IMP_MYBK_L2" ) ; 
-  simWorld->car->csV.IMP_MYBK_R1 = vs_get_var_ptr( "IMP_MYBK_R1" ) ; 
-  simWorld->car->csV.IMP_MYBK_R2 = vs_get_var_ptr( "IMP_MYBK_R2" ) ; 
+
+
+  simWorld->car->csV.brake = vs_get_var_ptr( "IMP_PCON_BK" ) ;
 
   simWorld->car->csV.steeringAngle = vs_get_var_ptr("IMP_STEER_SW");
   simWorld->car->csV.theirSteeringAngle = vs_get_var_ptr("STEER_SW");//528 of i_i
@@ -76,6 +75,7 @@ void external_setdef()
 
   simWorld->car->csV.timeStep = vs_get_var_ptr( "TSTEP" ) ;
 
+  //simWorld->car->csV.transmissionMode = vs_get_var_ptr_int( "IMP_MODE_TRANS" ) ;
 
 
   int *opt_steer, *opt_driver_model, *opt_sc,
@@ -237,13 +237,96 @@ void external_calc(vs_real t, vs_ext_loc where)
     break;
 
   case VS_EXT_EQ_IN:
-    // calculate import variables at the start of a time step
-    
-    // UPDATE CARSIM
-    // Compute what impetus should be
-    // on the car gas, brake, and steering wheel
-    // and push those updates to carsim
-    simWorld->car->update( 0.0166 ) ;
+    {
+      // calculate import variables at the start of a time step
+      
+      // UPDATE CARSIM
+      // Compute what impetus should be
+      // on the car gas, brake, and steering wheel
+      // and push those updates to carsim
+      simWorld->car->update( 0.0166 ) ;
+
+
+      // Shorthands
+      #define Throttle (*simWorld->car->csV.throttle)
+      #define S (simWorld->car->sNearest)
+      #define L (simWorld->car->L)
+      #define SteeringAngle (*simWorld->car->csV.steeringAngle)
+      #define X (*simWorld->car->csV.x)
+      #define Y (*simWorld->car->csV.y)
+
+
+      // double vs_road_l(double x, double y);
+      // How far are we from center?
+      L = vs_road_l( CAR(x), CAR(y) ) ;
+      // -L means right of center line
+      // +L means left of center line
+
+      // -steering is steering right
+      // +steering is steering left.
+
+
+
+      // What's the road curvature?
+
+      
+
+      // Only if on course
+      if( simWorld->car->courseState == Car::OnCourse )
+      {
+        // Compute and write steering angle to use
+        SteeringAngle = - 0.25*L ;
+
+        // Steering angle must be clamped of course
+        clamp( SteeringAngle, -6, 6 ) ;
+
+
+        /*
+        // How far is L?  Vary throttle with size of L.
+        Throttle = 1.0 - L ;
+        clamp( Throttle, 0.0, 1.0 ) ;
+        */
+        simWorld->car->driveAt( 60/3.6, 0.75 ) ; // meters per second
+      }
+
+
+
+
+      simWorld->car->sNearest = vs_road_s( X, Y ) ;
+
+      // How do we get back to the road
+      // if we've fallen off?
+      // How do you point the car directly
+      // at the road?
+      if( fabs( L ) > 4 )
+      {
+        // Too far from center line to recover.
+        simWorld->car->courseState = Car::OffCourse ;
+
+
+
+        // Give it an XYZ to aim for.
+
+        // We must know what S we are at,
+        // musn't we?
+
+        // get x and y of the station
+        // when L=0
+        double sx, sy, sz ;
+        vs_get_road_xyz( S, 0, &sx, &sy, &sz ) ;
+
+        // Aggression controls overshoot
+        // really the gain is adjustable
+        // depending on how far off course
+        // we get.  VARY WITH L?
+        simWorld->car->driveTo( sx, sy, sz, 1.2 ) ;
+      }
+      else
+      {
+        simWorld->car->courseState = Car::OnCourse ;
+      }
+    }
+
     break;
 
   case VS_EXT_EQ_OUT:
