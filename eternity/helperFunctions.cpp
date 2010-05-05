@@ -341,6 +341,22 @@ float D3DXVec3AngleBetween( D3DXVECTOR3 *u, D3DXVECTOR3 *v )
   return D3DXVec3AngleBetweenAlreadyNormal( &uC, &vC ) ;
 }
 
+float D3DXVec2AngleBetweenAlreadyNormal( D3DXVECTOR2 *u, D3DXVECTOR2 *v )
+{
+  float cross = D3DXVec2CCW( u, v ) ;
+  return asinf( cross ) ;
+}
+
+float D3DXVec2AngleBetween( D3DXVECTOR2 *u, D3DXVECTOR2 *v )
+{
+  D3DXVECTOR2 uC, vC ;
+  D3DXVec2Normalize( &uC, u ) ;
+  D3DXVec2Normalize( &vC, v ) ;
+
+  return D3DXVec2AngleBetweenAlreadyNormal( &uC, &vC ) ;
+}
+
+
 /*
 D3DXMATRIX lookAt( D3DXVECTOR3 eye, D3DXVECTOR3 look, D3DXVECTOR3 up )
 {

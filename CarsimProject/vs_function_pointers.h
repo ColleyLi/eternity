@@ -164,6 +164,9 @@ extern _x_vs_road_yaw vs_road_yaw ;
 typedef vs_real (*_x_vs_s_loop) (vs_real s);
 extern _x_vs_s_loop vs_s_loop ;
 
+typedef vs_real (*_x_vs_target_heading) (vs_real s);  // added by ME
+extern _x_vs_target_heading vs_target_heading ;
+
 typedef vs_real (*_x_vs_target_l) (vs_real s);
 extern _x_vs_target_l vs_target_l ;
 

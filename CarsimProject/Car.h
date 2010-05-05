@@ -22,11 +22,7 @@ typedef vector<ObjFile*>::iterator /* as simply */ VectorObjIter ;
 class Car
 {
 public:
-  #pragma region sim helper values
-
-  /// Driving target
-  ObjFile* target ;
-
+  #pragma region renderer
   /// Collections of OBJ files to use
   /// when rendering the car
   VectorObj models ;
@@ -36,7 +32,21 @@ public:
   /// same collection is rendered 4 times
   /// each frame - once for each of the tires
   VectorObj tireModels ;
+
+  /// The car is hidden
+  /// from view used for debug
+  bool hidden ;
   #pragma endregion
+
+  /// A control to override automatic
+  /// or manual vehicle control
+  bool manualControl ;
+
+  #pragma region sim helper values
+
+  /// Count of seconds it took
+  /// to complete each lap around the track.
+  vector<double> lapTimes ;
 
   /// Cached value.  More than one thing uses this,
   /// computed once per step in update()
@@ -52,15 +62,50 @@ public:
   /// given our X, Y, by vs_road_s()
   double sNearest ;
 
-  /// The car is hidden
-  /// from view used for debug
-  bool hidden ;
+  /// Computed value of sNearest + (some lookahead,
+  /// usually 5).  sAhead to use should depend on SPEED!!
+  double sAhead ;
+
+  /// The nearest x,y,z location
+  /// at the nearest station
+  double sNearestX, sNearestY, sNearestZ ;
+  D3DXVECTOR3 vecSNearest ;
+
+  /// The AHEAD x,y,z on the road
+  /// that we should be aiming the
+  /// car towards.
+  double sAheadX, sAheadY, sAheadZ ;
+  D3DXVECTOR3 vecSAhead ;
+
+  /// Measurement of road curvature.
+  /// Relatively small values,
+  /// curvature right is -
+  /// curvature left is +
+  double sCurvature ;
+
+  /// Measure of road curv AHEAD.
+  /// Large difference between curve now
+  /// and curve ahead means SLOW DOWN,
+  /// esp sign variation
+  double sCurvatureAhead ;
+
+  /// Heading angle at the current
+  /// station
+  double sTargetHeading ;
+
+  /// "lateral position of target path",..
+  double sTargetHeadingL ;
+
+  /// A vector that points ALONG the road.
+  /// this is the instantaneous direction
+  /// that we're SUPPOSED to be pointing in
 
   /// Saved as state vars
   /// so we can draw them
-  D3DXVECTOR3 toDest, inFront, fwd ;
+  D3DXVECTOR3 fwd, alongRoad, posToSNearest, posToSAhead ;
 
-  float angleBetweenFwdAndDest ;
+  float angleBetweenFwdAndSNearest, 
+        angleBetweenFwdAndSAhead ;
 
   enum VehicleCourseState
   {
@@ -75,6 +120,12 @@ public:
   /// will go.  We clamp the steering wheel
   /// input angle (by this val and -this val)
   static double steeringWheelMaxR ;
+
+  /// The amount of 's' to lookahead
+  /// for finding the direction vector
+  /// that points from our nearest
+  /// station ALONG THE ROAD
+  static double sNominalLookAheadAmount ;
 
   /// Structure for containing POINTERS TO
   /// CarSim state variable values.
@@ -120,8 +171,8 @@ public:
 
          
 
-           *tachAngle,
-           *speedoAngle,
+           *tach,
+           *speedometer,
 
            *PwrEngAv,
 
@@ -202,23 +253,15 @@ public:
   // CONTROL FUNCTIONS
 
 
-  void setNormSteering( double val )
-  {
-    if( val > 1 )
-    {
-      warning( "SetNormSteering wants value between -1 and +1!" ) ;
-      val = 1 ;
-    }
-    else if( val < -1 )
-    {
-      warning( "SetNormSteering wants value between -1 and +1!" ) ;
-      val = -1 ;
-    }
+  void setNormSteering( double val ) ;
 
-    CARSIM(steeringAngle) = val*steeringWheelMaxR ;
 
-  }
+  void updateAutomaticControlValues() ;
 
+  /// Drives at the max speed
+  /// estimated possible given
+  /// curvature@S and curvature@AS
+  void driveAtMaxSpeedForCurvSAndCurvAS( double kAggression ) ;
 
   /// Drives the car to
   /// a specific location.
@@ -226,106 +269,15 @@ public:
   /// correct error -- in other words, the
   /// gain.  The steering value is clamped
   /// so the wheel doesn't go.. "all the way around"
-  void driveTo( double x, double y, double z, double kAggression )
-  {
-    // First of all, take it slow when recovering.
-    driveAt( 20 / 3.6, 0.75 ) ; // probably make proportional
-    // to our actual speed
-
-    D3DXVECTOR3 pos = getPos() ;
-    D3DXVECTOR3 dest( x, y, z ) ;
-
-    // Now, secondly compute the
-    // vector to your destination.
-    // This is the "error" in our
-    // position.
-    toDest = dest - pos ;
-
-    // The vector pointing towards our goal
-    // is toDest.
-
-    // Compute the angle between
-    // our forward vector (that points
-    // straight ahead for us) and
-    // the vector pointing towards our goal.
-    // The difference in angle tells us
-    // how to steer.
-    fwd = getFwd() ;
-
-    // Just in front is a point,
-    // 1 unit "in front of" the car
-    inFront = pos + fwd ;
-
-    // we could zero outthe z-component now,
-    // since there's nothing we cna do about fixng error in THAT
-
-
-    // Draw the pos to fwd vector:
-    window->draw3DLine( pos, Color::Red, inFront, Color::Red ) ;
-
-    // draw the pos to dest vector:  toDest
-    window->draw3DLine( pos, Color::Blue, dest, Color::Blue ) ;
-
-
-    // to find the steering directoin
-    // we can work in 2D.
-    D3DXVECTOR2 d2Fwd( fwd.x, fwd.y ) ;
-    D3DXVECTOR2 d2ToDest( toDest.x, toDest.y ) ;
-
-    D3DXVec2Normalize( &d2Fwd, &d2Fwd ) ;
-    D3DXVec2Normalize( &d2ToDest, &d2ToDest ) ;
-
-    // get signed angle between
-    // the inFront vector and the toDest vector.
-    float det = d2Fwd.x * d2ToDest.y    -   d2Fwd.y * d2ToDest.x ;
-    angleBetweenFwdAndDest = D3DXVec2CCW( &d2Fwd, &d2ToDest ) ;
-
-    // sin(t) = (u x v) / (|u||v|)
-    //float angle = asinf( det ) ; // we normalized the vectors.
-
-    printf( "ANGLE %.2f\n", angleBetweenFwdAndDest ) ;
-
-    // This is the magnitude of the angle
-    // between where we're headed and
-    // where we should be steering.
-
-    // !!We need to MAP steering wheel angle
-    // to change in output angle.  Or, use
-    // a the normalize set procedure (setNormSteering) where we can
-    // set the wheel to values between -1 and +1,
-    // +1 means all the way left and -1 means all the way right.
-    // (because + is ccw rotation)
-    CARSIM( steeringAngle ) = kAggression*angleBetweenFwdAndDest ;
- 
-    
-  }
+  void driveTo( double x, double y, double z, double kAggression ) ;
 
   /// Drives the car at
   /// a specific speed.
-  // kAggression: this gain is the "bravery"
-  // with which we approach the speed.  If this
-  // gets closer to or exceeds 1.0 then we'll gun it
-  //towards wherever we have to go    
-  void driveAt( double targetSpeed, double kAggression )
-  {
-    double incrBy = targetSpeed - CARSIM(speedoAngle) ;
-
-    double kBrave = 0.75 ; 
-
-    if( incrBy > 0 )
-    {
-      // need to speed up
-      CARSIM(throttle) = kAggression*incrBy;
-
-      clamp( CARSIM(throttle), 0.0, 1.0 ) ;
-    }
-    else if( incrBy < (-1) ) // should slow down by more than a few units
-    {
-      // Brake a bit
-      CARSIM(brake) = kAggression*7e6 ;
-    }
-  }
-
+  /// kAggression: this gain is the "bravery"
+  /// with which we approach the speed.  If this
+  /// gets closer to or exceeds 1.0 then we'll gun it
+  /// towards wherever we have to go    
+  void driveAt( double targetSpeed, double kAggression ) ;
 } ;
 
 #endif

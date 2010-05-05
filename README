@@ -495,7 +495,7 @@
   - Added ability to take screen captures
   - Added ability to draw lines
   - (yesterday) added ability to createQuadVC, VTC
-  
+  - Finished autonomous vehicle controller
   
   - TODO:
     - DOXYGEN-ATE all files

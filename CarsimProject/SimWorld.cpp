@@ -10,12 +10,6 @@ SimWorld::SimWorld()
 
   car = new Car() ;
 
-  // Loa dthe car's target model
-  window->cd( "models/samples" ) ;
-  car->target = new ObjFile( window, "al.obj" ) ;
-  window->cdPop() ;
-
-
   // Change to the assets/models directory.
   window->cd( ASSET( "models/3D_shape_files_CS/vehicles/european_sedan" ) ) ;
 

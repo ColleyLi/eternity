@@ -72,6 +72,12 @@ bool argCheck( char *fnName, char* str, int numArgsGot, int numArgsExpected ) ;
 // numerical.  A few of these functions
 // can be templated.
 
+#define IsNaN(x) (x!=x)
+
+
+#define IsNear(x,y,EPS) (fabs(x-y)<EPS)
+
+
 /// Gets you a random float between
 /// 'a' and 'b'
 float randFloat( float a, float b ) ;
@@ -156,6 +162,10 @@ D3DXVECTOR3* D3DXVec3Truncate( D3DXVECTOR3 *vec, float minMag, float maxMag ) ;
 float D3DXVec3AngleBetweenAlreadyNormal( D3DXVECTOR3 *u, D3DXVECTOR3 *v ) ;
 
 float D3DXVec3AngleBetween( D3DXVECTOR3 *u, D3DXVECTOR3 *v ) ;
+
+float D3DXVec2AngleBetweenAlreadyNormal( D3DXVECTOR2 *u, D3DXVECTOR2 *v ) ;
+
+float D3DXVec2AngleBetween( D3DXVECTOR2 *u, D3DXVECTOR2 *v ) ;
 
 inline void ZeroVector(D3DXVECTOR3 &vec)
 {

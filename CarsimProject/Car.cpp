@@ -1,12 +1,13 @@
 #include "Car.h"
 
 double Car::steeringWheelMaxR = 4.5*D3DX_PI;
+double Car::sNominalLookAheadAmount = 1 ;
 
 Car::Car()
 {
-  steeringWheelMaxR = 4.5*D3DX_PI ;
-
   hidden = false ;
+
+  manualControl = false ; // start with automatic control on
 }
 
 Car::~Car()
@@ -114,8 +115,11 @@ void Car::userControlUpdate()
 void Car::update( double timeSinceLastFrame )
 {
   // User control
-  userControlUpdate() ;
+  if( manualControl )
+    userControlUpdate() ;
 
+
+  updateAutomaticControlValues() ;
 
   // update the pitch of the engine
   double rpmMax = 800 ;
@@ -124,7 +128,7 @@ void Car::update( double timeSinceLastFrame )
   // scale the thing from 0.5 at low speed 75 rpm
   // to 2.0 at 800 rpm
 
-  rpmNormalized = CARSIM(tachAngle)/(rpmMax-rpmMin) ;
+  rpmNormalized = CARSIM(tach)/(rpmMax-rpmMin) ;
   double rpmScale = 0.5 + (2.0-0.5)*rpmNormalized ;
 
   window->setPitchShift( rpmScale ) ;
@@ -160,6 +164,7 @@ void Car::drawDebug()
     D3DXVECTOR3(0,0,0), Color::Yellow,
     getPos(), Color::Yellow ) ;
 
+
   
 
 }
@@ -167,7 +172,8 @@ void Car::drawDebug()
 void Car::drawStats()
 {
 
-
+#define PVEC(theVec) theVec.x, theVec.y, theVec.z
+  
   window->setDrawingMode( D2 ) ; // 2d
   char buf[300];
   
@@ -226,8 +232,13 @@ void Car::drawStats()
     DT_LEFT | DT_TOP ) ;
   */
 
+  window->drawString(
+    Arial16,
+    manualControl?"MANUAL CONTROL":"AUTOMATIC CONTROL",
+    manualControl?D3DCOLOR_XRGB(255,255,0):color,
+    20, y+=20, 600, 600,
+    DT_LEFT | DT_TOP ) ;
 
-  
   sprintf( buf, "steer: %.2f [rads] brake: %.2f [Mpa]", 
     CARSIM(steeringAngle),
     CARSIM(brake)/1e6 ) ;
@@ -236,36 +247,56 @@ void Car::drawStats()
     20, y+=20, 600, 600,
     DT_LEFT | DT_TOP ) ;
 
+  /*
   sprintf( buf, "theirThrottle=%.2f theirSteering: %.2f",
     CARSIM(theirThrottle), CARSIM(theirSteeringAngle) ) ;
   window->drawString(
     Arial16, buf, color,
     20, y+=20, 600, 600,
     DT_LEFT | DT_TOP ) ;
+  */
 
-  sprintf( buf, "L=%.2f sNear=%.2f", L, sNearest ) ;
+  sprintf( buf, "L=%.2f sNear=%.2f sAhead=%.2f", // (%.2f, %.2f, %.2f)",
+    L, sNearest, sAhead //, sNearestX, sNearestY, sNearestZ
+  ) ;
   window->drawString(
     Arial16, buf, color,
     20, y+=20, 600, 600,
     DT_LEFT | DT_TOP ) ;
 
+  sprintf( buf, "curv@S=%.6f, curv@SA=%.6f |dcurv|=%.6f", // targetH=%.2f targetHL=%.2f",
+    sCurvature, sCurvatureAhead,
+    fabs(sCurvature-sCurvatureAhead)//, sTargetHeading, sTargetHeadingL
+  ) ;
+  window->drawString(
+    Arial16, buf, color,
+    20, y+=20, 600, 600,
+    DT_LEFT | DT_TOP ) ;
+
+  /*
+  sprintf( buf, "alongroad=(%.2f,%.2f,%.2f)",
+    PVEC(alongRoad) ) ;
+  window->drawString(
+    Arial16, buf, color,
+    20, y+=20, 600, 600,
+    DT_LEFT | DT_TOP ) ;
+  */
+
   
-  if( courseState == OffCourse )
-  {
-    sprintf( buf, "OFF COURSE %.2f", L ) ;
-    window->drawString(
-      Arial16, buf, Color::Red,
-      20, y+=20, 600, 600,
-      DT_LEFT | DT_TOP ) ;
-  }
+  window->drawString(
+    Arial16,
+    courseState==OnCourse?"On course":"Off course",
+    courseState==OnCourse?Color::Green:Color::Red,
+    20, y+=20, 600, 600,
+    DT_LEFT | DT_TOP ) ;
 
 
 
   // print the toDest and inFront vectors
-  sprintf( buf, "angle: %.2f toDest (%.2f, %.2f, %.2f) inFront( %.2f %.2f %.2f)",
-    angleBetweenFwdAndDest, 
-    toDest.x, toDest.y, toDest.z,
-    inFront.x, inFront.y, inFront.z ) ;
+  sprintf( buf, "angle: %.2f posToSNearest (%.2f, %.2f, %.2f)",
+      angleBetweenFwdAndSNearest, 
+      PVEC( posToSNearest )
+    ) ;
     window->drawString(
       Arial16, buf, Color::Red,
       20, y+=20, 600, 600,
@@ -273,9 +304,6 @@ void Car::drawStats()
   
 
   #pragma endregion
-
-
-
 
   #pragma region dials etc
 
@@ -287,7 +315,7 @@ void Car::drawStats()
   
   // Fill a box for how much yo'ure donw on the gas pedal
   window->drawBox( gasBoxColor, 20, window->getHeight()-20, 20, -gas ) ;
-  window->drawString( Fonts::Arial16, "gas", gasBoxColor,
+  window->drawString( Fonts::Arial16, "trt", gasBoxColor,
     20, WH-20, 20, 20, DT_CENTER | DT_VCENTER ) ;
 
 
@@ -374,10 +402,6 @@ void Car::drawStats()
                       wheelColor ) ;
 
   #pragma endregion
-
-
-  
-  
 }
 
 void Car::draw( double timeSinceLastFrame )
@@ -663,3 +687,191 @@ D3DXVECTOR3 Car::getFwd()
 
   return r ;
 }
+
+void Car::setNormSteering( double val )
+{
+  if( val > 1 )
+  {
+    warning( "SetNormSteering wants value between -1 and +1!" ) ;
+    val = 1 ;
+  }
+  else if( val < -1 )
+  {
+    warning( "SetNormSteering wants value between -1 and +1!" ) ;
+    val = -1 ;
+  }
+
+  CARSIM(steeringAngle) = val*steeringWheelMaxR ;
+}
+
+void Car::updateAutomaticControlValues()
+{
+  D3DXVECTOR3 pos = getPos() ;
+  vecSNearest = D3DXVECTOR3( sNearestX, sNearestY, sNearestZ ) ;
+  vecSAhead   = D3DXVECTOR3( sAheadX, sAheadY, sAheadZ ) ;
+
+  alongRoad = vecSAhead - vecSNearest ;
+
+  // Now, secondly compute the
+  // vector to your destination.
+  // This is the "error" in our
+  // position.
+  posToSNearest = vecSNearest - pos ; // find the 'error' in position
+
+  // The vector pointing towards our goal
+  // is toDest.
+
+  // Compute the angle between
+  // our forward vector (that points
+  // straight ahead for us) and
+  // the vector pointing towards our goal.
+  // The difference in angle tells us
+  // how to steer.
+  fwd = getFwd() ;
+
+
+  // to find the steering directoin
+  // we can work in 2D.
+  D3DXVECTOR2 d2Fwd( fwd.x, fwd.y ) ;
+  D3DXVECTOR2 d2PosToSNearest( posToSNearest.x, posToSNearest.y ) ;
+
+  angleBetweenFwdAndSNearest = D3DXVec2AngleBetween( &d2Fwd, &d2PosToSNearest ) ;
+
+
+
+
+
+  /////
+  // DRAW SOME VECTORS
+  // Draw the pos to fwd vector:
+  window->draw3DLine( pos, Color::Red, pos + 5*fwd, Color::Red ) ;
+
+  // draw the pos to sNearest vector:
+  window->draw3DLine( pos, Color::Blue, vecSNearest, Color::Blue ) ;
+
+  // draw vector alongRoad:
+  window->draw3DLine( vecSNearest, Color::Magenta,
+    vecSAhead, Color::Magenta ) ;
+
+}
+
+void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
+{
+  // If current curvature is high, that limits
+  // speed.
+
+  // If current curvature is low, and ahead is low,
+  // then you can gun it safely
+  const static double eps = 0.0001 ;
+
+  double absCurv = fabs( sCurvature ) ;
+  double absCurvAhead = fabs( sCurvatureAhead ) ;
+
+  // What reads better?
+  //if( IsNear( sCurvature, 0, eps ) &&
+  //    IsNear( sCurvatureAhead, 0, eps ) )
+
+  
+  if( absCurv < eps &&
+      absCurvAhead < eps )
+  {
+    // Near 0 curvature.  Gun it.
+    CARSIM( throttle ) = 1.0 ;
+    //info( "Flooring it.." ) ;
+  }
+
+
+  // curv now near 0, but ahead, not.
+  // So, we CAN brake now easily
+  else if( absCurv < eps   && 
+           absCurvAhead > 0.01 )
+  {
+    // 0.01 says there's a significant curve ahead
+    driveAt( 80 / 3.6, 5.0 ) ;
+    //info( "Going 80.." ) ;
+  }
+
+
+  else
+  {
+    // We can drive at 60 on almost any curve
+    driveAt( 60 / 3.6, 5.0 ) ;
+    //info( "Going 60" ) ;
+  }
+
+
+
+  // CHECK FOR WHEEL SLIPPAGE
+  // If the wheels are slipping,
+  // back off the accelerator a bit
+  double fslip = fabs( CARSIM(betaSideSlip) ) ;
+  if( fslip > 0.01 )
+  {
+    // Modify throttle by
+    // an amount varying with side slip
+    CARSIM(throttle) -= 10*fslip ;
+    //warning( "Controller detects slip, reducing throttle" ) ;
+  }
+
+  ////////////
+  // CURVATURE AHEAD
+  double diffCurve = fabs( sCurvature - sCurvatureAhead ) ;
+
+  // If curvature ahead is much different
+  // from curvature now, REDUCE SPEED
+  if( diffCurve > 0.1 )
+  {
+    // reduce throttle
+    CARSIM(throttle) = 0.1 ;
+
+    // apply brakes
+    CARSIM(brake) = kAggression*(diffCurve*100)*1e6 ;
+
+    //info( "Sharp curve detected, slowing down" ) ;
+  }
+}
+
+void Car::driveTo( double x, double y, double z, double kAggression )
+{
+  D3DXVECTOR3 pos = getPos() ;
+  D3DXVECTOR3 dest( x,y,z ) ;
+
+  D3DXVECTOR3 posToDest = dest - pos ;
+
+  D3DXVECTOR2 d2PosToDest( posToDest.x, posToDest.y ) ;
+  D3DXVECTOR2 d2Fwd( fwd.x, fwd.y ) ;
+
+  // Try and align "fwd" with 
+  // posToDest.
+  float angleBetween = D3DXVec2AngleBetween( &d2Fwd, &d2PosToDest ) ;
+
+  CARSIM( steeringAngle ) = kAggression*angleBetween ;
+}
+
+/// Drives the car at
+/// a specific speed.
+// kAggression: this gain is the "bravery"
+// with which we approach the speed.  If this
+// gets closer to or exceeds 1.0 then we'll gun it
+//towards wherever we have to go    
+void Car::driveAt( double targetSpeed, double kAggression )
+{
+  // First zero out brakes
+  CARSIM(brake) = 0 ;
+
+  double incrBy = targetSpeed - CARSIM(speedometer) ;
+
+  if( incrBy > 0 )
+  {
+    // need to speed up
+    CARSIM(throttle) = kAggression*incrBy;
+
+    clamp( CARSIM(throttle), 0.0, 0.25 ) ;
+  }
+  else if( incrBy < (-1) ) // should slow down by more than a few units
+  {
+    // Brake a bit
+    CARSIM(brake) = kAggression*7e6 ;
+  }
+}
+

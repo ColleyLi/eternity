@@ -62,6 +62,8 @@ _x_vs_road_y vs_road_y ;
 _x_vs_road_z vs_road_z ;
 _x_vs_road_yaw vs_road_yaw ;
 _x_vs_s_loop vs_s_loop ;
+
+_x_vs_target_heading vs_target_heading ;  // added by ME
 _x_vs_target_l vs_target_l ;
 
 

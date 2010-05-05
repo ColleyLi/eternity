@@ -317,7 +317,7 @@ void Update()
 
 
   // Change fill mode
-  if( window->keyJustPressed( '9' ) )
+  if( window->keyJustPressed( '0' ) )
   {
     DWORD fillMode ;
     DWORD nextFillMode = D3DFILL_SOLID ;
@@ -350,11 +350,12 @@ void Update()
     //window->getCamera()->reset() ;
   }
 
+  // hide the car, debug mode
   if( window->keyJustPressed( 'C' ) )
-  {
-    // hide the car, debug mode
     simWorld->car->hidden = ! simWorld->car->hidden ;
-  }
+
+  if( window->keyJustPressed( '9' ) )
+    simWorld->car->manualControl = !simWorld->car->manualControl ;
 
   if( window->keyJustPressed( 'P' ) )
   {
@@ -595,7 +596,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
 
   // Setup the window
   window = new GameWindow( hInstance, TEXT( "carsim project" ),
-     32, 0, // x pos, y pos
+     32, 32, // x pos, y pos
      800, 600// width, height
   ) ;
 

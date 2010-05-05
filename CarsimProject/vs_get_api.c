@@ -177,6 +177,7 @@ int vs_get_api_road (HMODULE dll, char *dll_fname)
   vs_get_road_start_stop = (_x_vs_get_road_start_stop)GetProcAddress(dll, "vs_get_road_start_stop");
   vs_get_road_xyz = (_x_vs_get_road_xyz)GetProcAddress(dll, "vs_get_road_xyz");
   vs_get_road_contact = (_x_vs_get_road_contact)GetProcAddress(dll, "vs_get_road_contact");
+  vs_target_heading = (_x_vs_target_heading)GetProcAddress(dll, "vs_target_heading"); // added by ME
   vs_target_l = (_x_vs_target_l)GetProcAddress(dll, "vs_target_l");
 
   // Get addresses for VS API functions used to extend a model (since June 2008)

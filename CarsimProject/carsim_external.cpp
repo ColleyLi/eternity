@@ -66,8 +66,8 @@ void external_setdef()
   simWorld->car->csV.theirSteeringAngle = vs_get_var_ptr("STEER_SW");//528 of i_i
   simWorld->car->csV.startTime = vs_get_var_ptr("TSTART");
 
-  simWorld->car->csV.tachAngle = vs_get_var_ptr( "A_TACH" ) ;
-  simWorld->car->csV.speedoAngle = vs_get_var_ptr( "A_SPEEDO" ) ;
+  simWorld->car->csV.tach = vs_get_var_ptr( "A_TACH" ) ;
+  simWorld->car->csV.speedometer = vs_get_var_ptr( "A_SPEEDO" ) ;
 
   simWorld->car->csV.PwrEngAv = vs_get_var_ptr( "PWRENGAV" ) ;
 
@@ -240,90 +240,186 @@ void external_calc(vs_real t, vs_ext_loc where)
     {
       // calculate import variables at the start of a time step
       
+
+
+      // Update the tach positoin etc.
+      // from CarSim state variables.
+      simWorld->car->update( 0.0166 ) ;
+      
+      //"!!CARSIM!!"
+
+// Shorthands
+#define Throttle (*simWorld->car->csV.throttle)
+#define SteeringAngle (*simWorld->car->csV.steeringAngle)
+#define Brake (*simWorld->car->csV.brake)
+#define X (*simWorld->car->csV.x)
+#define Y (*simWorld->car->csV.y)
+#define SPEED (*simWorld->car->csV.speedometer)
+
+#define S (simWorld->car->sNearest)
+#define SA (simWorld->car->sAhead)
+#define SX (simWorld->car->sNearestX)
+#define SY (simWorld->car->sNearestY)
+#define SZ (simWorld->car->sNearestZ)
+#define SAX (simWorld->car->sAheadX)
+#define SAY (simWorld->car->sAheadY)
+#define SAZ (simWorld->car->sAheadZ)
+
+#define CURV (simWorld->car->sCurvature)
+#define CURVA (simWorld->car->sCurvatureAhead) 
+
+#define THEADING (simWorld->car->sTargetHeading)
+#define THEADINGL (simWorld->car->sTargetHeadingL)
+
+#define L (simWorld->car->L)
+
+
+
+
+      /////////////
+      // UPDATE STATE VARIABLES FROM CARSIM
+
+      // How far are we from center?
+      L = vs_road_l( CAR(x), CAR(y) ) ;
+
+      // What is the nearest station to
+      // our car's xyz?
+      S = vs_road_s( X, Y ) ;
+
+      // Where is the nearest x,y,z point
+      // at the center of the road, at our nearest S that we just got?
+      
+      // get x and y of the NEAREST station
+      // when L=0.  This is where the car
+      // is SUPPOSED To be right now.
+      vs_get_road_xyz( S, 0, &SX, &SY, &SZ ) ;
+
+
+      SA = S + Car::sNominalLookAheadAmount * SPEED ; 
+
+      // Find a vector ahead now, and the x,y,z position of that
+      vs_get_road_xyz( SA, 0, &SAX, &SAY, &SAZ ) ;
+
+
+
+      // Get the road curvature here too
+      // The '1' is an indexer property,
+      // which is supposed to help CarSim interpolate
+      // faster.  
+      // because all of our lookups are pretty much right next to
+      // each other in subsequent calls, we could use the
+      // same indexer.  I used 2 though, one for
+      // CURV and one for CURVAHEAD
+      CURV = vs_road_curv_i( S, 1 ) ;
+      CURVA = vs_road_curv_i( SA, 2 ) ;
+
+      THEADING = vs_target_heading( S ) ; // not used
+      THEADINGL = vs_target_l( S ) ; // not used
+
+      ////////////////
       // UPDATE CARSIM
       // Compute what impetus should be
       // on the car gas, brake, and steering wheel
       // and push those updates to carsim
-      simWorld->car->update( 0.0166 ) ;
 
-
-      // Shorthands
-      #define Throttle (*simWorld->car->csV.throttle)
-      #define S (simWorld->car->sNearest)
-      #define L (simWorld->car->L)
-      #define SteeringAngle (*simWorld->car->csV.steeringAngle)
-      #define X (*simWorld->car->csV.x)
-      #define Y (*simWorld->car->csV.y)
-
-
-      // double vs_road_l(double x, double y);
-      // How far are we from center?
-      L = vs_road_l( CAR(x), CAR(y) ) ;
-      // -L means right of center line
-      // +L means left of center line
-
-      // -steering is steering right
-      // +steering is steering left.
-
-
-
-      // What's the road curvature?
-
-      
-
-      // Only if on course
-      if( simWorld->car->courseState == Car::OnCourse )
+      // ARE WE ON AUTOMATIC OR MANUAL CONTROL?
+      if( simWorld->car->manualControl )
       {
-        // Compute and write steering angle to use
-        SteeringAngle = - 0.25*L ;
+        // We're done here.. no control to do
+        break;
+      }
+      else // AUTOMATIC CONTROL
+      {
 
-        // Steering angle must be clamped of course
-        clamp( SteeringAngle, -6, 6 ) ;
+        // +L means left of center line
+        // -L means right of center line
+       
+        // +steering is steering left (CCW)
+        // -steering is steering right (CW)
+        
 
 
-        /*
-        // How far is L?  Vary throttle with size of L.
-        Throttle = 1.0 - L ;
-        clamp( Throttle, 0.0, 1.0 ) ;
-        */
-        simWorld->car->driveAt( 60/3.6, 0.75 ) ; // meters per second
+        // DETERMINE IF WE ARE ON OR OFF COURSE.
+        if( fabs( L ) > 4 ) // Too far from center line to recover.
+          simWorld->car->courseState = Car::OffCourse ;
+        else
+          simWorld->car->courseState = Car::OnCourse ;
+
+        
+
+        // Only if on course, we gun it basically.
+        if( simWorld->car->courseState == Car::OnCourse )
+        {
+          // Compute and write steering angle to use
+          
+
+          /*
+          // How far is L?  Vary throttle with size of L.
+          Throttle = 1.0 - L ;
+          clamp( Throttle, 0.0, 1.0 ) ;
+          */
+
+          
+          simWorld->car->driveAtMaxSpeedForCurvSAndCurvAS( 1.0 ) ;
+          //simWorld->car->driveAt( 60 / 3.6, 0.2 ) ; // meters per second
+
+
+          //SteeringAngle = - 0.15*L ; //!! BAD!! too light,
+          // doens't lookahead.
+          simWorld->car->driveTo( SAX, SAY, SAZ, 6.2 ) ;
+        } // END ON COURSE
+        else  // OFF COURSE
+        {
+          // How do we get back to the road
+          // if we've fallen off?
+          // First of all, take it slow when recovering.
+          simWorld->car->driveAt( 20 / 3.6, 0.75 ) ; // probably make proportional
+          // to error
+
+
+          // RECOVERY:
+          // How do you point the car directly
+          // at the road?
+
+          // Give it an XYZ to aim for.
+
+          // We must know what S we are at,
+          // musn't we?
+
+          // Aggression controls overshoot
+          // really the gain is adjustable
+          // depending on how far off course
+          // we get.  VARY WITH L?
+          // Drive to the center of the road.
+          simWorld->car->driveTo( SX, SY, SZ, 1.2 ) ;
+        } // END OFF COURSE
+
       }
 
 
 
+      // CLAMPS
+      // Steering angle must be clamped of course
+      // to the physical limits.  Its too bad CarSim
+      // doesn't enforce this, but hey.
+      clamp( SteeringAngle, -Car::steeringWheelMaxR, Car::steeringWheelMaxR ) ;
+      clamp( Throttle, 0, 1 ) ;
 
-      simWorld->car->sNearest = vs_road_s( X, Y ) ;
-
-      // How do we get back to the road
-      // if we've fallen off?
-      // How do you point the car directly
-      // at the road?
-      if( fabs( L ) > 4 )
+      // NONE OF THE INPUTS MAY BE NAN!!
+      if( IsNaN( SteeringAngle ) )
       {
-        // Too far from center line to recover.
-        simWorld->car->courseState = Car::OffCourse ;
-
-
-
-        // Give it an XYZ to aim for.
-
-        // We must know what S we are at,
-        // musn't we?
-
-        // get x and y of the station
-        // when L=0
-        double sx, sy, sz ;
-        vs_get_road_xyz( S, 0, &sx, &sy, &sz ) ;
-
-        // Aggression controls overshoot
-        // really the gain is adjustable
-        // depending on how far off course
-        // we get.  VARY WITH L?
-        simWorld->car->driveTo( sx, sy, sz, 1.2 ) ;
+        error("ERROR!  STEERING ANGLE WAS NAN!" ) ;
+        SteeringAngle = 0 ;
       }
-      else
+      if( IsNaN( Throttle ) )
       {
-        simWorld->car->courseState = Car::OnCourse ;
+        error("ERROR!  Throttle WAS NAN!" ) ;
+        Throttle = 0 ;
+      }
+      if( IsNaN( Brake ) )
+      {
+        error("ERROR!  Brake WAS NAN!" ) ;
+        Brake = 0 ;
       }
     }
 
