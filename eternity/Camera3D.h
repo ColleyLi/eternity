@@ -125,6 +125,11 @@ public:
     D3DXVec3Normalize( &forward, &forward ) ;
   }
 
+  D3DXVECTOR3 getForward()
+  {
+    return forward ;
+  }
+
   D3DXVECTOR3 getUp()
   {
     return up ;

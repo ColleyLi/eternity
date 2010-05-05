@@ -48,6 +48,13 @@ public:
   /// to complete each lap around the track.
   vector<double> lapTimes ;
 
+  /// Cached string with laptimes
+  /// saved in it
+  char lapTimesString[ 1024 ] ;
+
+  /// The time you started this lap.
+  double lapStartTime ;
+
   /// Cached value.  More than one thing uses this,
   /// computed once per step in update()
   double rpmNormalized ;
@@ -57,6 +64,12 @@ public:
   /// LEFT of centerline is + value,
   /// RIGHT of centerline is - value.
   double L ;
+
+  D3DXVECTOR3 pos, vel ;
+
+  /// Value of s for last frame.
+  /// used for detecting if you made a lap or not.
+  double sLast ;
 
   /// Nearest station to us
   /// given our X, Y, by vs_road_s()
@@ -115,6 +128,12 @@ public:
   /// Set to true when
   /// vehicle has diverted from course
   VehicleCourseState courseState ;
+
+  enum VehicleSlipState
+  {
+
+  } ;
+  VehicleSlipState slipState ;
 
   /// The maximum rotation the steering wheel
   /// will go.  We clamp the steering wheel
@@ -181,8 +200,8 @@ public:
            *timeStep,
            
 
-           roadSStart,
-           roadSEnd,
+           sStart,
+           sEnd,
            *startTime      // start time
     ;
 //not working, crashes the simulator
@@ -235,6 +254,8 @@ public:
   /// as a vector
   D3DXVECTOR3 getPos() ;
 
+  D3DXVECTOR3 getVel() ;
+
   /// Gets you the vector that points forward
   /// to the vehicle now.
   D3DXVECTOR3 getFwd() ;
@@ -263,11 +284,12 @@ public:
   /// curvature@S and curvature@AS
   void driveAtMaxSpeedForCurvSAndCurvAS( double kAggression ) ;
 
-  /// Drives the car to
+  /// Alters STEERING ANGLE to drive the car to
   /// a specific location.
   /// @param kAggression is how aggressively we
   /// correct error -- in other words, the
-  /// gain.  The steering value is clamped
+  /// gain.  You must clamp the steering wheel
+  /// to realistic limits after you run this, 
   /// so the wheel doesn't go.. "all the way around"
   void driveTo( double x, double y, double z, double kAggression ) ;
 
@@ -278,6 +300,8 @@ public:
   /// gets closer to or exceeds 1.0 then we'll gun it
   /// towards wherever we have to go    
   void driveAt( double targetSpeed, double kAggression ) ;
+
+  int getNumLaps() ;
 } ;
 
 #endif

@@ -40,6 +40,20 @@ void GameWindow::step()
 
   inputManStep() ;
 
+
+  //!! is this the best place for this?
+  // You must need to update the
+  // listener position in FMOD as well.
+  FMOD_VECTOR v;
+  v.x=v.y=v.z=0;
+  setListener(
+    (FMOD_VECTOR*)(&camera.getEye()),
+    &v,
+    (FMOD_VECTOR*)(&camera.getForward()),
+    (FMOD_VECTOR*)(&camera.getUp())
+    ) ;
+
+
   soundStep();
 
   // Advance sprite animations.
@@ -407,6 +421,8 @@ void GameWindow::draw3DObjects()
     ) ;
 
     DX_CHECK( hr, "flush3D: DrawPrimitiveC" ) ;
+
+    //printf( "There are %d lines\n", linesC.size() ) ;
 
     /////
     // NOW CLEAR THE LINES

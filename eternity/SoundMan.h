@@ -65,6 +65,12 @@ protected:
   void initSoundMan() ;
 
   void soundStep() ;
+
+  void setListener( 
+    FMOD_VECTOR *pos,
+    FMOD_VECTOR *vel,
+    FMOD_VECTOR *fwd,
+    FMOD_VECTOR *up ) ;
   void soundPause() ;
   void soundUnpause() ;
 
@@ -84,6 +90,8 @@ public:
   /// Gets you the FMOD_SOUND* pointer
   /// in case you want it
   FMOD_SOUND* getSound( int soundId ) ;
+
+  FMOD_CHANNEL* getFmodChannel( int soundId ) ;
 
   bool isPlaying( int soundId ) ;
 
@@ -109,7 +117,12 @@ public:
   /// to loop a sound infinitely
   void loopSound( int soundId, int loopCount = FMOD_LOOP_FOREVER ) ;
 
-  FMOD_CHANNEL* getFmodChannel( int soundId ) ;
+
+  void setSoundPosition(
+    int soundId,
+    FMOD_VECTOR *pos,
+    FMOD_VECTOR *vel ) ;
+
 
   /// Channel callback
   static FMOD_RESULT F_CALLBACK channelEndCallback(

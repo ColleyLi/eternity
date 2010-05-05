@@ -496,6 +496,7 @@
   - Added ability to draw lines
   - (yesterday) added ability to createQuadVC, VTC
   - Finished autonomous vehicle controller
+  - Added 3d sound
   
   - TODO:
     - DOXYGEN-ATE all files

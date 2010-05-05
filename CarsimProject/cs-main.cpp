@@ -185,13 +185,13 @@ void Init()
   window->loadSprite( TachBack, ASSET( "sprites/tach-back-3.png" ) ) ;
   window->loadSprite( SteeringWheel, ASSET( "sprites/steering-white.png" ) ) ;
 
-  window->loadSound( Screech, ASSET("sounds/Generic-Tire-01_Skid-01.wav") ) ;
+  window->loadSound( Screech, ASSET("sounds/Generic-Tire-01_Skid-01.wav"), FMOD_3D ) ;
 
-  window->loadSound( EngineLowIn, ASSET("sounds/Generic_Engine_01_L4_2.4L_0.0_Load_02_Low_RPM.WAV") ) ;
-  window->loadSound( EngineLowOut, ASSET("sounds/Generic_Engine_01_L4_2.4L_1.0_Load_02_Low_RPM.WAV") ) ;
+  window->loadSound( EngineLowIn, ASSET("sounds/Generic_Engine_01_L4_2.4L_0.0_Load_02_Low_RPM.WAV"), FMOD_3D) ;
+  window->loadSound( EngineLowOut, ASSET("sounds/Generic_Engine_01_L4_2.4L_1.0_Load_02_Low_RPM.WAV"), FMOD_3D ) ;
   
-  window->loadSound( EngineMidIn, ASSET("sounds/Generic_Engine_02_L4_2.4L_0.0_Load_03_Mid_RPM.WAV") ) ;
-  window->loadSound( EngineMidOut, ASSET("sounds/Generic_Engine_02_L4_2.4L_1.0_Load_03_Mid_RPM.WAV") ) ;
+  window->loadSound( EngineMidIn, ASSET("sounds/Generic_Engine_02_L4_2.4L_0.0_Load_03_Mid_RPM.WAV"), FMOD_3D ) ;
+  window->loadSound( EngineMidOut, ASSET("sounds/Generic_Engine_02_L4_2.4L_1.0_Load_03_Mid_RPM.WAV"), FMOD_3D ) ;
 
 
   window->loopSound( EngineMidIn ) ;

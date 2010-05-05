@@ -23,10 +23,12 @@ void SoundMan::initSoundMan()
   }
 
   info( "Initializing fmod with %d channels . . .", fmodMaxChannels ) ;
-  FMOD_ErrorCheck( FMOD_System_Init( fmodSys, fmodMaxChannels, FMOD_INIT_NORMAL, NULL ) ) ;
+  FMOD_ErrorCheck( FMOD_System_Init(
+    fmodSys, fmodMaxChannels, FMOD_INIT_NORMAL | FMOD_INIT_3D_RIGHTHANDED,
+    NULL ) ) ;
 
 
-
+  //FMOD_System_Set3DSettings( fmodSys, 1.0f, 1.0f, 1.0f ) ;
 
 
   /*
@@ -211,6 +213,25 @@ void SoundMan::soundStep()
   FMOD_ErrorCheck( FMOD_System_Update( fmodSys ) ) ;
 }
 
+void SoundMan::setSoundPosition( int soundId, FMOD_VECTOR *pos, FMOD_VECTOR *vel )
+{
+  FMOD_CHANNEL* channel = getFmodChannel( soundId ) ;
+
+  if( channel )
+    FMOD_Channel_Set3DAttributes( channel, pos, vel ) ;
+  else
+    warning( "Can't set position: Sound `%d` is not playing right now", soundId ) ;
+}
+
+void SoundMan::setListener(
+  FMOD_VECTOR *pos,
+  FMOD_VECTOR *vel,
+  FMOD_VECTOR *fwd,
+  FMOD_VECTOR *up )
+{
+  FMOD_System_Set3DListenerAttributes( fmodSys, 0, pos, vel, fwd, up ) ;
+}
+
 void SoundMan::soundPause()
 {
   foreach( ChannelMultimapIter, channelIter, fmodChannels )
@@ -232,7 +253,13 @@ void SoundMan::loadSound( int soundId, char * filename, int options )
   FMOD_SOUND *newSound ;
   
   // Load the sound
-  bool success = FMOD_ErrorCheck( FMOD_System_CreateSound( fmodSys, filename, FMOD_SOFTWARE | options, 0, &newSound ) ) ;
+  bool success = FMOD_ErrorCheck(
+    FMOD_System_CreateSound(
+    // !! Too often effects don't work on
+    // target pc's with crummy sound cards.
+    // We should check the card's caps
+    // before setting.
+    fmodSys, filename, FMOD_SOFTWARE | options, 0, &newSound ) ) ;
 
   if( !success )
   {
@@ -270,6 +297,36 @@ FMOD_SOUND* SoundMan::getSound( int soundId )
     warning( "Sound id=%d doesn't exist, you get NULL", soundId ) ;
 
   return sound ;
+}
+
+/// !!TEMPORARYAR FUNCTION
+FMOD_CHANNEL* SoundMan::getFmodChannel( int soundId )
+{
+  ChannelMultimapIter channelIter = fmodChannels.begin();
+
+  while( channelIter != fmodChannels.end() )
+  {
+    if( channelIter->first == soundId )
+    {
+      //!! due to ANOTHER bug which I 
+      // could'nt root out earlier just because
+      // a sound is prsent in this map doesn't/
+      // mean its playing.. also check isPlaying
+      // prpoerty of the channel
+      FMOD_BOOL playing ;
+      FMOD_Channel_IsPlaying( channelIter->second, &playing ) ;
+      if( playing )
+      {
+        // this is the channel you wanted 
+        return channelIter->second ;
+      }
+    }
+
+    ++channelIter ;
+  }
+  
+  // no channel
+  return NULL ;
 }
 
 bool SoundMan::isPlaying( int soundId )
@@ -476,36 +533,6 @@ void SoundMan::loopSound( int soundId, int loopCount )
   // ^^This causes a problem for FMOD_CREATESTREAM loaded
   // sounds
 
-}
-
-/// !!TEMPORARYAR FUNCTION
-FMOD_CHANNEL* SoundMan::getFmodChannel( int soundId )
-{
-  ChannelMultimapIter channelIter = fmodChannels.begin();
-
-  while( channelIter != fmodChannels.end() )
-  {
-    if( channelIter->first == soundId )
-    {
-      //!! due to ANOTHER bug which I 
-      // could'nt root out earlier just because
-      // a sound is prsent in this map doesn't/
-      // mean its playing.. also check isPlaying
-      // prpoerty of the channel
-      FMOD_BOOL playing ;
-      FMOD_Channel_IsPlaying( channelIter->second, &playing ) ;
-      if( playing )
-      {
-        // this is the channel you wanted 
-        return channelIter->second ;
-      }
-    }
-
-    ++channelIter ;
-  }
-  
-  // no channel
-  return NULL ;
 }
 
 

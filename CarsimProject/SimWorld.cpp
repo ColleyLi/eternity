@@ -91,7 +91,7 @@ SimWorld::SimWorld()
 
   */
 
-
+// colorful
   window->createQuadVTC(
 
     Sprites::SixteenCounter,
@@ -99,17 +99,18 @@ SimWorld::SimWorld()
     VertexTC(-limits, -limits, z, 0, 1 ),
     VertexTC( limits, -limits, z, 1, 1 ),
     VertexTC( limits,  limits, z, 1, 0 )
-
-
-    /*
-    VertexC( limits,  limits, z, 128, 128, 128 ),
-    VertexC(-limits,  limits, z, 128, 128, 128 ),
-    VertexC(-limits, -limits, z, 128, 128, 128 ),
-    VertexC( limits, -limits, z,  78,  78,  78 )
-    */
+    
   ) ;
-
-
+  
+/*
+// Solid green grass
+  window->createQuadVC(
+    VertexC(-limits,  limits, z, 0, 128, 9 ),
+    VertexC(-limits, -limits, z, 0, 128, 9 ),
+    VertexC( limits, -limits, z, 0, 128, 9 ),
+    VertexC( limits,  limits, z, 0, 128, 9 )
+  );
+*/
 }
 
 SimWorld::~SimWorld()

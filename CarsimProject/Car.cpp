@@ -8,6 +8,11 @@ Car::Car()
   hidden = false ;
 
   manualControl = false ; // start with automatic control on
+
+  lapStartTime = 0.0 ;
+  sLast = sNearest = 0.0 ;
+
+  sprintf( lapTimesString, "First lap" ) ;
 }
 
 Car::~Car()
@@ -125,6 +130,8 @@ void Car::update( double timeSinceLastFrame )
   double rpmMax = 800 ;
   double rpmMin = 75 ;
 
+  // Sound
+
   // scale the thing from 0.5 at low speed 75 rpm
   // to 2.0 at 800 rpm
 
@@ -132,6 +139,8 @@ void Car::update( double timeSinceLastFrame )
   double rpmScale = 0.5 + (2.0-0.5)*rpmNormalized ;
 
   window->setPitchShift( rpmScale ) ;
+  window->setSoundPosition( EngineMidIn, (FMOD_VECTOR*)&pos, (FMOD_VECTOR*)&vel ) ;
+  window->setSoundPosition( Screech, (FMOD_VECTOR*)&pos, (FMOD_VECTOR*)&vel ) ;
 
   if( fabs(CARSIM(betaSideSlip)) > 0.5 )
   {
@@ -162,7 +171,7 @@ void Car::drawDebug()
   // a line from origin to here
   window->draw3DLine(
     D3DXVECTOR3(0,0,0), Color::Yellow,
-    getPos(), Color::Yellow ) ;
+    pos, Color::Yellow ) ;
 
 
   
@@ -220,17 +229,25 @@ void Car::drawStats()
   */
 
   /*
-  sprintf( buf, "power: %.2f tach: %.2f speedo: %.2f side-slip: %.2f",
-    CARSIM( PwrEngAv ),
+  sprintf( buf, "power: %.2f tach: %.2f",
     CARSIM( tachAngle ),
-    CARSIM( speedoAngle ),
-    CARSIM( betaSideSlip )
+    CARSIM( speedoAngle )
   ) ;
   window->drawString(
     Arial16, buf, color,
     20, y+=20, 600, 600,
     DT_LEFT | DT_TOP ) ;
   */
+
+  sprintf( buf, "slip=%.2f powerAv=%.2f",
+    CARSIM( betaSideSlip ),
+    CARSIM( PwrEngAv )
+  ) ;
+  window->drawString(
+    Arial16, buf, color,
+    20, y+=20, 600, 600,
+    DT_LEFT | DT_TOP ) ;
+
 
   window->drawString(
     Arial16,
@@ -292,16 +309,23 @@ void Car::drawStats()
 
 
 
-  // print the toDest and inFront vectors
+  /*
   sprintf( buf, "angle: %.2f posToSNearest (%.2f, %.2f, %.2f)",
       angleBetweenFwdAndSNearest, 
       PVEC( posToSNearest )
     ) ;
-    window->drawString(
-      Arial16, buf, Color::Red,
-      20, y+=20, 600, 600,
-      DT_LEFT | DT_TOP ) ;
+  window->drawString(
+    Arial16, buf, Color::Red,
+    20, y+=20, 600, 600,
+    DT_LEFT | DT_TOP ) ;
+  */
   
+  
+  window->drawString(
+    Arial16, lapTimesString, Color::Yellow,
+    20, y+=20, 600, 600,
+    DT_LEFT | DT_TOP ) ;
+
 
   #pragma endregion
 
@@ -393,9 +417,14 @@ void Car::drawStats()
   float percMax = CARSIM(steeringAngle)/steeringWheelMaxR ;
   // +1 to the left, -1 to the right.
   
-  BYTE bMax = fabs(percMax) * 255 ;
+  BYTE bMax = abs(percMax*255) ;
   
-  D3DCOLOR wheelColor = D3DCOLOR_ARGB( 180, bMax, 0, 0 ) ;
+  // Red is left, blue is right
+  D3DCOLOR wheelColor = D3DCOLOR_ARGB( 180,
+    percMax>0 ? bMax:0,
+    0,
+    percMax<0 ? bMax:0
+  ) ;
   // Draw the steering wheel, right next to the tach
   window->drawSprite( SteeringWheel, tcC.x - 100,
                       tcC.y, 100, 100, -DEGREES( CARSIM(steeringAngle) ),
@@ -656,6 +685,10 @@ D3DXVECTOR3 Car::getPos()
   return D3DXVECTOR3( CARSIM(x), CARSIM(y), CARSIM(z) ) ;
 }
 
+D3DXVECTOR3 Car::getVel()
+{
+  return D3DXVECTOR3( CARSIM(vx), CARSIM(vy), CARSIM(vz) ) ;
+}
 
 
 D3DXVECTOR3 Car::getFwd()
@@ -706,9 +739,53 @@ void Car::setNormSteering( double val )
 
 void Car::updateAutomaticControlValues()
 {
-  D3DXVECTOR3 pos = getPos() ;
+  pos = getPos() ;
+  vel = getVel() ;
   vecSNearest = D3DXVECTOR3( sNearestX, sNearestY, sNearestZ ) ;
   vecSAhead   = D3DXVECTOR3( sAheadX, sAheadY, sAheadZ ) ;
+
+  double sDifference = sLast - sNearest ;
+
+  // If difference is near (at least 90% of sEnd) for whole track
+  // then its a lap
+  
+  // To prevent cheating (by crossing back and
+  // forth over the finish line) we'd keep
+  // (negative count) crosses backwards over the finish line.
+  static int negativeCrosses = 0 ;
+  if( sDifference < csV.sEnd * -0.9 )
+  {
+    negativeCrosses++ ;
+    info( "Cheater." ) ;
+  }
+  if( sDifference > csV.sEnd * 0.9 )
+  {
+    if( negativeCrosses )
+    {
+      negativeCrosses--;
+    }
+    else
+    {
+      // He made a lap
+      double now = window->getTimeElapsedSinceGameStart() ;
+
+      double lapTime = now - lapStartTime ;
+      lapTimes.push_back( lapTime ) ;
+
+      // Start next lap
+      lapStartTime = now ;
+
+
+      // Redo the lapTimes string
+      int cw = 0 ;
+      cw += sprintf( lapTimesString+cw, "Laps " ) ;
+      for( int i = 0 ; i < getNumLaps() && cw < 800 ; i++ )
+        cw += sprintf( lapTimesString+cw, "%d=%.2f ",
+        (i+1), lapTimes[i] ) ;
+    }
+
+  }
+  sLast = sNearest ;
 
   alongRoad = vecSAhead - vecSNearest ;
 
@@ -770,8 +847,6 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
   // What reads better?
   //if( IsNear( sCurvature, 0, eps ) &&
   //    IsNear( sCurvatureAhead, 0, eps ) )
-
-  
   if( absCurv < eps &&
       absCurvAhead < eps )
   {
@@ -780,7 +855,6 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
     //info( "Flooring it.." ) ;
   }
 
-
   // curv now near 0, but ahead, not.
   // So, we CAN brake now easily
   else if( absCurv < eps   && 
@@ -788,7 +862,7 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
   {
     // 0.01 says there's a significant curve ahead
     driveAt( 80 / 3.6, 5.0 ) ;
-    //info( "Going 80.." ) ;
+    // Original value: 80
   }
 
 
@@ -796,7 +870,7 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
   {
     // We can drive at 60 on almost any curve
     driveAt( 60 / 3.6, 5.0 ) ;
-    //info( "Going 60" ) ;
+    // original value: 60
   }
 
 
@@ -809,7 +883,7 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
   {
     // Modify throttle by
     // an amount varying with side slip
-    CARSIM(throttle) -= 10*fslip ;
+    CARSIM(throttle) -= 1.5*fslip ; // 10*fslip
     //warning( "Controller detects slip, reducing throttle" ) ;
   }
 
@@ -829,11 +903,20 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
 
     //info( "Sharp curve detected, slowing down" ) ;
   }
+
+
+  /*
+  // CONSIDER:  
+  // How far is L?  Vary throttle with size of L.
+  // This doesn't always make sense to do however,
+  // just because you're not center-line doesn't mean
+  // driving isn't going fine
+  */
 }
 
 void Car::driveTo( double x, double y, double z, double kAggression )
 {
-  D3DXVECTOR3 pos = getPos() ;
+  pos = getPos() ;
   D3DXVECTOR3 dest( x,y,z ) ;
 
   D3DXVECTOR3 posToDest = dest - pos ;
@@ -841,8 +924,7 @@ void Car::driveTo( double x, double y, double z, double kAggression )
   D3DXVECTOR2 d2PosToDest( posToDest.x, posToDest.y ) ;
   D3DXVECTOR2 d2Fwd( fwd.x, fwd.y ) ;
 
-  // Try and align "fwd" with 
-  // posToDest.
+  // Try and align "fwd" with posToDest.
   float angleBetween = D3DXVec2AngleBetween( &d2Fwd, &d2PosToDest ) ;
 
   CARSIM( steeringAngle ) = kAggression*angleBetween ;
@@ -866,7 +948,9 @@ void Car::driveAt( double targetSpeed, double kAggression )
     // need to speed up
     CARSIM(throttle) = kAggression*incrBy;
 
-    clamp( CARSIM(throttle), 0.0, 0.25 ) ;
+    clamp( CARSIM(throttle), 0.0, 0.25 ) ; // had 0.25 cap,
+    // but that juts means kAggression was too high
+    // (and that was before I checked betaSideSlip)
   }
   else if( incrBy < (-1) ) // should slow down by more than a few units
   {
@@ -875,3 +959,7 @@ void Car::driveAt( double targetSpeed, double kAggression )
   }
 }
 
+int Car::getNumLaps()
+{
+  return lapTimes.size() ;
+}

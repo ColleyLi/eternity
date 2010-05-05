@@ -128,8 +128,8 @@ void external_calc(vs_real t, vs_ext_loc where)
         info( "ROAD START: %lf, END: %lf", sStart, sEnd );
 
         // Store these s values off.
-        simWorld->car->csV.roadSStart = sStart ;
-        simWorld->car->csV.roadSEnd = sEnd ;
+        simWorld->car->csV.sStart = sStart ;
+        simWorld->car->csV.sEnd = sEnd ;
 
         if( ! sEnd && ! sStart )
         {
@@ -340,7 +340,7 @@ void external_calc(vs_real t, vs_ext_loc where)
 
 
         // DETERMINE IF WE ARE ON OR OFF COURSE.
-        if( fabs( L ) > 4 ) // Too far from center line to recover.
+        if( fabs( L ) > 8 ) // Too far from center line to recover.
           simWorld->car->courseState = Car::OffCourse ;
         else
           simWorld->car->courseState = Car::OnCourse ;
@@ -352,28 +352,20 @@ void external_calc(vs_real t, vs_ext_loc where)
         {
           // Compute and write steering angle to use
           
+          double kONCourseMaxSpeedDrive = 1.0 ;
+          simWorld->car->driveAtMaxSpeedForCurvSAndCurvAS( kONCourseMaxSpeedDrive ) ;
 
-          /*
-          // How far is L?  Vary throttle with size of L.
-          Throttle = 1.0 - L ;
-          clamp( Throttle, 0.0, 1.0 ) ;
-          */
-
-          
-          simWorld->car->driveAtMaxSpeedForCurvSAndCurvAS( 1.0 ) ;
-          //simWorld->car->driveAt( 60 / 3.6, 0.2 ) ; // meters per second
-
-
-          //SteeringAngle = - 0.15*L ; //!! BAD!! too light,
-          // doens't lookahead.
-          simWorld->car->driveTo( SAX, SAY, SAZ, 6.2 ) ;
+          double kONCourseSteer = 6.2 ;
+          simWorld->car->driveTo( SAX, SAY, SAZ, kONCourseSteer ) ;
         } // END ON COURSE
         else  // OFF COURSE
         {
           // How do we get back to the road
           // if we've fallen off?
           // First of all, take it slow when recovering.
-          simWorld->car->driveAt( 20 / 3.6, 0.75 ) ; // probably make proportional
+          double kOFFCourseSpeedDrive = 0.75 ;
+          simWorld->car->driveAt( 20 / 3.6, kOFFCourseSpeedDrive ) ;
+          // probably make proportional
           // to error
 
 
@@ -391,7 +383,8 @@ void external_calc(vs_real t, vs_ext_loc where)
           // depending on how far off course
           // we get.  VARY WITH L?
           // Drive to the center of the road.
-          simWorld->car->driveTo( SX, SY, SZ, 1.2 ) ;
+          double kOFFCourseSteer = 1.2 ;
+          simWorld->car->driveTo( SX, SY, SZ, kOFFCourseSteer ) ;
         } // END OFF COURSE
 
       }
