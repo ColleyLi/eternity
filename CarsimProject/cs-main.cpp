@@ -71,18 +71,15 @@ int carsimUpdate()
   // Run. Each loop advances time one full step.
   //while(!vs_stop_run()) // don't stay locked in here
 
-  // CarSim 1000 FPS:  cannot be reduced without
+  // CarSim 960 FPS:  cannot be reduced without
   // affecting accuracy of simulation.  Run
   // CarSim 16 times per frame, then.
-  for( int i = 0 ; i < 16; i++ )
+  
+  // can speed up step
+  // 16 iterations per step, can be
+  // modified by simWorld->car->simStepsFrame
+  for( int it = 0 ; it < simWorld->car->simStepsFrame*16; it++ )
     vs_integrate( &t, NULL );
-
-  /// THIS WAY LETS US SET THE VALUE OF TIME..
-  // !! but it doesn't work either.
-  //vs_integrate_io( window->getTimeElapsedSinceGameStart(), 0, 0 ) ;
-
-
-  //printf( "Time is %f\n", t ) ;
 
   // Check for errors every time step
   if( vs_error_occurred() )
@@ -193,13 +190,10 @@ void Init()
   window->loadSound( EngineMidIn, ASSET("sounds/Generic_Engine_02_L4_2.4L_0.0_Load_03_Mid_RPM.WAV"), FMOD_3D ) ;
   window->loadSound( EngineMidOut, ASSET("sounds/Generic_Engine_02_L4_2.4L_1.0_Load_03_Mid_RPM.WAV"), FMOD_3D ) ;
 
-
   window->loopSound( EngineMidIn ) ;
-
   FMOD_CHANNEL *c = window->getFmodChannel( EngineMidIn ) ;
 
   window->createPitchShiftToChannel( c ) ;
-  
   
   
 
@@ -350,6 +344,9 @@ void Update()
     //window->getCamera()->reset() ;
   }
 
+  if( window->keyJustPressed( VK_OEM_4 ) ) // VK_OEM_4 is [{
+    simWorld->car->drawDebugLines = ! simWorld->car->drawDebugLines ;
+
   // hide the car, debug mode
   if( window->keyJustPressed( 'C' ) )
     simWorld->car->hidden = ! simWorld->car->hidden ;
@@ -362,13 +359,36 @@ void Update()
     window->screenshot() ;
   }
 
-
   if( window->keyJustPressed( VK_ESCAPE ) )
   {
     // pop to tld
     while( window->cdPop() ) ;
 
     __RUNNING__ = false ;
+  }
+
+  // Increase number of sim steps per frame
+  if( window->keyJustPressed( VK_OEM_PLUS ))
+  {
+    if( simWorld->car->simStepsFrame > 0.99 )
+      simWorld->car->simStepsFrame++ ; // still integral value
+    else
+      simWorld->car->simStepsFrame *= 2.0 ;
+
+    clamp( simWorld->car->simStepsFrame, 1.0/16.0, 25.0 ) ;
+  }
+
+  // decrease number of sim steps per frame
+  if( window->keyJustPressed( VK_OEM_MINUS ) ||
+      window->keyIsPressed( VK_BACK ) )
+  {
+    if( simWorld->car->simStepsFrame > 1.01 )
+      simWorld->car->simStepsFrame-- ; // still integral value
+    else
+      simWorld->car->simStepsFrame /= 2.0 ;
+
+    // Clamp limits
+    clamp( simWorld->car->simStepsFrame, 1.0/16.0, 25.0 ) ;
   }
 
   if( window->keyJustPressed( 'R' ) )
@@ -391,9 +411,11 @@ void Update()
   // the carsim simulator by one frame.
   carsimUpdate() ;
 
-  //!! DO NOT CALL THIS HERE.
-  // Let CarSim call it.
-  ///simWorld->car->update( window->getTimeElapsedSinceLastFrame() ) ;
+  // Update lap time
+  simWorld->car->lapTime += window->getTimeElapsedSinceLastFrame() *
+    simWorld->car->simStepsFrame ;
+
+
   
 
 
@@ -576,7 +598,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLin
   // Setup a console
   consoleCreate() ;
   consoleWhite() ;
-  consoleMove( 32, 510 ) ;
+  consoleMove( 32, 610 ) ;
   consoleRowsAndCols( 10, 120 ) ;
 
   // Start up the log.

@@ -36,13 +36,26 @@ public:
   /// The car is hidden
   /// from view used for debug
   bool hidden ;
+
+  /// Whether to draw the angle / force
+  /// steering debug lines or not
+  bool drawDebugLines ;
   #pragma endregion
+
+  /// Make simulation run faster
+  /// by increasing this value
+  double simStepsFrame ;
 
   /// A control to override automatic
   /// or manual vehicle control
   bool manualControl ;
 
   #pragma region sim helper values
+
+  /// running count of lapTime.
+  /// If increase simStepsFrame,
+  /// this value is multiplied as well.
+  double lapTime ;
 
   /// Count of seconds it took
   /// to complete each lap around the track.
@@ -51,9 +64,6 @@ public:
   /// Cached string with laptimes
   /// saved in it
   char lapTimesString[ 1024 ] ;
-
-  /// The time you started this lap.
-  double lapStartTime ;
 
   /// Cached value.  More than one thing uses this,
   /// computed once per step in update()
@@ -67,6 +77,10 @@ public:
 
   D3DXVECTOR3 pos, vel ;
 
+  /// The target speed we should be travelling at now,
+  /// usually based on value returned by "getMaxSpeedForCurve"
+  double speedTarget ;
+
   /// Value of s for last frame.
   /// used for detecting if you made a lap or not.
   double sLast ;
@@ -78,6 +92,11 @@ public:
   /// Computed value of sNearest + (some lookahead,
   /// usually 5).  sAhead to use should depend on SPEED!!
   double sAhead ;
+  
+  /// A secondary lookahead that is
+  /// twice as far as sAhead.  It is
+  /// used to detect curves coming up.
+  double sFarAhead ;
 
   /// The nearest x,y,z location
   /// at the nearest station
@@ -87,8 +106,8 @@ public:
   /// The AHEAD x,y,z on the road
   /// that we should be aiming the
   /// car towards.
-  double sAheadX, sAheadY, sAheadZ ;
-  D3DXVECTOR3 vecSAhead ;
+  double sAheadX, sAheadY, sAheadZ, sFarAheadX, sFarAheadY, sFarAheadZ ;
+  D3DXVECTOR3 vecSAhead, vecSFarAhead ;
 
   /// Measurement of road curvature.
   /// Relatively small values,
@@ -96,11 +115,19 @@ public:
   /// curvature left is +
   double sCurvature ;
 
+  /// Keep track of this for
+  /// observation purposes
+  double sCurvatureMaxSoFar ;
+
   /// Measure of road curv AHEAD.
   /// Large difference between curve now
   /// and curve ahead means SLOW DOWN,
   /// esp sign variation
   double sCurvatureAhead ;
+
+  /// Looking farther ahead
+  /// for curvature than sCurvatureAhead
+  double sCurvatureFarAhead ;
 
   /// Heading angle at the current
   /// station
@@ -129,11 +156,34 @@ public:
   /// vehicle has diverted from course
   VehicleCourseState courseState ;
 
-  enum VehicleSlipState
+  enum SpeedCurveState
   {
+    /// On a straight
+    StraightAway,
 
+    /// Going on a straight, curve coming up
+    StraightIntoGentleCurve,
+
+    /// Going into a very tight curve
+    IntoSharpCurve,
+
+    /// Twisty-turvy.  Section of road that winds 
+    /// back and forth, left and right
+    Chicane,
+
+    /// Driving on a curve
+    OnCurve,
+
+    /// Leaving a curve for a straight-away
+    CurveIntoStraight,
+
+    /// I see a far ahead curve
+    SeeFarAheadCurve
   } ;
-  VehicleSlipState slipState ;
+
+  /// All this affects the maximum
+  /// speed we can travel at
+  SpeedCurveState speedCurveState ;
 
   /// The maximum rotation the steering wheel
   /// will go.  We clamp the steering wheel
@@ -145,6 +195,8 @@ public:
   /// that points from our nearest
   /// station ALONG THE ROAD
   static double sNominalLookAheadAmount ;
+
+  static double sNominalLookFarAheadAmount ;
 
   /// Structure for containing POINTERS TO
   /// CarSim state variable values.
@@ -197,6 +249,18 @@ public:
 
            *betaSideSlip,
 
+           /// lateral slip angles
+           *slipLatL1,
+           *slipLatR1,
+           *slipLatL2,
+           *slipLatR2,
+
+           /// wheel-spin
+           *slipLongL1,
+           *slipLongR1,
+           *slipLongL2,
+           *slipLongR2,
+
            *timeStep,
            
 
@@ -233,9 +297,9 @@ public:
   /// send to CarSim (via the import variables)
   void update( double timeSinceLastFrame ) ;
 
-  /// Draws angles force vectors
-  /// for debugging
-  void drawDebug() ;
+  /// quickly draws an output string
+  /// in a default font, top left corner
+  void drawOutputString( char *str, D3DCOLOR color, float x, float y ) ;
 
   /// Draws the stats of
   /// the vehicle to the screen,
@@ -273,11 +337,36 @@ public:
   //////////////
   // CONTROL FUNCTIONS
 
+  void control() ;
 
+  /// Reduces set throttle if
+  /// car is slipping, ESPECIALLY
+  /// if front wheels are spinning
+  void controlSlippage() ;
+
+  /// Clamp values and make
+  /// sure none of them is NAN.
+  void clampCarSimInputValues() ;
+
+  /// Set max steer left +1,
+  /// max steer right -1.
   void setNormSteering( double val ) ;
 
-
+  /// Update the values used
+  /// by the automatic controller
   void updateAutomaticControlValues() ;
+
+
+
+  ////////
+  // DRIVE
+
+  /// Gets you the max speed this vehicle
+  /// should travel at based on curvature.
+  double getMaxSpeedForCurve( double s ) ;
+
+  /// Gets you current speed in KPH
+  double getSpeed() ;
 
   /// Drives at the max speed
   /// estimated possible given
@@ -286,21 +375,22 @@ public:
 
   /// Alters STEERING ANGLE to drive the car to
   /// a specific location.
-  /// @param kAggression is how aggressively we
+  /// @param kSteeringAggression is how aggressively we
   /// correct error -- in other words, the
   /// gain.  You must clamp the steering wheel
   /// to realistic limits after you run this, 
   /// so the wheel doesn't go.. "all the way around"
-  void driveTo( double x, double y, double z, double kAggression ) ;
-
+  void driveTo( double x, double y, double z, double kSteeringAggression ) ;
+ 
   /// Drives the car at
   /// a specific speed.
-  /// kAggression: this gain is the "bravery"
-  /// with which we approach the speed.  If this
-  /// gets closer to or exceeds 1.0 then we'll gun it
-  /// towards wherever we have to go    
-  void driveAt( double targetSpeed, double kAggression ) ;
+  void driveAt( double newTargetSpeed,
+                double kAggressionThrottle,
+                double kThrottleClamp,
+                double kAggressionBrake ) ;
 
+
+  double getLapStartTime() ;
   int getNumLaps() ;
 } ;
 

@@ -6,70 +6,8 @@ SoundMan::SoundMan()
 {
 }
 
-void SoundMan::initSoundMan()
+void SoundMan::createDefaultSound()
 {
-  FMOD_ErrorCheck( FMOD_System_Create( &fmodSys ) ) ;
-
-  UINT version ;
-  FMOD_ErrorCheck( FMOD_System_GetVersion( fmodSys, &version ) ) ;
-
-  if( version < FMOD_VERSION ) 
-  {
-    // if the version being used to run
-    // this program is different from the
-    // version the program was compiled with,
-    // print an error
-    error("FMOD Error!  You are using an old version of FMOD %08x.  This program requires %08x", version, FMOD_VERSION);
-  }
-
-  info( "Initializing fmod with %d channels . . .", fmodMaxChannels ) ;
-  FMOD_ErrorCheck( FMOD_System_Init(
-    fmodSys, fmodMaxChannels, FMOD_INIT_NORMAL | FMOD_INIT_3D_RIGHTHANDED,
-    NULL ) ) ;
-
-
-  //FMOD_System_Set3DSettings( fmodSys, 1.0f, 1.0f, 1.0f ) ;
-
-
-  /*
-  //!! erase me
-  FMOD_DSP* dspPITCHSHIFT ;
-
-  FMOD_RESULT result ;
-  result = FMOD_System_CreateDSPByType(fmodSys, FMOD_DSP_TYPE_PITCHSHIFT, &dspPITCHSHIFT);
-  FMOD_ErrorCheck(result);
-
-  result = FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0);
-  FMOD_ErrorCheck(result);
-
-  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_FFTSIZE, 1024);
-  FMOD_ErrorCheck(result);
-
-  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, 1.2f);
-  FMOD_ErrorCheck(result);
-
-  FMOD_System_Update( fmodSys ) ;
-  Sleep(20) ;
-  int dspPITCHSHIFT_ACTIVE;
-
-  FMOD_DSP_GetActive(dspPITCHSHIFT, &dspPITCHSHIFT_ACTIVE);
-
-  if( !dspPITCHSHIFT_ACTIVE )
-  {
-    puts( "buyt why?" ) ;
-    system("pause" ) ;
-  }
-  */
-
-
-
-
-
-
-
-
-
-
   int numSamples = 8000 ;
   int fs = 44100 ;
   float NTs  = 1.0f/fs ; // sampling interval
@@ -184,7 +122,7 @@ B   61   123  247   494   988  1976  3951  7902
     FMOD_System_CreateSound(
       fmodSys,
       (char*)data,
-      FMOD_HARDWARE | FMOD_CREATESAMPLE | FMOD_OPENUSER,
+      FMOD_SOFTWARE | FMOD_CREATESAMPLE | FMOD_OPENUSER,
       &soundInfo, &defaultSound
     )
   ) ;
@@ -204,6 +142,70 @@ B   61   123  247   494   988  1976  3951  7902
 
   // erase the local copy of the generated data
   //free( data ) ;
+}
+
+void SoundMan::initSoundMan()
+{
+  FMOD_ErrorCheck( FMOD_System_Create( &fmodSys ) ) ;
+
+  UINT version ;
+  FMOD_ErrorCheck( FMOD_System_GetVersion( fmodSys, &version ) ) ;
+
+  if( version < FMOD_VERSION ) 
+  {
+    // if the version being used to run
+    // this program is different from the
+    // version the program was compiled with,
+    // print an error
+    error("FMOD Error!  You are using an old version of FMOD %08x.  This program requires %08x", version, FMOD_VERSION);
+  }
+
+  info( "Initializing fmod with %d channels . . .", fmodMaxChannels ) ;
+  FMOD_ErrorCheck( FMOD_System_Init(
+    fmodSys,
+    fmodMaxChannels,
+    FMOD_INIT_NORMAL, //| FMOD_INIT_3D_RIGHTHANDED,
+    NULL )
+  ) ;
+
+
+  FMOD_ErrorCheck( 
+    FMOD_System_Set3DSettings( fmodSys, 1.0f, 1.0f, 1.0f ) 
+  ) ;
+
+
+  /*
+  //!! erase me
+  FMOD_DSP* dspPITCHSHIFT ;
+
+  FMOD_RESULT result ;
+  result = FMOD_System_CreateDSPByType(fmodSys, FMOD_DSP_TYPE_PITCHSHIFT, &dspPITCHSHIFT);
+  FMOD_ErrorCheck(result);
+
+  result = FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0);
+  FMOD_ErrorCheck(result);
+
+  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_FFTSIZE, 1024);
+  FMOD_ErrorCheck(result);
+
+  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, 1.2f);
+  FMOD_ErrorCheck(result);
+
+  FMOD_System_Update( fmodSys ) ;
+  Sleep(20) ;
+  int dspPITCHSHIFT_ACTIVE;
+
+  FMOD_DSP_GetActive(dspPITCHSHIFT, &dspPITCHSHIFT_ACTIVE);
+
+  if( !dspPITCHSHIFT_ACTIVE )
+  {
+    puts( "buyt why?" ) ;
+    system("pause" ) ;
+  }
+  */
+
+
+  createDefaultSound() ;
 }
 
 

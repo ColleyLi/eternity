@@ -78,6 +78,8 @@ bool argCheck( char *fnName, char* str, int numArgsGot, int numArgsExpected ) ;
 #define IsNear(x,y,EPS) (fabs(x-y)<EPS)
 
 
+#define SameSign(x,y) ( (x >= 0 && y >= 0) || (x < 0 && y < 0) )
+
 /// Gets you a random float between
 /// 'a' and 'b'
 float randFloat( float a, float b ) ;

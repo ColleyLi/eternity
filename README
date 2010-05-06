@@ -498,6 +498,9 @@
   - Finished autonomous vehicle controller
   - Added 3d sound
   
+May 6 / 2010 v0.1.8-carsim
+  - Controller tuning
+  
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in

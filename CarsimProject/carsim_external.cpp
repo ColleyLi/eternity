@@ -19,6 +19,8 @@ extern "C" {
 // it's a nice shorthand syntax.
 #define CAR(PROPERTY) (*simWorld->car->csV.##PROPERTY)
 
+
+
 /// Set up variables for the model extension.
 /// This is where variables for the
 /// model extensions are given default values,
@@ -72,6 +74,19 @@ void external_setdef()
   simWorld->car->csV.PwrEngAv = vs_get_var_ptr( "PWRENGAV" ) ;
 
   simWorld->car->csV.betaSideSlip = vs_get_var_ptr( "BETA" ) ;
+
+  // lateral slip
+  simWorld->car->csV.slipLatL1 = vs_get_var_ptr( "ALPHA_L1" ) ;
+  simWorld->car->csV.slipLatR1 = vs_get_var_ptr( "ALPHA_R1" ) ;
+  simWorld->car->csV.slipLatL2 = vs_get_var_ptr( "ALPHA_L2" ) ;
+  simWorld->car->csV.slipLatR2 = vs_get_var_ptr( "ALPHA_R2" ) ;
+
+  simWorld->car->csV.slipLongL1 = vs_get_var_ptr( "KAPPA_L1" ) ;
+  simWorld->car->csV.slipLongR1 = vs_get_var_ptr( "KAPPA_R1" ) ;
+  simWorld->car->csV.slipLongL2 = vs_get_var_ptr( "KAPPA_L2" ) ;
+  simWorld->car->csV.slipLongR2 = vs_get_var_ptr( "KAPPA_R2" ) ;
+
+
 
   simWorld->car->csV.timeStep = vs_get_var_ptr( "TSTEP" ) ;
 
@@ -246,9 +261,8 @@ void external_calc(vs_real t, vs_ext_loc where)
       // from CarSim state variables.
       simWorld->car->update( 0.0166 ) ;
       
-      //"!!CARSIM!!"
-
-// Shorthands
+      // Shorthands below.  These aren't really necessary
+      // but they make the code more readable.
 #define Throttle (*simWorld->car->csV.throttle)
 #define SteeringAngle (*simWorld->car->csV.steeringAngle)
 #define Brake (*simWorld->car->csV.brake)
@@ -258,15 +272,20 @@ void external_calc(vs_real t, vs_ext_loc where)
 
 #define S (simWorld->car->sNearest)
 #define SA (simWorld->car->sAhead)
+#define SFA (simWorld->car->sFarAhead)
 #define SX (simWorld->car->sNearestX)
 #define SY (simWorld->car->sNearestY)
 #define SZ (simWorld->car->sNearestZ)
 #define SAX (simWorld->car->sAheadX)
 #define SAY (simWorld->car->sAheadY)
 #define SAZ (simWorld->car->sAheadZ)
+#define SFAX (simWorld->car->sFarAheadX)
+#define SFAY (simWorld->car->sFarAheadY)
+#define SFAZ (simWorld->car->sFarAheadZ)
 
 #define CURV (simWorld->car->sCurvature)
 #define CURVA (simWorld->car->sCurvatureAhead) 
+#define CURVFA (simWorld->car->sCurvatureFarAhead) 
 
 #define THEADING (simWorld->car->sTargetHeading)
 #define THEADINGL (simWorld->car->sTargetHeadingL)
@@ -294,12 +313,26 @@ void external_calc(vs_real t, vs_ext_loc where)
       // is SUPPOSED To be right now.
       vs_get_road_xyz( S, 0, &SX, &SY, &SZ ) ;
 
+      SA = S + Car::sNominalLookAheadAmount * (SPEED) ;
 
-      SA = S + Car::sNominalLookAheadAmount * SPEED ; 
+
+      // experiment with exponential lookahead.
+      //sa = S + Car::sNominalLookAheadAmount * (pow(1.1,SPEED)) ;
+
+      // This linear lookahead works
+      // very well for __steering__, but
+      // not so much for speed.
+      // To deal with the specific problem of
+      // hairpin curves, we need to look much
+      // further ahead on straights_ _ to help
+      // control speed from a straight going
+      // into a sharp curve.
+      SFA = S + Car::sNominalLookFarAheadAmount * (SPEED) ;
 
       // Find a vector ahead now, and the x,y,z position of that
       vs_get_road_xyz( SA, 0, &SAX, &SAY, &SAZ ) ;
 
+      vs_get_road_xyz( SFA, 0, &SFAX, &SFAY, &SFAZ ) ;
 
 
       // Get the road curvature here too
@@ -312,6 +345,7 @@ void external_calc(vs_real t, vs_ext_loc where)
       // CURV and one for CURVAHEAD
       CURV = vs_road_curv_i( S, 1 ) ;
       CURVA = vs_road_curv_i( SA, 2 ) ;
+      CURVFA = vs_road_curv_i( SFA, 3 ) ;
 
       THEADING = vs_target_heading( S ) ; // not used
       THEADINGL = vs_target_l( S ) ; // not used
@@ -330,89 +364,7 @@ void external_calc(vs_real t, vs_ext_loc where)
       }
       else // AUTOMATIC CONTROL
       {
-
-        // +L means left of center line
-        // -L means right of center line
-       
-        // +steering is steering left (CCW)
-        // -steering is steering right (CW)
-        
-
-
-        // DETERMINE IF WE ARE ON OR OFF COURSE.
-        if( fabs( L ) > 8 ) // Too far from center line to recover.
-          simWorld->car->courseState = Car::OffCourse ;
-        else
-          simWorld->car->courseState = Car::OnCourse ;
-
-        
-
-        // Only if on course, we gun it basically.
-        if( simWorld->car->courseState == Car::OnCourse )
-        {
-          // Compute and write steering angle to use
-          
-          double kONCourseMaxSpeedDrive = 1.0 ;
-          simWorld->car->driveAtMaxSpeedForCurvSAndCurvAS( kONCourseMaxSpeedDrive ) ;
-
-          double kONCourseSteer = 6.2 ;
-          simWorld->car->driveTo( SAX, SAY, SAZ, kONCourseSteer ) ;
-        } // END ON COURSE
-        else  // OFF COURSE
-        {
-          // How do we get back to the road
-          // if we've fallen off?
-          // First of all, take it slow when recovering.
-          double kOFFCourseSpeedDrive = 0.75 ;
-          simWorld->car->driveAt( 20 / 3.6, kOFFCourseSpeedDrive ) ;
-          // probably make proportional
-          // to error
-
-
-          // RECOVERY:
-          // How do you point the car directly
-          // at the road?
-
-          // Give it an XYZ to aim for.
-
-          // We must know what S we are at,
-          // musn't we?
-
-          // Aggression controls overshoot
-          // really the gain is adjustable
-          // depending on how far off course
-          // we get.  VARY WITH L?
-          // Drive to the center of the road.
-          double kOFFCourseSteer = 1.2 ;
-          simWorld->car->driveTo( SX, SY, SZ, kOFFCourseSteer ) ;
-        } // END OFF COURSE
-
-      }
-
-
-
-      // CLAMPS
-      // Steering angle must be clamped of course
-      // to the physical limits.  Its too bad CarSim
-      // doesn't enforce this, but hey.
-      clamp( SteeringAngle, -Car::steeringWheelMaxR, Car::steeringWheelMaxR ) ;
-      clamp( Throttle, 0, 1 ) ;
-
-      // NONE OF THE INPUTS MAY BE NAN!!
-      if( IsNaN( SteeringAngle ) )
-      {
-        error("ERROR!  STEERING ANGLE WAS NAN!" ) ;
-        SteeringAngle = 0 ;
-      }
-      if( IsNaN( Throttle ) )
-      {
-        error("ERROR!  Throttle WAS NAN!" ) ;
-        Throttle = 0 ;
-      }
-      if( IsNaN( Brake ) )
-      {
-        error("ERROR!  Brake WAS NAN!" ) ;
-        Brake = 0 ;
+        simWorld->car->control() ;
       }
     }
 

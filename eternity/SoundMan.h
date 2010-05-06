@@ -61,6 +61,8 @@ protected:
 
   SoundMan() ;
 
+  void createDefaultSound() ;
+
   // initialize FMOD sound system
   void initSoundMan() ;
 

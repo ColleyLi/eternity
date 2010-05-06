@@ -1,15 +1,21 @@
 #include "Car.h"
 
 double Car::steeringWheelMaxR = 4.5*D3DX_PI;
-double Car::sNominalLookAheadAmount = 1 ;
+double Car::sNominalLookAheadAmount = 1.0 ;
+double Car::sNominalLookFarAheadAmount = 1.5 ;
 
 Car::Car()
 {
+  simStepsFrame = 1 ;
+
+  drawDebugLines = false ;
+
   hidden = false ;
 
   manualControl = false ; // start with automatic control on
 
-  lapStartTime = 0.0 ;
+  lapTime = 0.0 ;
+
   sLast = sNearest = 0.0 ;
 
   sprintf( lapTimesString, "First lap" ) ;
@@ -123,65 +129,55 @@ void Car::update( double timeSinceLastFrame )
   if( manualControl )
     userControlUpdate() ;
 
-
   updateAutomaticControlValues() ;
 
+  // Sound
+  //
   // update the pitch of the engine
   double rpmMax = 800 ;
   double rpmMin = 75 ;
 
-  // Sound
-
   // scale the thing from 0.5 at low speed 75 rpm
   // to 2.0 at 800 rpm
-
   rpmNormalized = CARSIM(tach)/(rpmMax-rpmMin) ;
   double rpmScale = 0.5 + (2.0-0.5)*rpmNormalized ;
 
   window->setPitchShift( rpmScale ) ;
   window->setSoundPosition( EngineMidIn, (FMOD_VECTOR*)&pos, (FMOD_VECTOR*)&vel ) ;
-  window->setSoundPosition( Screech, (FMOD_VECTOR*)&pos, (FMOD_VECTOR*)&vel ) ;
+  
 
   if( fabs(CARSIM(betaSideSlip)) > 0.5 )
   {
-    // car is slipping.
+    // car is slipping quite a bit
     if( !window->isPlaying( Sounds::Screech ) )
     {
       window->playSound( Sounds::Screech ) ;
     }
+    window->setSoundPosition( Screech, (FMOD_VECTOR*)&pos, (FMOD_VECTOR*)&vel ) ;
   }
   else
   {
     // not slipping, so stop the skid sound
     window->stopSound( Sounds::Screech ) ;
   }
-  
-
-
-  
-  // COMPUTE NEXT STATE UPDATE TO CARSIM.
-
 }
 
-void Car::drawDebug()
+void Car::drawOutputString( char *str, D3DCOLOR color, float x, float y )
 {
-  
-  // INCLUDE a couple of lines
-
-  // a line from origin to here
-  window->draw3DLine(
-    D3DXVECTOR3(0,0,0), Color::Yellow,
-    pos, Color::Yellow ) ;
-
-
-  
+  window->drawString(
+    Arial16,
+    str,
+    color,
+    x, y,
+    window->getWidth()-x, window->getHeight()-y,
+    DT_LEFT | DT_TOP ) ;
 
 }
 
 void Car::drawStats()
 {
 
-#define PVEC(theVec) theVec.x, theVec.y, theVec.z
+  #define PVEC(theVec) theVec.x, theVec.y, theVec.z
   
   window->setDrawingMode( D2 ) ; // 2d
   char buf[300];
@@ -190,42 +186,63 @@ void Car::drawStats()
   D3DCOLOR color= D3DCOLOR_XRGB(255,255,255) ;
 
   int y = 0 ;
-  sprintf( buf, "pos: %.2f %.2f %.2f",
+
+  sprintf( buf, "%.2f", simStepsFrame ) ;
+  window->drawString( TimesNewRoman24, buf, Color::White,
+    window->getWidth()-60, 20, 60, 20, DT_CENTER|DT_VCENTER ) ;
+
+  sprintf( buf, "%.2f", lapTime ) ;
+  window->drawString( Arial16, buf, Color::White,
+    window->getWidth()-60, 45, 60, 20, DT_CENTER|DT_VCENTER ) ;
+
+  
+
+  /*
+  // Position.  Not very useful for evaluating the controller.
+  sprintf( buf, "pos: (%.2f, %.2f, %.2f)",
     CARSIM(x), CARSIM(y), CARSIM(z) ) ;
   window->drawString(
     Arial16, buf, color,
     20, y+=20, 600, 600,
     DT_LEFT | DT_TOP ) ;
+  */
+
+  // AUTOMATIC OR MANUAL CONTROL
+  drawOutputString(
+    manualControl?"MANUAL CONTROL":"AUTOMATIC CONTROL",
+    manualControl?D3DCOLOR_XRGB(255,255,0):color,
+    20, y+=20 ) ;
+
+  sprintf( buf, "brake: %.2f [Mpa]", CARSIM(brake)/1e6 ) ;
+  drawOutputString( buf, Color::AliceBlue,
+    20, y+=20 ) ;
 
   /*
-  // Speed is displayed, so this isn't
+  // Speed is displayed, so components aren't
   // always useful
   sprintf( buf, "vel: %.2f %.2f %.2f",
     CARSIM(vx), CARSIM(vy), CARSIM(vz)  ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 200, 200,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
   */
 
   /*
-  // Not always useful
+  // accelerations aren't always useful either
   sprintf( buf, "acc: %.2f %.2f %.2f",
     CARSIM(ax), CARSIM(ay), CARSIM(az)  ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 200, 200,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
   */
 
   /*
   // Shown visually
   sprintf( buf, "yaw: %.2f pitch: %.2f roll: %.2f",
     CARSIM(yaw), CARSIM(pitch), CARSIM(roll) ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
   */
 
   /*
@@ -233,79 +250,132 @@ void Car::drawStats()
     CARSIM( tachAngle ),
     CARSIM( speedoAngle )
   ) ;
-  window->drawString(
+  drawOutputString(
     Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+    20, y+=20 ) ;
   */
 
+  /*
   sprintf( buf, "slip=%.2f powerAv=%.2f",
     CARSIM( betaSideSlip ),
     CARSIM( PwrEngAv )
   ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
+  */
 
+  sprintf( buf, "tire spin:\n%.2f %.2f\n%.2f %.2f",
+    CARSIM( slipLongL1 ),
+    CARSIM( slipLongR1 ),
+    CARSIM( slipLongL2 ),
+    CARSIM( slipLongR2 )
+  ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
 
-  window->drawString(
-    Arial16,
-    manualControl?"MANUAL CONTROL":"AUTOMATIC CONTROL",
-    manualControl?D3DCOLOR_XRGB(255,255,0):color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  y+=40 ; // because we used two \n above
 
-  sprintf( buf, "steer: %.2f [rads] brake: %.2f [Mpa]", 
-    CARSIM(steeringAngle),
-    CARSIM(brake)/1e6 ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  sprintf( buf, "lat slip:\n%.2f %.2f\n%.2f %.2f",
+    CARSIM( slipLatL1 ),
+    CARSIM( slipLatR1 ),
+    CARSIM( slipLatL2 ),
+    CARSIM( slipLatR2 )
+  ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
+
+  y+=40 ; // because we used two \n above
+
 
   /*
   sprintf( buf, "theirThrottle=%.2f theirSteering: %.2f",
     CARSIM(theirThrottle), CARSIM(theirSteeringAngle) ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
   */
 
-  sprintf( buf, "L=%.2f sNear=%.2f sAhead=%.2f", // (%.2f, %.2f, %.2f)",
-    L, sNearest, sAhead //, sNearestX, sNearestY, sNearestZ
+  sprintf( buf, "L %.2f curv %.6f curvA %.6f curvFA %.6f",
+    L,
+    sCurvature,
+    sCurvatureAhead,
+    sCurvatureFarAhead
   ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
 
-  sprintf( buf, "curv@S=%.6f, curv@SA=%.6f |dcurv|=%.6f", // targetH=%.2f targetHL=%.2f",
+
+  switch( speedCurveState )
+  {
+  case SpeedCurveState::Chicane:
+    sprintf( buf, "Chicane" ) ;
+    color = Color::Red ;
+    break;
+
+  case SpeedCurveState::CurveIntoStraight:
+    sprintf( buf, "CurveIntoStraight" ) ;
+    color = Color::Orange ;
+    break;
+
+  case SpeedCurveState::IntoSharpCurve:
+    sprintf( buf, "IntoSharpCurve" ) ;
+    color = Color::Red ;
+    break;
+
+  case SpeedCurveState::OnCurve:
+    sprintf( buf, "OnCurve" ) ;
+    color = Color::Aqua ;
+    break;
+
+  case SpeedCurveState::StraightAway:
+    sprintf( buf, "StraightAway" ) ;
+    color = Color::Green ;
+    break;
+
+  case SpeedCurveState::StraightIntoGentleCurve:
+    sprintf( buf, "StraightIntoGentleCurve" ) ;
+    color = Color::Blue ;
+    break;
+
+  case SeeFarAheadCurve:
+    sprintf( buf, "SeeFarAheadCurve" ) ;
+    color = Color::Orange ;
+  }
+
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
+
+  
+
+  /*
+  sprintf( buf, "curv@S=%.6f, curv@SA=%.6f |SA-A|=%.6f SMax=%.6f", // targetH=%.2f targetHL=%.2f",
     sCurvature, sCurvatureAhead,
-    fabs(sCurvature-sCurvatureAhead)//, sTargetHeading, sTargetHeadingL
+    fabs(sCurvatureAhead-sCurvature),
+    sCurvatureMaxSoFar  //, sTargetHeading, sTargetHeadingL
   ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
+  */
 
   /*
   sprintf( buf, "alongroad=(%.2f,%.2f,%.2f)",
     PVEC(alongRoad) ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, color,
+    20, y+=20 ) ;
   */
 
   
-  window->drawString(
-    Arial16,
+  drawOutputString(
     courseState==OnCourse?"On course":"Off course",
     courseState==OnCourse?Color::Green:Color::Red,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+    20, y+=20 ) ;
 
 
 
@@ -314,18 +384,22 @@ void Car::drawStats()
       angleBetweenFwdAndSNearest, 
       PVEC( posToSNearest )
     ) ;
-  window->drawString(
-    Arial16, buf, Color::Red,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    buf, Color::Red,
+    20, y+=20 ) ;
   */
   
   
-  window->drawString(
-    Arial16, lapTimesString, Color::Yellow,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
+  drawOutputString(
+    lapTimesString, Color::Yellow,
+    20, y+=20 ) ;
 
+  //double incrBy = speedTarget - CARSIM(speedometer) ;
+  sprintf( buf, "target-speed %.2f", speedTarget ) ;
+  drawOutputString(
+    buf,
+    color,
+    20, y+=20 ) ;
 
   #pragma endregion
 
@@ -339,7 +413,7 @@ void Car::drawStats()
   
   // Fill a box for how much yo'ure donw on the gas pedal
   window->drawBox( gasBoxColor, 20, window->getHeight()-20, 20, -gas ) ;
-  window->drawString( Fonts::Arial16, "trt", gasBoxColor,
+  window->drawString( Arial16, "trt", gasBoxColor,
     20, WH-20, 20, 20, DT_CENTER | DT_VCENTER ) ;
 
 
@@ -351,17 +425,16 @@ void Car::drawStats()
   window->drawBox( 
     D3DCOLOR_ARGB( 180, 0,0,0 ),
     50, WH-40, 100, 40 ) ;
-  window->drawString( Fonts::Arial16, "speed", gasBoxColor,
+  sprintf( buf, "speed (%.2f)", getMaxSpeedForCurve( sCurvatureAhead ) ) ;
+
+  window->drawString( Arial16, buf, gasBoxColor,
     50, WH-20, 100, 20, DT_CENTER|DT_VCENTER ) ;
 
-  double velMag = 3.6*sqrt( CARSIM(vx)*CARSIM(vx) + 
-    CARSIM(vy)*CARSIM(vy) +
-    CARSIM(vz)*CARSIM(vz) ) ;
-  
   D3DCOLOR spColor = D3DCOLOR_ARGB( 230, 0, 255, 0 ) ;
-  sprintf( buf, "%.0lf", velMag ) ;
-  window->drawString( Fonts::TimesNewRoman24, buf, spColor,
+  sprintf( buf, "%.0lf", getSpeed() ) ;
+  window->drawString( TimesNewRoman24, buf, spColor,
     50, WH-40, 100, 20, DT_CENTER|DT_VCENTER ) ;
+
 
 
 
@@ -382,9 +455,9 @@ void Car::drawStats()
     look.x, look.y, look.z,
     right.x, right.y, right.z,
     up.x, up.y, up.z ) ;
-  window->drawString( Fonts::Arial16, buf,
+  drawOutputString( buf,
     color,
-    400, y+=20, 200, 600, DT_TOP | DT_LEFT ) ;
+    400, y+=20 ) ;
   */
 
 
@@ -435,7 +508,6 @@ void Car::drawStats()
 
 void Car::draw( double timeSinceLastFrame )
 {
-  drawDebug() ;
 
   // No draw if car is hidden, just draw hidden message
   if( hidden )
@@ -721,6 +793,148 @@ D3DXVECTOR3 Car::getFwd()
   return r ;
 }
 
+
+
+/////////////////////////////////////////////
+//////////////// CONTROL ////////////////////
+
+void Car::control()
+{
+  // Main control loop.
+
+  // +L means left of center line
+  // -L means right of center line
+ 
+  // +steering is steering left (CCW)
+  // -steering is steering right (CW)
+  
+  // DETERMINE IF WE ARE ON OR OFF COURSE.
+  if( fabs( L ) > 8 ) // Too far from center line to recover.
+    courseState = Car::OffCourse ;
+  else
+    courseState = Car::OnCourse ;
+  
+
+  // If on course, we drive more aggressively
+  if( courseState == Car::OnCourse )
+  {
+    // Speed:  Compute max speed to travel at
+    driveAtMaxSpeedForCurvSAndCurvAS( 1.0 ) ;
+    // 1.0=good
+
+    // Direction:  Drive towards the NEXT
+    // station's (x, y, z)
+    driveTo( sAheadX, sAheadY, sAheadZ, 12.0 ) ;
+    // 6.2=good, 10.2=a bit of oversteer
+    // a bit of oversteer is good
+    // when pushing the limits
+    // of the vehicle
+
+  } // END ON COURSE
+
+
+  else  // OFF COURSE
+  {
+    // When off course, goal is to get
+    // back on course without error.
+
+    // Just say you're always on curve here.
+    // could create separate state, but not really necessary.
+    // behavior is as if OnCurve
+    speedCurveState = SpeedCurveState::OnCurve ;
+
+    // Speed:  Take it slow when recovering.
+    driveAt( 20, 0.75, 0.25, 5.0 ) ;
+    // 0.75=good.
+
+    // Probably could make proportional
+    // to (L), but we'll leave it at 20
+
+    // Direction:  point the car directly
+    // at the nearest station in road
+    driveTo( sNearestX, sNearestY, sNearestZ, 4.2 ) ;
+    
+
+  } // END OFF COURSE
+
+  controlSlippage() ;
+
+}
+
+void Car::controlSlippage()
+{
+  //////////////////
+  // AFTER SETTING the throttle amount by
+  // driveAt, we might need to cut it back
+  // a bit.
+
+  ///!!!!! USE ALPHA_L1 for lateral slip
+  /// KAPPA_L1 for longitudinal slip.
+  /// If KAPPA_L2 >> KAPPA_L1 then 
+  /// rwd vehicle is in danger of going
+  /// into oversteer.
+
+  /// Really "good" control of the vehicle
+  /// is when wheel slipping is minimized.
+  /// I wanted to write a controller that
+  /// could use slippage to its advantage,
+  /// but that is more difficult,
+  //!!CHECK FOR WHEEL SLIPPAGE
+  // If the wheels are slipping,
+  // back off the accelerator a bit
+  double fslip = fabs( CARSIM(betaSideSlip) ) ;
+  if( fslip > 0.05 )
+  {
+    // Modify throttle by
+    // an amount varying with side slip.
+    // this is like "punishment" for slipping,
+    // you have to reduce throttle.
+    CARSIM(throttle) -= 10*fslip ;
+    // 10 means if slippage is 0.1,
+    // you will have no throttle.
+    // 0.1 is pretty much out of control (expt),
+    // so this is good.  When slipping we need
+    // the grip for steering, and shouldn't
+    // waste it on throttle generally.
+    //warning( "Controller detects slip, reducing throttle" ) ;
+
+    CARSIM(throttle)= 0.1;
+  }
+}
+
+void Car::clampCarSimInputValues()
+{
+  ///////
+  // CLAMPS
+  // Steering angle must be clamped of course
+  // to the physical limits.  Its too bad CarSim
+  // doesn't enforce this, but hey.
+  clamp( CARSIM(steeringAngle), -Car::steeringWheelMaxR, Car::steeringWheelMaxR ) ;
+
+  // Throttle must be clamped as well
+  clamp( CARSIM(throttle), 0.0, 1.0 ) ;
+
+  // NONE OF THE INPUTS MAY BE NAN!!
+  // If you send CarSim NAN the whole
+  // simulation gets corrupted (all values go to NAN after that.
+  // NAN is toxic.)
+  if( IsNaN( CARSIM(steeringAngle) ) )
+  {
+    warning("Steering angle was NaN!" ) ;
+    CARSIM(steeringAngle) = 0 ;
+  }
+  if( IsNaN( CARSIM(throttle) ) )
+  {
+    warning("Throttle WAS NAN!" ) ;
+    CARSIM(throttle) = 0 ;
+  }
+  if( IsNaN( CARSIM(brake) ) )
+  {
+    warning("Brake WAS NAN!" ) ;
+    CARSIM(brake) = 0 ;
+  }
+}
+
 void Car::setNormSteering( double val )
 {
   if( val > 1 )
@@ -737,12 +951,18 @@ void Car::setNormSteering( double val )
   CARSIM(steeringAngle) = val*steeringWheelMaxR ;
 }
 
+
+
+////////
+// DRIVE
+
 void Car::updateAutomaticControlValues()
 {
   pos = getPos() ;
   vel = getVel() ;
   vecSNearest = D3DXVECTOR3( sNearestX, sNearestY, sNearestZ ) ;
   vecSAhead   = D3DXVECTOR3( sAheadX, sAheadY, sAheadZ ) ;
+  vecSFarAhead   = D3DXVECTOR3( sFarAheadX, sFarAheadY, sFarAheadZ ) ;
 
   double sDifference = sLast - sNearest ;
 
@@ -769,12 +989,8 @@ void Car::updateAutomaticControlValues()
       // He made a lap
       double now = window->getTimeElapsedSinceGameStart() ;
 
-      double lapTime = now - lapStartTime ;
       lapTimes.push_back( lapTime ) ;
-
-      // Start next lap
-      lapStartTime = now ;
-
+      lapTime = 0 ;
 
       // Redo the lapTimes string
       int cw = 0 ;
@@ -819,17 +1035,53 @@ void Car::updateAutomaticControlValues()
 
 
   /////
-  // DRAW SOME VECTORS
-  // Draw the pos to fwd vector:
-  window->draw3DLine( pos, Color::Red, pos + 5*fwd, Color::Red ) ;
+  // DRAW SOME VECTORS, debug lines
+  if( drawDebugLines )
+  {
+    // Draw the pos to fwd vector:
+    window->draw3DLine( pos, Color::Red, pos + 5*fwd, Color::Red ) ;
 
-  // draw the pos to sNearest vector:
-  window->draw3DLine( pos, Color::Blue, vecSNearest, Color::Blue ) ;
+    // draw the pos to sNearest vector:
+    window->draw3DLine( pos, Color::Blue, vecSNearest, Color::Blue ) ;
 
-  // draw vector alongRoad:
-  window->draw3DLine( vecSNearest, Color::Magenta,
-    vecSAhead, Color::Magenta ) ;
+    // draw vector alongRoad:
+    window->draw3DLine( vecSNearest, Color::Magenta,
+      vecSAhead, Color::Magenta ) ;
 
+    window->draw3DLine( vecSNearest, Color::Yellow,
+      vecSFarAhead, Color::Yellow ) ;
+
+    // a line from origin to where the car is
+    window->draw3DLine(
+      D3DXVECTOR3(0,0,0), Color::Yellow,
+      pos, Color::Yellow ) ;
+  }
+}
+
+double Car::getMaxSpeedForCurve( double s )
+{
+  // compute the speed we should be
+  // going as approximately 2 / CURV.
+  // The formula 2 / CURV was derived
+  // by experiment.  It varies for
+  // different vehicles, esp RWD vs FWD.
+
+  double maxSpeed = 400.0 ;
+
+  if( s == 0.0 )
+    return maxSpeed ; // just means GUN IT.  like, as fast as you can go. 400kph seems
+  // reasonable for a target speed on a straight, if you get get there.
+  else
+    maxSpeed = fabs( 1.1 / s ) ; // ! s can be negative.
+   
+  clamp( maxSpeed, 3.0, 400.0 ) ; // never go slower than 3,
+  // or faster than 400.0
+  return maxSpeed ;
+}
+
+double Car::getSpeed()
+{
+  return 3.6*CARSIM(speedometer) ;
 }
 
 void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
@@ -842,49 +1094,73 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
   const static double eps = 0.0001 ;
 
   double absCurv = fabs( sCurvature ) ;
+  if( absCurv > sCurvatureMaxSoFar )
+    sCurvatureMaxSoFar = absCurv ; // just keep track of this
+
   double absCurvAhead = fabs( sCurvatureAhead ) ;
 
-  // What reads better?
-  //if( IsNear( sCurvature, 0, eps ) &&
-  //    IsNear( sCurvatureAhead, 0, eps ) )
+  // If the curve is near 0, gun it basically.
   if( absCurv < eps &&
       absCurvAhead < eps )
   {
     // Near 0 curvature.  Gun it.
-    CARSIM( throttle ) = 1.0 ;
-    //info( "Flooring it.." ) ;
+    //CARSIM( throttle ) = 1.0 ;
+    driveAt(
+      400,  // aim for max speed 400 kph
+      10.0, // aggressive acceleration
+      1.0,  // allow full throttle
+      0.10  // shouldn't brake
+    ) ; 
+
+    speedCurveState = StraightAway ;
   }
 
   // curv now near 0, but ahead, not.
   // So, we CAN brake now easily
-  else if( absCurv < eps   && 
-           absCurvAhead > 0.01 )
+  else if( absCurv < eps   &&    // we're ON straight now
+           absCurvAhead > 0.01 ) // but curve ahead
   {
     // 0.01 says there's a significant curve ahead
-    driveAt( 80 / 3.6, 5.0 ) ;
-    // Original value: 80
+    // Start to drive at the speed that curve dictates.
+
+    // Here is where we can very very aggressively slow down
+    // if necessary, because we're not on a curve now.
+    driveAt(
+      getMaxSpeedForCurve(sCurvatureAhead), // get max speed by curvature
+      0.25,  // not too aggressive on the throttle
+      0.25,  // quarter throttle allowed
+      1.0   // high braking
+    ) ;
+
+    speedCurveState = StraightIntoGentleCurve ;
   }
 
 
   else
   {
-    // We can drive at 60 on almost any curve
-    driveAt( 60 / 3.6, 5.0 ) ;
-    // original value: 60
-  }
+    // We're in a curve. try and travel
+    // at the target speed, but don't make
+    // any "sudden moves" in terms of
+    // gas or brake.
 
+    driveAt(
+      getMaxSpeedForCurve(sCurvatureAhead),
+      0.5,
+      0.75,//75% throttle MAX
+      1.0
+    ) ; 
+    // Accelerating in a curve is always
+    // dangerous.  You could lose control.
+    // So we have a very gentle aggression
+    // on kAggressionThrottle.
+    // Braking while on a curve is
+    // dangerous as well, because
+    // you need the traction for steering.
+    // However if going into the curve
+    // that's when we take the speed down
+    // (see below)    
 
-
-  // CHECK FOR WHEEL SLIPPAGE
-  // If the wheels are slipping,
-  // back off the accelerator a bit
-  double fslip = fabs( CARSIM(betaSideSlip) ) ;
-  if( fslip > 0.01 )
-  {
-    // Modify throttle by
-    // an amount varying with side slip
-    CARSIM(throttle) -= 1.5*fslip ; // 10*fslip
-    //warning( "Controller detects slip, reducing throttle" ) ;
+    speedCurveState = OnCurve ;
   }
 
   ////////////
@@ -893,16 +1169,55 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
 
   // If curvature ahead is much different
   // from curvature now, REDUCE SPEED
-  if( diffCurve > 0.1 )
+  if( diffCurve > 0.05 )
   {
-    // reduce throttle
-    CARSIM(throttle) = 0.1 ;
+    // if the sign is different, then its a chicane
+    if( !SameSign( sCurvature, sCurvatureAhead ) )
+      speedCurveState = Chicane ;  // twists
+    else
+      speedCurveState = IntoSharpCurve ;
+
+    // reduce throttle.  Use the curve ahead
+    // instead of the current curve to determine
+    // our throttle.  This COULD MEAN
+    // we're going to gun it coming OUT of curves.
+    CARSIM(throttle) = 0.0 ;
 
     // apply brakes
-    CARSIM(brake) = kAggression*(diffCurve*100)*1e6 ;
+    // !!????????????????? well you know, this could
+    // be the secret sauce to handling huge curves coming up.
+    CARSIM(brake) = kAggression*(diffCurve*100)*10e6 ;
 
     //info( "Sharp curve detected, slowing down" ) ;
   }
+
+
+
+
+  // at high speed..
+  if( getSpeed() > 120 )
+  {
+    // this only applies at high speeds
+    double diffFarAhead = fabs( diffCurve - fabs(sCurvatureFarAhead) );
+
+    speedCurveState = SeeFarAheadCurve ;
+
+    // drive at the speed for that curve
+    driveAt( 
+      getMaxSpeedForCurve(sCurvatureFarAhead),
+      1.0,
+      1.0,
+      0.25
+    ) ;
+  }
+
+
+
+  controlSlippage() ;
+
+
+
+
 
 
   /*
@@ -914,7 +1229,7 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
   */
 }
 
-void Car::driveTo( double x, double y, double z, double kAggression )
+void Car::driveTo( double x, double y, double z, double kSteeringAggression )
 {
   pos = getPos() ;
   D3DXVECTOR3 dest( x,y,z ) ;
@@ -927,38 +1242,74 @@ void Car::driveTo( double x, double y, double z, double kAggression )
   // Try and align "fwd" with posToDest.
   float angleBetween = D3DXVec2AngleBetween( &d2Fwd, &d2PosToDest ) ;
 
-  CARSIM( steeringAngle ) = kAggression*angleBetween ;
+  CARSIM( steeringAngle ) = kSteeringAggression*angleBetween ;
 }
 
-/// Drives the car at
-/// a specific speed.
-// kAggression: this gain is the "bravery"
-// with which we approach the speed.  If this
-// gets closer to or exceeds 1.0 then we'll gun it
-//towards wherever we have to go    
-void Car::driveAt( double targetSpeed, double kAggression )
+/// Drives the car at a specific speed.
+/// @param newTargetSpeed Target speed km/h.
+/// @param kAggressionThrottle How aggressively we
+/// push the throttle to get to our target speed.
+/// @param kThrottleClamp If you wish to clamp
+/// the maximum throttle, use a value less than 1 here.
+/// This is especially important when trying to control
+/// acceleration into curves, you can't do it on "km/h
+/// I should be driving at here" alone, .....!!!!
+////// OR CAN YOU?? Perhaps you can if
+////// you control slippage better.
+/// @param kAggressionBrake How aggressively we
+/// push the brake to get to our target speed.
+void Car::driveAt( double newTargetSpeed,
+                   double kAggressionThrottle,
+                   double kThrottleClamp,
+                   double kAggressionBrake )
 {
+  // We use km/h so CONVERT IT HERE,
+  // and save new target speed in
+  // the speedTarget state variable.
+  speedTarget = newTargetSpeed ;// 3.6 ;
+
+  if( speedTarget < 0 )
+  {
+    warning( "Speedtarget = %f", speedTarget )  ;
+    speedTarget = 3;
+  }
+
   // First zero out brakes
   CARSIM(brake) = 0 ;
 
-  double incrBy = targetSpeed - CARSIM(speedometer) ;
+  double incrBy = speedTarget - getSpeed() ;
 
   if( incrBy > 0 )
   {
     // need to speed up
-    CARSIM(throttle) = kAggression*incrBy;
+    CARSIM(throttle) = kAggressionThrottle *incrBy ;
 
-    clamp( CARSIM(throttle), 0.0, 0.25 ) ; // had 0.25 cap,
-    // but that juts means kAggression was too high
-    // (and that was before I checked betaSideSlip)
+    clamp( CARSIM(throttle), 0, kThrottleClamp ) ;
   }
   else if( incrBy < (-1) ) // should slow down by more than a few units
   {
-    // Brake a bit
-    CARSIM(brake) = kAggression*7e6 ;
+    // Brake a bit.
+    // This part of code gets hit
+    // when we need to slow down going into a curve,
+    // mostly (that's when target speed decreases 
+    // most often).
+    CARSIM(throttle) = 0.0 ;
+    CARSIM(brake) = kAggressionBrake * (fabs(incrBy)*1e6) ;
   }
 }
 
+double Car::getLapStartTime()
+{
+  if( lapTimes.empty() )
+  {
+    return 0.0 ; // first lap
+  }
+  else
+  {
+    // the finish time of the last lap
+    return( *(lapTimes.end() - 1) ) ;
+  }
+}
 int Car::getNumLaps()
 {
   return lapTimes.size() ;

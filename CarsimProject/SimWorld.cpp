@@ -120,7 +120,7 @@ SimWorld::~SimWorld()
 
 void SimWorld::Draw()
 {
-
+  
   car->drawStats() ;
 
   // Draw the vehicle, but not if in cockpit mode
