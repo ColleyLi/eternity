@@ -6,6 +6,7 @@ SimWorld::SimWorld()
 {
   info( "Constructing simworld.." ) ;
 
+  simState = Running ;
   camMode =FollowCam ; // defaults to FreeCam mode
 
   car = new Car() ;
@@ -101,6 +102,9 @@ SimWorld::SimWorld()
     VertexTC( limits,  limits, z, 1, 0 )
     
   ) ;
+
+
+
   
 /*
 // Solid green grass

@@ -22,6 +22,14 @@ typedef vector<ObjFile*>::iterator /* as simply */ VectorObjIter ;
 class Car
 {
 public:
+
+  /// A structure containing
+  /// all the controller's gains.
+  struct ControllerGains
+  {
+    
+  } gains ;
+
   #pragma region renderer
   /// Collections of OBJ files to use
   /// when rendering the car
@@ -39,7 +47,7 @@ public:
 
   /// Whether to draw the angle / force
   /// steering debug lines or not
-  bool drawDebugLines ;
+  bool drawDebugLines, drawDebugText ;
   #pragma endregion
 
   /// Make simulation run faster

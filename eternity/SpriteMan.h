@@ -102,7 +102,7 @@ public:
   // Gets you the measurement dimensions
   // that a boxful of text WOULD have when
   // it is drawn.
-  void getBoxDimensions( int fontId, char *str, RECT &r ) ;
+  void getBoxDimensions( int fontId, const char *str, RECT &r ) ;
 
 
   /*
@@ -117,12 +117,12 @@ public:
   // Draws a string center screen.
   // If you pass DEFAULT_FONT(-1) for fontId,
   // you get a default font (which is just Arial 18)
-  void drawString( int fontId, char *str, D3DCOLOR color ) ;
+  void drawString( int fontId, const char *str, D3DCOLOR color ) ;
 
   // Draw a string with its top left corner at position x, y,
   // bounded by a box of boxWidth, boxHeight pixels.  Text
   // wraps automatically.
-  void drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight ) ;
+  void drawString( int fontId, const char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight ) ;
 
   // formatOptions:
   // DT_LEFT - left align text
@@ -133,10 +133,10 @@ public:
   // DT_BOTTOM - mashes text to bottom of box
   // So if you want TOP LEFT aligned text,
   // use (DT_TOP | DT_LEFT)
-  void drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight, DWORD formatOptions ) ;
+  void drawString( int fontId, const char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight, DWORD formatOptions ) ;
 
-  void drawString( int fontId, char *str, D3DCOLOR color, RECT &r ) ;
-  void drawString( int fontId, char *str, D3DCOLOR color, RECT &r, DWORD formatOptions ) ;
+  void drawString( int fontId, const char *str, D3DCOLOR color, RECT &r ) ;
+  void drawString( int fontId, const char *str, D3DCOLOR color, RECT &r, DWORD formatOptions ) ;
 
 
   /*
@@ -191,24 +191,24 @@ public:
   /* Creates boxed text as a sprite
   Uses the default font (Arial 18) to draw the text
   in the textColor you specify */
-  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor ) ;
+  void boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor ) ;
 
   /* Puts text against a square
   fitted background. */
-  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor ) ;
+  void boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor ) ;
 
   /* The "padding" parameter is how much space to pad out around the sides. */
-  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, int padding ) ;
+  void boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, int padding ) ;
 
   /* the RECT for padding specifies left, top, right, bottom padding. */
-  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding ) ;
+  void boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding ) ;
   
   /* Boxed text has fontName, size, and boldness you specify.
   Boldness:  Should a number between 0 and 1000.  400 is considered "normal", while 700 is considered "bold". */
-  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, char *fontName, float size, int boldness, bool italics ) ;
+  void boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, const char *fontName, float size, int boldness, bool italics ) ;
 
 private:
-  void boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, ID3DXFont *font ) ;
+  void boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, ID3DXFont *font ) ;
 
 
 
@@ -225,20 +225,20 @@ public:
   // Load a static sprite with only 1 frame (not animated)
   // Loads width and height values from file
   // Assume background color is Photoshop's "transparent"
-  void loadSprite( int id, char *filename ) ;
+  void loadSprite( int id, const char *filename ) ;
 
   // Load a static sprite from a file
   // consider "backgroundColor" as
   // the transparent color (doesn't have to be
   // photoshop "transparent")
-  void loadSprite( int id, char *filename, D3DCOLOR backgroundColor ) ;
+  void loadSprite( int id, const char *filename, D3DCOLOR backgroundColor ) ;
 
   // Load an animated sprite from a file,
   // singleSpriteWidth and singleSpriteHeight
   // are the width and height of a single frame,
   // numFrames is the number of frames you've got
   // in the sprite.
-  void loadSprite( int id, char *filename,
+  void loadSprite( int id, const char *filename,
     D3DCOLOR backgroundColor,
     int singleSpriteWidth,
     int singleSpriteHeight,

@@ -187,7 +187,7 @@ void SpriteMan::drawBoxCentered( D3DCOLOR color, int xCenter, int yCenter, int w
   DX_CHECK( id3dxSpriteRenderer->End(), "End draw box, sprite" ) ;
 }
 
-void SpriteMan::getBoxDimensions( int fontId, char *str, RECT &r )
+void SpriteMan::getBoxDimensions( int fontId, const char *str, RECT &r )
 {
   // Retrieve the font
   ID3DXFont *font = id3dxDefaultFont ;
@@ -209,7 +209,7 @@ void SpriteMan::getBoxDimensions( int fontId, char *str, RECT &r )
     DT_CALCRECT /* | dtOptions */, 0 ) ;
 }
 
-void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color )
+void SpriteMan::drawString( int fontId, const char *str, D3DCOLOR color )
 {
   RECT rect ;
   SetRect( &rect, 0, 0, screenWidth, screenHeight ) ;
@@ -217,7 +217,7 @@ void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color )
   drawString( fontId, str, color, rect, DT_CENTER | DT_VCENTER ) ;
 }
 
-void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight )
+void SpriteMan::drawString( int fontId, const char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight )
 {
   RECT rect ;
   SetRect( &rect, x, y, x + boxWidth, y + boxHeight ) ;
@@ -225,7 +225,7 @@ void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, float x, floa
   drawString( fontId, str, color, rect, DT_CENTER | DT_VCENTER ) ;
 }
 
-void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight, DWORD formatOptions )
+void SpriteMan::drawString( int fontId, const char *str, D3DCOLOR color, float x, float y, float boxWidth, float boxHeight, DWORD formatOptions )
 {
   RECT rect ;
   SetRect( &rect, x, y, x + boxWidth, y + boxHeight ) ;
@@ -233,12 +233,12 @@ void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, float x, floa
   drawString( fontId, str, color, rect, formatOptions ) ;
 }
 
-void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, RECT &rect )
+void SpriteMan::drawString( int fontId, const char *str, D3DCOLOR color, RECT &rect )
 {
   drawString( fontId, str, color, rect, DT_CENTER | DT_VCENTER ) ;
 }
 
-void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, RECT &rect, DWORD formatOptions )
+void SpriteMan::drawString( int fontId, const char *str, D3DCOLOR color, RECT &rect, DWORD formatOptions )
 {
   // Retrieve the font
   ID3DXFont *font = id3dxDefaultFont ;
@@ -259,30 +259,30 @@ void SpriteMan::drawString( int fontId, char *str, D3DCOLOR color, RECT &rect, D
 
 // Generates you a texture with colored
 // text on a clear background
-void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor )
+void SpriteMan::boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor )
 {
   RECT rect = { 0 } ;
   boxedTextSprite( spriteId, str, textColor, 0, rect, id3dxDefaultFont ) ;
 }
 
-void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor )
+void SpriteMan::boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor )
 {
   RECT rect = { 0 } ;
   boxedTextSprite( spriteId, str, textColor, backgroundColor, rect, id3dxDefaultFont ) ;
 }
 
-void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, int padding )
+void SpriteMan::boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, int padding )
 {
   RECT rect = { padding, padding, padding, padding } ;
   boxedTextSprite( spriteId, str, textColor, backgroundColor, rect, id3dxDefaultFont ) ;
 }
 
-void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding )
+void SpriteMan::boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding )
 {
   boxedTextSprite( spriteId, str, textColor, backgroundColor, padding, id3dxDefaultFont ) ;
 }
 
-void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, char *fontName, float size, int boldness, bool italics )
+void SpriteMan::boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, const char *fontName, float size, int boldness, bool italics )
 {
   ID3DXFont *id3dxFont ;
 
@@ -296,7 +296,7 @@ void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3
 }
 
 //private:
-void SpriteMan::boxedTextSprite( int spriteId, char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, ID3DXFont *font ) 
+void SpriteMan::boxedTextSprite( int spriteId, const char *str, D3DCOLOR textColor, D3DCOLOR backgroundColor, RECT padding, ID3DXFont *font ) 
 {
   #pragma region compute the limiting rect
   RECT computedRect = { 0, 0, 1, 1 } ;
@@ -542,14 +542,14 @@ void SpriteMan::drawLine( D3DXVECTOR2 & start, D3DXVECTOR2 & end, D3DCOLOR color
 
 
 
-void SpriteMan::loadSprite( int spriteId, char *filename )
+void SpriteMan::loadSprite( int spriteId, const char *filename )
 {
   loadSprite( spriteId, filename, D3DCOLOR_ARGB( 0,0,0,0 ),
     SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
     SPRITE_READ_FROM_FILE, 0.5f ) ;
 }
 
-void SpriteMan::loadSprite( int spriteId, char *filename, D3DCOLOR backgroundColor )
+void SpriteMan::loadSprite( int spriteId, const char *filename, D3DCOLOR backgroundColor )
 {
   loadSprite( spriteId, filename, backgroundColor,
     SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
@@ -558,7 +558,7 @@ void SpriteMan::loadSprite( int spriteId, char *filename, D3DCOLOR backgroundCol
 
 // id is how you will refer to this sprite after its been loaded
 // filename is just the filename on the disk drive
-void SpriteMan::loadSprite( int spriteId, char *filename,
+void SpriteMan::loadSprite( int spriteId, const char *filename,
                          D3DCOLOR backgroundColor,
                          int singleSpriteWidth, int singleSpriteHeight,
                          int numFrames, float timeBetweenFrames )
@@ -687,6 +687,13 @@ void SpriteMan::drawAxes( float LEN )
 
 void SpriteMan::addSprite( int spriteId, Sprite *sprite )
 {
+  if( !spriteId )
+  {
+    warning( "Created a sprite with ID 0.  "
+      "You should use only positive numbers "
+      "to create your sprites, like 1 or 2 or 3 or 5000." ) ;
+  }
+
   SpriteMapIter existingSpritePtr = sprites.find( spriteId ) ;
   if( existingSpritePtr != sprites.end() )
   {

@@ -51,7 +51,7 @@ private:
   IDirect3DTexture9 *spritesheet ;
   D3DXIMAGE_INFO imageInfo ;
 
-  char *originalFilename ;
+  const char *originalFilename ;
   int spriteWidth ;
   int spriteHeight ;
 
@@ -115,7 +115,7 @@ public:
   // If you're using PNG images, then you don't
   // need a background color (because PNG supports
   // transparency inside the file itself)
-  Sprite( IDirect3DDevice9 *gpu, char *filename,
+  Sprite( IDirect3DDevice9 *gpu, const char *filename,
     D3DCOLOR backgroundColor = D3DCOLOR_ARGB( 0,0,0,0 ), // defaults to transparent black (i.e. no effect)
     
     // If you are loading in
@@ -299,7 +299,7 @@ private:
     return hr ;
   }
 
-  HRESULT loadTexturePow2( IDirect3DDevice9 *gpu, char *filename, D3DCOLOR backgroundColor )
+  HRESULT loadTexturePow2( IDirect3DDevice9 *gpu, const char *filename, D3DCOLOR backgroundColor )
   {
     // D3DXCreateTextureFromFile()
     // http://msdn.microsoft.com/en-us/library/ee417125%28VS.85%29.aspx

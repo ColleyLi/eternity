@@ -484,7 +484,7 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
   }
 }
 
-wchar_t* getUnicode( char* ascii )
+wchar_t* getUnicode( const char* ascii )
 {
   int len = strlen( ascii ) ;
   WCHAR * wstr = new WCHAR[ len+1 ] ;

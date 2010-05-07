@@ -15,7 +15,7 @@ bool __RUNNING__ = true ;
 
 
 
-
+#pragma region carsim
 double t ; // global sense of time
 
 // Start Carsim up
@@ -165,9 +165,15 @@ void carsimSetup( char* simfile )
 
   return;
 }
+#pragma endregion
 
-
-
+#pragma region textfield callbacks
+void updateK1()
+{
+  puts( "Updating k1" ) ;
+  
+}
+#pragma endregion
 
 void Init()
 {
@@ -181,7 +187,23 @@ void Init()
   window->loadSprite( Road2, ASSET( "sprites/Road2.png" ) ) ;
   window->loadSprite( TachBack, ASSET( "sprites/tach-back-3.png" ) ) ;
   window->loadSprite( SteeringWheel, ASSET( "sprites/steering-white.png" ) ) ;
+  window->loadSprite( MouseCursor, ASSET( "sprites/MouseCursor.png" ) ) ;
+  
 
+  // Create a few buttons
+  window->createTextFieldWithLabel(
+    
+    UIObjects::TextFieldk1,
+    TextField::Numeric,
+    "", 
+    "k1",
+    new Callback0( 0, updateK1 ),
+    D3DCOLOR_XRGB(255,255,0),
+    D3DCOLOR_XRGB(  0, 42,0),
+    Fonts::Arial16,
+    40, 40, 200, 40
+  ) ;
+  
   window->loadSound( Screech, ASSET("sounds/Generic-Tire-01_Skid-01.wav"), FMOD_3D ) ;
 
   window->loadSound( EngineLowIn, ASSET("sounds/Generic_Engine_01_L4_2.4L_0.0_Load_02_Low_RPM.WAV"), FMOD_3D) ;
@@ -195,6 +217,10 @@ void Init()
 
   window->createPitchShiftToChannel( c ) ;
   
+  
+
+
+
   
 
 
@@ -230,16 +256,23 @@ void Init()
 
   //window->fullScreenInMaxResolution() ;
   //window->setDefaultRenderStateOptions();
-
 }
 
-void Update()
+/// runs simulator
+void RunSimulation()
 {
-  
-  #pragma region camera motion and other ui funcs
+  // Update carsim.  this steps
+  // the carsim simulator by one frame.
+  carsimUpdate() ;
 
+  // Update lap time
+  simWorld->car->lapTime += window->getTimeElapsedSinceLastFrame() *
+    simWorld->car->simStepsFrame ;
+}
 
-
+/// camera motion and other ui funcs
+void UpdateCamera()
+{
   const static float increment = 0.005f ; 
 
   if( simWorld->camMode == SimWorld::FreeCam )
@@ -303,13 +336,10 @@ void Update()
 
   // set the window's view by whatever the camera's doing
   window->setViewBYCAMERA() ;
+}
 
-
-
-
-
-
-
+void DoOtherKeyboardCommands()
+{
   // Change fill mode
   if( window->keyJustPressed( '0' ) )
   {
@@ -346,6 +376,9 @@ void Update()
 
   if( window->keyJustPressed( VK_OEM_4 ) ) // VK_OEM_4 is [{
     simWorld->car->drawDebugLines = ! simWorld->car->drawDebugLines ;
+
+  if( window->keyJustPressed( VK_OEM_6 ) )
+    simWorld->car->drawDebugText = ! simWorld->car->drawDebugText ;
 
   // hide the car, debug mode
   if( window->keyJustPressed( 'C' ) )
@@ -403,18 +436,51 @@ void Update()
   {
     window->getCamera()->goTo( simWorld->car->getPos() ) ;
   }
-  #pragma endregion
 
 
+  if( window->keyJustPressed( VK_SPACE ) )
+  {
+    if( simWorld->isPaused() )
+      simWorld->unpause() ;
+    else
+      simWorld->pause();
+  }
+}
 
-  // Update carsim.  this steps
-  // the carsim simulator by one frame.
-  carsimUpdate() ;
+void Update()
+{
 
-  // Update lap time
-  simWorld->car->lapTime += window->getTimeElapsedSinceLastFrame() *
-    simWorld->car->simStepsFrame ;
+  switch( simWorld->simState )
+  {
+    
+  case SimWorld::TitleScreen:
+    break;
 
+  case SimWorld::Running:
+    UpdateCamera() ;
+    DoOtherKeyboardCommands() ;
+    RunSimulation() ;
+    break;
+
+  case SimWorld::Paused:
+    // We DO NOT run the simulation here
+    // and all other manipulations aren't allowed
+    // 
+
+    //UpdateCamera() ;
+    //DoOtherKeyboardCommands() ;
+
+    if( window->mouseJustPressed( Mouse::Left ) )
+    {
+      window->hitTestUIObjects( window->getMouseX(), window->getMouseY() ) ;
+    }
+
+    // check the quit command only
+    if( window->keyJustPressed( VK_ESCAPE ) )
+      __RUNNING__ = false ;
+
+    break;
+  }
 
   
 
@@ -422,39 +488,87 @@ void Update()
 }
 
 
-// DO ALL DRAWING HERE.
-void Draw()
+
+void DrawSimulatorState()
 {
   // Reset the world xform
   D3DXMATRIX identity ;
   D3DXMatrixIdentity( &identity ) ;
   window->setWorld( &identity ) ;
 
-
-  
   window->setDrawingMode( D3 ) ; // 3d
-  
 
   // draw axes, 50 units in length
   window->setVertexDeclaration( D3DWindow::PositionColor ) ;
   window->setLighting( false ) ;
   window->drawAxes( 50.0f ) ;
 
-
   // Call ThreeDMan's draw function.
   // This draws the road.
   window->draw3DObjects() ;
 
-
+  // Draw the simulator state
   simWorld->Draw() ;
+}
 
-  // draw the mouse cursor with this sprite.
-  //window->drawMouseCursor( Mario ) ;
+void DrawMenuOptions()
+{
+  window->drawBox(
+    D3DCOLOR_ARGB( 180, 0, 0, 0 ),
+    0, 0, window->getWidth(), window->getHeight() ) ;
 
+
+
+  char buf[300];
+  float x = 120 ;
+  float y = 40 ;
+  
+  sprintf( buf, "kSteering %.2f", 35.0 ) ;
+  window->drawString( 
+    Arial16, buf, Color::Yellow,
+    x, y, 100, 100
+  ) ;
+
+
+  window->drawUIObjects() ;
   //window->drawFrameCounter(); // erase this if you don't like
   // the frame counter in the top right corner
 
   //window->drawTimer() ;
+
+  ////
+  // draw the mouse cursor with this sprite.
+  // This should always be last so the mouse
+  // appears on top of everything else.
+  window->drawMouseCursor( MouseCursor ) ;
+
+}
+
+
+// DO ALL DRAWING HERE.
+void Draw()
+{
+
+  switch( simWorld->simState )
+  {
+  case SimWorld::TitleScreen:
+    window->drawString( Fonts::Arial16, "How did you get here?\nQuit and restart!", Color::White ) ;
+    break;
+
+  case SimWorld::Running:
+    DrawSimulatorState() ;
+    break;
+
+  case SimWorld::Paused:
+    DrawSimulatorState() ;
+    // If paused, draw options on top
+    // and show the mouse cursor
+    DrawMenuOptions() ;
+    break;
+
+
+  }
+  
 }
 
 
@@ -500,6 +614,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam 
   case WM_CHAR:
     {
       //info( "You pushed %c, ascii=%d", wparam, wparam ) ;
+      window->sendCharacter( wparam ) ;
     }
     return 0 ;
 

@@ -122,7 +122,7 @@ GDIPlusTexture::~GDIPlusTexture()
 
 GDIPlusTexture*
 GDIPlusTexture::CreateFromFile(
-  IDirect3DDevice9 *gpu, char *filename
+  IDirect3DDevice9 *gpu, const char *filename
 )
 {
   // Load the image

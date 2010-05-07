@@ -10,6 +10,8 @@ Car::Car()
 
   drawDebugLines = false ;
 
+  drawDebugText = true ;
+
   hidden = false ;
 
   manualControl = false ; // start with automatic control on
@@ -177,231 +179,238 @@ void Car::drawOutputString( char *str, D3DCOLOR color, float x, float y )
 void Car::drawStats()
 {
 
-  #define PVEC(theVec) theVec.x, theVec.y, theVec.z
-  
-  window->setDrawingMode( D2 ) ; // 2d
+
   char buf[300];
   
-  #pragma region text
   D3DCOLOR color= D3DCOLOR_XRGB(255,255,255) ;
 
-  int y = 0 ;
-
-  sprintf( buf, "%.2f", simStepsFrame ) ;
-  window->drawString( TimesNewRoman24, buf, Color::White,
-    window->getWidth()-60, 20, 60, 20, DT_CENTER|DT_VCENTER ) ;
-
-  sprintf( buf, "%.2f", lapTime ) ;
-  window->drawString( Arial16, buf, Color::White,
-    window->getWidth()-60, 45, 60, 20, DT_CENTER|DT_VCENTER ) ;
-
-  
-
-  /*
-  // Position.  Not very useful for evaluating the controller.
-  sprintf( buf, "pos: (%.2f, %.2f, %.2f)",
-    CARSIM(x), CARSIM(y), CARSIM(z) ) ;
-  window->drawString(
-    Arial16, buf, color,
-    20, y+=20, 600, 600,
-    DT_LEFT | DT_TOP ) ;
-  */
-
-  // AUTOMATIC OR MANUAL CONTROL
-  drawOutputString(
-    manualControl?"MANUAL CONTROL":"AUTOMATIC CONTROL",
-    manualControl?D3DCOLOR_XRGB(255,255,0):color,
-    20, y+=20 ) ;
-
-  sprintf( buf, "brake: %.2f [Mpa]", CARSIM(brake)/1e6 ) ;
-  drawOutputString( buf, Color::AliceBlue,
-    20, y+=20 ) ;
-
-  /*
-  // Speed is displayed, so components aren't
-  // always useful
-  sprintf( buf, "vel: %.2f %.2f %.2f",
-    CARSIM(vx), CARSIM(vy), CARSIM(vz)  ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-  */
-
-  /*
-  // accelerations aren't always useful either
-  sprintf( buf, "acc: %.2f %.2f %.2f",
-    CARSIM(ax), CARSIM(ay), CARSIM(az)  ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-  */
-
-  /*
-  // Shown visually
-  sprintf( buf, "yaw: %.2f pitch: %.2f roll: %.2f",
-    CARSIM(yaw), CARSIM(pitch), CARSIM(roll) ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-  */
-
-  /*
-  sprintf( buf, "power: %.2f tach: %.2f",
-    CARSIM( tachAngle ),
-    CARSIM( speedoAngle )
-  ) ;
-  drawOutputString(
-    Arial16, buf, color,
-    20, y+=20 ) ;
-  */
-
-  /*
-  sprintf( buf, "slip=%.2f powerAv=%.2f",
-    CARSIM( betaSideSlip ),
-    CARSIM( PwrEngAv )
-  ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-  */
-
-  sprintf( buf, "tire spin:\n%.2f %.2f\n%.2f %.2f",
-    CARSIM( slipLongL1 ),
-    CARSIM( slipLongR1 ),
-    CARSIM( slipLongL2 ),
-    CARSIM( slipLongR2 )
-  ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-
-  y+=40 ; // because we used two \n above
-
-  sprintf( buf, "lat slip:\n%.2f %.2f\n%.2f %.2f",
-    CARSIM( slipLatL1 ),
-    CARSIM( slipLatR1 ),
-    CARSIM( slipLatL2 ),
-    CARSIM( slipLatR2 )
-  ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-
-  y+=40 ; // because we used two \n above
-
-
-  /*
-  sprintf( buf, "theirThrottle=%.2f theirSteering: %.2f",
-    CARSIM(theirThrottle), CARSIM(theirSteeringAngle) ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-  */
-
-  sprintf( buf, "L %.2f curv %.6f curvA %.6f curvFA %.6f",
-    L,
-    sCurvature,
-    sCurvatureAhead,
-    sCurvatureFarAhead
-  ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-
-
-  switch( speedCurveState )
+  if( drawDebugText )
   {
-  case SpeedCurveState::Chicane:
-    sprintf( buf, "Chicane" ) ;
-    color = Color::Red ;
-    break;
+    #pragma region text
 
-  case SpeedCurveState::CurveIntoStraight:
-    sprintf( buf, "CurveIntoStraight" ) ;
-    color = Color::Orange ;
-    break;
+    #define PVEC(theVec) theVec.x, theVec.y, theVec.z
+    
+    window->setDrawingMode( D2 ) ; // 2d
 
-  case SpeedCurveState::IntoSharpCurve:
-    sprintf( buf, "IntoSharpCurve" ) ;
-    color = Color::Red ;
-    break;
+    int y = 0 ;
 
-  case SpeedCurveState::OnCurve:
-    sprintf( buf, "OnCurve" ) ;
-    color = Color::Aqua ;
-    break;
+    sprintf( buf, "%.2f", simStepsFrame ) ;
+    window->drawString( TimesNewRoman24, buf, Color::White,
+      window->getWidth()-60, 20, 60, 20, DT_CENTER|DT_VCENTER ) ;
 
-  case SpeedCurveState::StraightAway:
-    sprintf( buf, "StraightAway" ) ;
-    color = Color::Green ;
-    break;
+    sprintf( buf, "%.2f", lapTime ) ;
+    window->drawString( Arial16, buf, Color::White,
+      window->getWidth()-60, 45, 60, 20, DT_CENTER|DT_VCENTER ) ;
 
-  case SpeedCurveState::StraightIntoGentleCurve:
-    sprintf( buf, "StraightIntoGentleCurve" ) ;
-    color = Color::Blue ;
-    break;
+    
 
-  case SeeFarAheadCurve:
-    sprintf( buf, "SeeFarAheadCurve" ) ;
-    color = Color::Orange ;
-  }
+    /*
+    // Position.  Not very useful for evaluating the controller.
+    sprintf( buf, "pos: (%.2f, %.2f, %.2f)",
+      CARSIM(x), CARSIM(y), CARSIM(z) ) ;
+    window->drawString(
+      Arial16, buf, color,
+      20, y+=20, 600, 600,
+      DT_LEFT | DT_TOP ) ;
+    */
 
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
+    // AUTOMATIC OR MANUAL CONTROL
+    drawOutputString(
+      manualControl?"MANUAL CONTROL":"AUTOMATIC CONTROL",
+      manualControl?D3DCOLOR_XRGB(255,255,0):color,
+      20, y+=20 ) ;
 
-  
+    sprintf( buf, "brake: %.2f [Mpa]", CARSIM(brake)/1e6 ) ;
+    drawOutputString( buf, Color::AliceBlue,
+      20, y+=20 ) ;
 
-  /*
-  sprintf( buf, "curv@S=%.6f, curv@SA=%.6f |SA-A|=%.6f SMax=%.6f", // targetH=%.2f targetHL=%.2f",
-    sCurvature, sCurvatureAhead,
-    fabs(sCurvatureAhead-sCurvature),
-    sCurvatureMaxSoFar  //, sTargetHeading, sTargetHeadingL
-  ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-  */
+    /*
+    // Speed is displayed, so components aren't
+    // always useful
+    sprintf( buf, "vel: %.2f %.2f %.2f",
+      CARSIM(vx), CARSIM(vy), CARSIM(vz)  ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
 
-  /*
-  sprintf( buf, "alongroad=(%.2f,%.2f,%.2f)",
-    PVEC(alongRoad) ) ;
-  drawOutputString(
-    buf, color,
-    20, y+=20 ) ;
-  */
+    /*
+    // accelerations aren't always useful either
+    sprintf( buf, "acc: %.2f %.2f %.2f",
+      CARSIM(ax), CARSIM(ay), CARSIM(az)  ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
 
-  
-  drawOutputString(
-    courseState==OnCourse?"On course":"Off course",
-    courseState==OnCourse?Color::Green:Color::Red,
-    20, y+=20 ) ;
+    /*
+    // Shown visually
+    sprintf( buf, "yaw: %.2f pitch: %.2f roll: %.2f",
+      CARSIM(yaw), CARSIM(pitch), CARSIM(roll) ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
 
-
-
-  /*
-  sprintf( buf, "angle: %.2f posToSNearest (%.2f, %.2f, %.2f)",
-      angleBetweenFwdAndSNearest, 
-      PVEC( posToSNearest )
+    /*
+    sprintf( buf, "power: %.2f tach: %.2f",
+      CARSIM( tachAngle ),
+      CARSIM( speedoAngle )
     ) ;
-  drawOutputString(
-    buf, Color::Red,
-    20, y+=20 ) ;
-  */
-  
-  
-  drawOutputString(
-    lapTimesString, Color::Yellow,
-    20, y+=20 ) ;
+    drawOutputString(
+      Arial16, buf, color,
+      20, y+=20 ) ;
+    */
 
-  //double incrBy = speedTarget - CARSIM(speedometer) ;
-  sprintf( buf, "target-speed %.2f", speedTarget ) ;
-  drawOutputString(
-    buf,
-    color,
-    20, y+=20 ) ;
+    /*
+    sprintf( buf, "slip=%.2f powerAv=%.2f",
+      CARSIM( betaSideSlip ),
+      CARSIM( PwrEngAv )
+    ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
 
-  #pragma endregion
+    sprintf( buf, "tire spin:\n%.2f %.2f\n%.2f %.2f",
+      CARSIM( slipLongL1 ),
+      CARSIM( slipLongR1 ),
+      CARSIM( slipLongL2 ),
+      CARSIM( slipLongR2 )
+    ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+
+    y+=40 ; // because we used two \n above
+
+    sprintf( buf, "lat slip:\n%.2f %.2f\n%.2f %.2f",
+      CARSIM( slipLatL1 ),
+      CARSIM( slipLatR1 ),
+      CARSIM( slipLatL2 ),
+      CARSIM( slipLatR2 )
+    ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+
+    y+=40 ; // because we used two \n above
+
+
+    /*
+    sprintf( buf, "theirThrottle=%.2f theirSteering: %.2f",
+      CARSIM(theirThrottle), CARSIM(theirSteeringAngle) ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
+
+    /*
+    // These were relevant earlier
+    sprintf( buf, "L %.2f curv %.6f curvA %.6f curvFA %.6f",
+      L,
+      sCurvature,
+      sCurvatureAhead,
+      sCurvatureFarAhead
+    ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
+
+    switch( speedCurveState )
+    {
+    case SpeedCurveState::Chicane:
+      sprintf( buf, "Chicane" ) ;
+      color = Color::Red ;
+      break;
+
+    case SpeedCurveState::CurveIntoStraight:
+      sprintf( buf, "CurveIntoStraight" ) ;
+      color = Color::Orange ;
+      break;
+
+    case SpeedCurveState::IntoSharpCurve:
+      sprintf( buf, "IntoSharpCurve" ) ;
+      color = Color::Red ;
+      break;
+
+    case SpeedCurveState::OnCurve:
+      sprintf( buf, "OnCurve" ) ;
+      color = Color::Aqua ;
+      break;
+
+    case SpeedCurveState::StraightAway:
+      sprintf( buf, "StraightAway" ) ;
+      color = Color::Green ;
+      break;
+
+    case SpeedCurveState::StraightIntoGentleCurve:
+      sprintf( buf, "StraightIntoGentleCurve" ) ;
+      color = Color::Blue ;
+      break;
+
+    case SeeFarAheadCurve:
+      sprintf( buf, "SeeFarAheadCurve" ) ;
+      color = Color::Orange ;
+    }
+
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+
+    
+
+    /*
+    sprintf( buf, "curv@S=%.6f, curv@SA=%.6f |SA-A|=%.6f SMax=%.6f", // targetH=%.2f targetHL=%.2f",
+      sCurvature, sCurvatureAhead,
+      fabs(sCurvatureAhead-sCurvature),
+      sCurvatureMaxSoFar  //, sTargetHeading, sTargetHeadingL
+    ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
+
+    /*
+    sprintf( buf, "alongroad=(%.2f,%.2f,%.2f)",
+      PVEC(alongRoad) ) ;
+    drawOutputString(
+      buf, color,
+      20, y+=20 ) ;
+    */
+
+    
+    drawOutputString(
+      courseState==OnCourse?"On course":"Off course",
+      courseState==OnCourse?Color::Green:Color::Red,
+      20, y+=20 ) ;
+
+
+
+    /*
+    sprintf( buf, "angle: %.2f posToSNearest (%.2f, %.2f, %.2f)",
+        angleBetweenFwdAndSNearest, 
+        PVEC( posToSNearest )
+      ) ;
+    drawOutputString(
+      buf, Color::Red,
+      20, y+=20 ) ;
+    */
+    
+    
+    drawOutputString(
+      lapTimesString, Color::Yellow,
+      20, y+=20 ) ;
+
+    //double incrBy = speedTarget - CARSIM(speedometer) ;
+    sprintf( buf, "target-speed %.2f", speedTarget ) ;
+    drawOutputString(
+      buf,
+      color,
+      20, y+=20 ) ;
+    #pragma endregion
+  }
 
   #pragma region dials etc
 
@@ -1048,8 +1057,8 @@ void Car::updateAutomaticControlValues()
     window->draw3DLine( vecSNearest, Color::Magenta,
       vecSAhead, Color::Magenta ) ;
 
-    window->draw3DLine( vecSNearest, Color::Yellow,
-      vecSFarAhead, Color::Yellow ) ;
+    //window->draw3DLine( vecSNearest, Color::Yellow,
+    //  vecSFarAhead, Color::Yellow ) ;
 
     // a line from origin to where the car is
     window->draw3DLine(

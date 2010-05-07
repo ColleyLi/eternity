@@ -22,12 +22,37 @@ public:
   
   CamMode camMode ;
 
+  enum SimState
+  {
+    TitleScreen,
+    Running,
+    Paused
+  } ;
+  SimState simState ;
+
   SimWorld() ;
   ~SimWorld() ;
 
   void LoadCarSimFile( char* filename ) ;
 
   void Draw() ;
+
+  void pause()
+  {
+    window->pause() ;
+    simState = Paused ;
+  }
+  
+  bool isPaused()
+  {
+    return simState == Paused ;
+  }
+
+  void unpause()
+  {
+    window->unpause() ;
+    simState = Running ;
+  }
 
 } ;
 

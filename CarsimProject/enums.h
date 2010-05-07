@@ -8,7 +8,8 @@ enum Sprites
   Road1,
   Road2,
   TachBack,
-  SteeringWheel
+  SteeringWheel,
+  MouseCursor
 } ;
 
 enum Sounds
@@ -25,6 +26,13 @@ enum Fonts
   Arial8,
   Arial16,
   TimesNewRoman24
+} ;
+
+enum UIObjects
+{
+  TextFieldk1,
+  TextFieldk2,
+  TextFieldK3
 } ;
 
 #endif

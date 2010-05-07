@@ -209,7 +209,7 @@ void addSlidingSquarewave( short *data, int durationInSamples, int offset,
 
 /// Gets you a unicode copy of the string you pass it.
 /// YOU ARE RESPONSIBLE FOR CALLING delete[] on the string returned!
-wchar_t* getUnicode( char* ascii ) ;
+wchar_t* getUnicode( const char* ascii ) ;
 
 /// b must exist.
 #define cstrcpy(a,b) if(b){a=(char*)malloc( strlen(b)+1 ) ; strcpy(a,b) ;}

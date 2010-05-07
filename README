@@ -500,6 +500,20 @@
   
 May 6 / 2010 v0.1.8-carsim
   - Controller tuning
+
+May 7 / 2010 v0.1.8-carsim
+  - Button and TextField
+  - Changed all `char *` signatures 
+    in SpriteMan to `const char *`
+    This is a major change but shouldn't
+    break anything
+    The motivation for this was to allow
+    use of STL strings because STL string.c_str()
+    always is const char*.
+  
+  
+  
+  
   
   - TODO:
     - DOXYGEN-ATE all files

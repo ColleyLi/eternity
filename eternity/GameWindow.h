@@ -8,6 +8,7 @@
 #include "InputMan.h"
 #include "Callback.h"
 #include "ThreeDMan.h"
+#include "ButtonMan.h"
 
 /*
   __ _  __ _ _ __ ___   ___ 
@@ -18,7 +19,7 @@
 
 */
 
-class GameWindow : public D3DWindow, public SoundMan, public SpriteMan, public InputMan, public ThreeDMan
+class GameWindow : public D3DWindow, public SoundMan, public SpriteMan, public InputMan, public ThreeDMan, public ButtonMan
 {
 protected:
   
@@ -145,6 +146,107 @@ public:
   void draw3DObjects() ;
 
   void setViewBYCAMERA() ;
+
+
+
+  // Buttonmanager functions
+  void drawUIObjects()
+  {
+    foreach( ButtonMapIter, buttonIter, buttons )
+    {
+      Button *b = buttonIter->second ;
+
+      // Draw the background box
+      drawBox( b->bkgColor, b->left(), b->top(), b->width(), b->height() ) ;
+
+      // Only draw the background sprite if
+      // it is not 0.  0 is reserved for
+      // meaning.. "no sprite"
+      if( b->backgroundSpriteId )
+        drawSprite( b->backgroundSpriteId,
+          b->left(), b->top(),
+          b->width(), b->height(), 0.0f,
+          b->spriteModulatingColor,
+          SpriteCentering::TopLeft ) ;
+  
+      // Draw the text inside it
+      drawString(
+        b->fontId,
+        b->text.c_str(),
+        b->textColor,
+        b->left(), b->top(), b->width(), b->height(),
+        DT_CENTER | DT_VCENTER ) ;
+    }
+
+    foreach( TextFieldMapIter, tfIter, textfields )
+    {
+      TextField *tf = tfIter->second ;
+
+      // Draw the background box
+      drawBox( tf->bkgColor, tf->left(), tf->top(), tf->width(), tf->height() ) ;
+
+      // Only draw the background sprite if
+      // it is not 0.  0 is reserved for
+      // meaning.. "no sprite"
+      if( tf->backgroundSpriteId )
+        drawSprite( tf->backgroundSpriteId,
+          tf->left(), tf->top(),
+          tf->width(), tf->height(), 0.0f,
+          tf->spriteModulatingColor,
+          SpriteCentering::TopLeft ) ;
+  
+      // Draw the text inside it
+
+      // if it has a label, draw the label
+      // in the center left, and the text
+      // center right.  Else draw the text
+      // center
+      if( tf->labelText.length() )
+      {
+        drawString(
+          tf->fontId,
+          tf->labelText.c_str(),
+          tf->textColor,
+          tf->left(), tf->top(), tf->width(), tf->height(),
+          DT_LEFT | DT_VCENTER ) ;
+
+        drawString(
+          tf->fontId,
+          tf->text.c_str(),
+          tf->textColor,
+          tf->left(), tf->top(), tf->width(), tf->height(),
+          DT_RIGHT | DT_VCENTER ) ;     
+      }
+      else
+      {
+        // no label, so draw the text field of
+        // the text field centered
+        //!! THIS SHOULD BE A SETTABLE PARAM AS WELL.
+        drawString(
+          tf->fontId,
+          tf->text.c_str(),
+          tf->textColor,
+          tf->left(), tf->top(), tf->width(), tf->height(),
+          DT_CENTER | DT_VCENTER ) ;
+      }
+      // if this text field is
+      // the active object, draw the caret
+      // inside of it
+      if( tf == activeObject )
+      {
+        // (for now just draw a black box
+        // in its top right corner)
+        drawBox( D3DCOLOR_ARGB( 180, 255, 0, 0 ),
+          tf->right() - 4 - 2,
+          tf->top()+2,
+          4, 4 ) ;
+      }
+
+
+
+    }
+
+  }
 
 
 } ;

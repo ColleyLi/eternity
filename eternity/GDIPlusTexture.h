@@ -52,7 +52,7 @@ public:
   // .gif, .tiff, and .emf files while
   // the D3DX function cannot load them.
   static GDIPlusTexture* CreateFromFile(
-    IDirect3DDevice9 *gpu, char *filename
+    IDirect3DDevice9 *gpu, const char *filename
   ) ;
 
   ~GDIPlusTexture() ;

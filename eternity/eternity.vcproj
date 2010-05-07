@@ -295,6 +295,10 @@
 				Name="Managers"
 				>
 				<File
+					RelativePath=".\ButtonMan.h"
+					>
+				</File>
+				<File
 					RelativePath=".\InputMan.h"
 					>
 				</File>
