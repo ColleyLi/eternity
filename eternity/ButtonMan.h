@@ -557,7 +557,15 @@ public:
   void hitTestUIObjects( int x, int y )
   {
     // Start by assuming nothing was clicked on
-    activeObject = NULL ;
+
+    // need to call activeObject's "deselected" function
+    if( activeObject )
+    {
+      //!! For now call clicked(),
+      // which its its basic action function
+      activeObject->clicked() ;
+      activeObject = NULL ;
+    }
 
     foreach( ButtonMapIter, buttonIter, buttons )
     {
@@ -641,6 +649,8 @@ public:
           // if the selected object is a textfield,
           // that entry is finished.
           // 
+          // !! need to call deselected, call clicked() for now
+          activeObject->clicked() ; 
           activeObject=NULL;
         }
         else if( c == 9 )

@@ -168,10 +168,16 @@ void carsimSetup( char* simfile )
 #pragma endregion
 
 #pragma region textfield callbacks
-void updateK1()
+void updateK( double *var, int fromField )
 {
-  puts( "Updating k1" ) ;
+  info( "Replacing value %lf with value from %d", *var, fromField ) ;
   
+
+}
+
+void populateTextfields()
+{
+
 }
 #pragma endregion
 
@@ -188,21 +194,6 @@ void Init()
   window->loadSprite( TachBack, ASSET( "sprites/tach-back-3.png" ) ) ;
   window->loadSprite( SteeringWheel, ASSET( "sprites/steering-white.png" ) ) ;
   window->loadSprite( MouseCursor, ASSET( "sprites/MouseCursor.png" ) ) ;
-  
-
-  // Create a few buttons
-  window->createTextFieldWithLabel(
-    
-    UIObjects::TextFieldk1,
-    TextField::Numeric,
-    "", 
-    "k1",
-    new Callback0( 0, updateK1 ),
-    D3DCOLOR_XRGB(255,255,0),
-    D3DCOLOR_XRGB(  0, 42,0),
-    Fonts::Arial16,
-    40, 40, 200, 40
-  ) ;
   
   window->loadSound( Screech, ASSET("sounds/Generic-Tire-01_Skid-01.wav"), FMOD_3D ) ;
 
@@ -241,6 +232,38 @@ void Init()
   simWorld = new SimWorld() ;
 
 
+
+
+
+
+  Callback2<double*, int> *cb = new Callback2<double*, int>(
+    0,
+    updateK,
+    &simWorld->car->gains.kBrakeChicane,
+    TextFieldk1
+  ) ;
+
+  // Create a few buttons
+  window->createTextFieldWithLabel(
+    UIObjects::TextFieldk1,
+    TextField::Numeric,
+    "", 
+    "k1",
+    cb,
+    D3DCOLOR_XRGB(255,255,0),
+    D3DCOLOR_XRGB(  0, 42,0),
+    Fonts::Arial16,
+    200, 200, 200, 40
+  ) ;
+  
+
+
+
+
+
+
+
+
   // LOAD AND START UP CARSIM
   info( "Starting up CarSim . . . " ) ;
 
@@ -266,8 +289,11 @@ void RunSimulation()
   carsimUpdate() ;
 
   // Update lap time
-  simWorld->car->lapTime += window->getTimeElapsedSinceLastFrame() *
-    simWorld->car->simStepsFrame ;
+  simWorld->car->lapTime += 1.0 / 60.0 * simWorld->car->simStepsFrame ;
+
+  // There is CPU lag when you speed
+  // the simulation up.
+  //window->getTimeElapsedSinceLastFrame()
 }
 
 /// camera motion and other ui funcs
@@ -392,13 +418,6 @@ void DoOtherKeyboardCommands()
     window->screenshot() ;
   }
 
-  if( window->keyJustPressed( VK_ESCAPE ) )
-  {
-    // pop to tld
-    while( window->cdPop() ) ;
-
-    __RUNNING__ = false ;
-  }
 
   // Increase number of sim steps per frame
   if( window->keyJustPressed( VK_OEM_PLUS ))
@@ -437,6 +456,17 @@ void DoOtherKeyboardCommands()
     window->getCamera()->goTo( simWorld->car->getPos() ) ;
   }
 
+}
+
+void GlobalControls()
+{
+  if( window->keyJustPressed( VK_ESCAPE ) )
+  {
+    // pop to tld
+    while( window->cdPop() ) ;
+
+    __RUNNING__ = false ;
+  }
 
   if( window->keyJustPressed( VK_SPACE ) )
   {
@@ -445,6 +475,7 @@ void DoOtherKeyboardCommands()
     else
       simWorld->pause();
   }
+
 }
 
 void Update()
@@ -459,6 +490,7 @@ void Update()
   case SimWorld::Running:
     UpdateCamera() ;
     DoOtherKeyboardCommands() ;
+    GlobalControls();
     RunSimulation() ;
     break;
 
@@ -469,15 +501,14 @@ void Update()
 
     //UpdateCamera() ;
     //DoOtherKeyboardCommands() ;
+    GlobalControls();
 
     if( window->mouseJustPressed( Mouse::Left ) )
     {
       window->hitTestUIObjects( window->getMouseX(), window->getMouseY() ) ;
     }
 
-    // check the quit command only
-    if( window->keyJustPressed( VK_ESCAPE ) )
-      __RUNNING__ = false ;
+    
 
     break;
   }
@@ -517,17 +548,6 @@ void DrawMenuOptions()
     D3DCOLOR_ARGB( 180, 0, 0, 0 ),
     0, 0, window->getWidth(), window->getHeight() ) ;
 
-
-
-  char buf[300];
-  float x = 120 ;
-  float y = 40 ;
-  
-  sprintf( buf, "kSteering %.2f", 35.0 ) ;
-  window->drawString( 
-    Arial16, buf, Color::Yellow,
-    x, y, 100, 100
-  ) ;
 
 
   window->drawUIObjects() ;

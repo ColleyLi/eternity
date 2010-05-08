@@ -8,7 +8,7 @@ Car::Car()
 {
   simStepsFrame = 1 ;
 
-  drawDebugLines = false ;
+  drawDebugLines = true ;
 
   drawDebugText = true ;
 
@@ -44,8 +44,7 @@ void Car::loadTireModel( char *filename )
 
 void Car::userControlUpdate()
 {
-  const static double incrGas = 0.0005f, incrBrake=10000, incrSteer = 0.002f ;
-
+  const static double incrGas = 0.0005f, incrBrake=50000, incrSteer = 0.002f ;
 
   if( window->keyIsPressed( VK_UP ) )
   {
@@ -320,39 +319,46 @@ void Car::drawStats()
 
     switch( speedCurveState )
     {
-    case SpeedCurveState::Chicane:
-      sprintf( buf, "Chicane" ) ;
-      color = Color::Red ;
-      break;
-
-    case SpeedCurveState::CurveIntoStraight:
-      sprintf( buf, "CurveIntoStraight" ) ;
-      color = Color::Orange ;
-      break;
-
-    case SpeedCurveState::IntoSharpCurve:
-      sprintf( buf, "IntoSharpCurve" ) ;
-      color = Color::Red ;
-      break;
-
-    case SpeedCurveState::OnCurve:
-      sprintf( buf, "OnCurve" ) ;
-      color = Color::Aqua ;
-      break;
-
-    case SpeedCurveState::StraightAway:
+    case StraightAway:
       sprintf( buf, "StraightAway" ) ;
       color = Color::Green ;
       break;
 
-    case SpeedCurveState::StraightIntoGentleCurve:
+    case StraightIntoGentleCurve:
       sprintf( buf, "StraightIntoGentleCurve" ) ;
       color = Color::Blue ;
       break;
 
-    case SeeFarAheadCurve:
-      sprintf( buf, "SeeFarAheadCurve" ) ;
+    case StraightIntoSharpCurve:
+      sprintf( buf, "StraightIntoSharpCurve" ) ;
+      color = Color::Red ;
+      break;
+
+    case StraightSeeFarAheadCurve:
+      sprintf( buf, "StraightSeeFarAheadCurve" ) ;
       color = Color::Orange ;
+      break;
+
+    case CurveIntoStraight:
+      sprintf( buf, "CurveIntoStraight" ) ;
+      color = Color::Orange ;
+      break;
+
+    case Curve:
+      sprintf( buf, "Curve" ) ;
+      color = Color::Aqua ;
+      break;
+
+    case CurveIntoSharperCurve:
+      sprintf( buf, "CurveIntoSharperCurve" );
+      color = Color::Yellow;
+      break;
+
+    case Chicane:
+      sprintf( buf, "Chicane" ) ;
+      color = Color::Red ;
+      break;
+
     }
 
     drawOutputString(
@@ -850,7 +856,7 @@ void Car::control()
     // Just say you're always on curve here.
     // could create separate state, but not really necessary.
     // behavior is as if OnCurve
-    speedCurveState = SpeedCurveState::OnCurve ;
+    speedCurveState = Curve ;
 
     // Speed:  Take it slow when recovering.
     driveAt( 20, 0.75, 0.25, 5.0 ) ;
@@ -1103,63 +1109,165 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
   const static double eps = 0.0001 ;
 
   double absCurv = fabs( sCurvature ) ;
+
   if( absCurv > sCurvatureMaxSoFar )
     sCurvatureMaxSoFar = absCurv ; // just keep track of this
 
   double absCurvAhead = fabs( sCurvatureAhead ) ;
+  double absCurvFarAhead = fabs( sCurvatureFarAhead ) ;
 
   // If the curve is near 0, gun it basically.
   if( absCurv < eps &&
       absCurvAhead < eps )
   {
     // Near 0 curvature.  Gun it.
-    //CARSIM( throttle ) = 1.0 ;
-    driveAt(
-      400,  // aim for max speed 400 kph
-      10.0, // aggressive acceleration
-      1.0,  // allow full throttle
-      0.10  // shouldn't brake
-    ) ; 
-
     speedCurveState = StraightAway ;
+
+    // But what if we're on a straightaway
+    // and there's a huge curve far ahead?
+
+    // We're only concerned about curves
+    // far ahead if we're at high speeds
+    if( getSpeed() > 120 )
+      if( fabs( sCurvatureFarAhead ) > eps )
+        speedCurveState = StraightSeeFarAheadCurve ;
   }
 
-  // curv now near 0, but ahead, not.
-  // So, we CAN brake now easily
-  else if( absCurv < eps   &&    // we're ON straight now
-           absCurvAhead > 0.01 ) // but curve ahead
+  else if( absCurvAhead < eps &&
+           absCurvFarAhead < eps )
   {
-    // 0.01 says there's a significant curve ahead
-    // Start to drive at the speed that curve dictates.
+    // We're on a straight now,
+    // but we are definitely going into a straight
+    // gun it.
+    speedCurveState = CurveIntoStraight ;
+  }
 
-    // Here is where we can very very aggressively slow down
-    // if necessary, because we're not on a curve now.
-    driveAt(
-      getMaxSpeedForCurve(sCurvatureAhead), // get max speed by curvature
-      0.25,  // not too aggressive on the throttle
-      0.25,  // quarter throttle allowed
-      1.0   // high braking
-    ) ;
-
+  else if( absCurv < eps   &&    // we're ON straight now
+           absCurvAhead < 0.01 ) // but curve ahead
+  {
+    // Straight now, but ahead curve.
+    // So, we CAN brake now easily,
+    // pretty hard as well, since
+    // we're still on the straight
     speedCurveState = StraightIntoGentleCurve ;
   }
-
-
+  else if( absCurv < eps   &&    // on straight now
+           absCurvAhead > 0.01 )
+  {
+    // 0.01 says there's a significant curve ahead
+    speedCurveState = StraightIntoSharpCurve ;
+  }
   else
   {
+    // Assume we must be on some kind of curve
+    speedCurveState = Curve ;
+  }
+
+  ////////////
+  // Check for
+  // severe CURVATURE AHEAD
+  double diffCurve = fabs( sCurvature - sCurvatureAhead ) ;
+
+  // We want to detect if curvature ahead
+  // is much different from curvature now,
+  // including if it changes sign.
+  // We'll need to REDUCE SPEED.
+  // This states overrides any previous
+  // state selected.  This state is rare
+  // to enter.
+  if( diffCurve > 0.05 )
+  {
+    // if the sign is different, then its a chicane
+    if( !SameSign( sCurvature, sCurvatureAhead ) )
+      speedCurveState = Chicane ;  // twists
+    else
+      speedCurveState = CurveIntoSharperCurve ;
+  }
+
+
+
+
+
+
+
+
+
+
+  ///////////
+  // driveAt()
+  // Now based on speed curve state, choose
+  // a driveAt with correct parameters
+  switch( speedCurveState )
+  {
+  case StraightAway:
+    // Gun it.
+    //CARSIM( throttle ) = 1.0 ;
+    driveAt(
+      400,
+      gains.kThrottleStraightAway,
+      gains.kClampStraightAway,
+      gains.kBrakeStraightAway
+    ) ; 
+    break;
+
+  case StraightIntoGentleCurve:
+    // get max speed by curvature
+    // not too aggressive on the throttle
+    // high braking
+    driveAt(
+      getMaxSpeedForCurve(sCurvatureAhead), 
+      gains.kThrottleStraightIntoGentleCurve,
+      gains.kClampStraightIntoGentleCurve,
+      gains.kBrakeStraightIntoGentleCurve
+    ) ;
+    break;
+
+  case StraightIntoSharpCurve:
+    
+    // On straight, but severe curve ahead.
+    // Start to drive at the speed that curve dictates.
+    // Brake aggressively.
+    // Here is where we can very very aggressively slow down
+    // if necessary, because we're not on a curve now.
+    // brake rapidly
+    driveAt(
+      20,
+      gains.kThrottleStraightIntoSharpCurve,
+      gains.kClampStraightIntoSharpCurve,
+      gains.kBrakeStraightIntoSharpCurve
+    ) ;
+    break;
+
+  case StraightSeeFarAheadCurve:
+    // drive at the speed for FAR AHEAD curve
+    //driveAt( getMaxSpeedForCurve(sCurvatureFarAhead),
+    //         1.0, 1.0, 0.25 ) ;
+    driveAt(
+      20,
+      gains.kThrottleStraightSeeFarAheadCurve,
+      gains.kClampStraightSeeFarAheadCurve,
+      gains.kBrakeStraightSeeFarAheadCurve
+    ) ;
+    break;
+
+  case CurveIntoStraight:
+    driveAt(
+      400,
+      gains.kThrottleCurveIntoStraight,
+      gains.kClampCurveIntoStraight, 
+      gains.kBrakeCurveIntoStraight
+    ) ;
+    break;
+
+  case Curve:
     // We're in a curve. try and travel
     // at the target speed, but don't make
     // any "sudden moves" in terms of
     // gas or brake.
-
-    driveAt(
-      getMaxSpeedForCurve(sCurvatureAhead),
-      0.5,
-      0.75,//75% throttle MAX
-      1.0
-    ) ; 
+    
     // Accelerating in a curve is always
-    // dangerous.  You could lose control.
+    // dangerous.  You could lose control
+    // due to both lateral and longitudinal wheel slippage.
     // So we have a very gentle aggression
     // on kAggressionThrottle.
     // Braking while on a curve is
@@ -1167,67 +1275,36 @@ void Car::driveAtMaxSpeedForCurvSAndCurvAS( double kAggression )
     // you need the traction for steering.
     // However if going into the curve
     // that's when we take the speed down
-    // (see below)    
+    driveAt(
+      getMaxSpeedForCurve(sCurvatureAhead),
+      gains.kThrottleCurve,
+      gains.kClampCurve,
+      gains.kBrakeCurve
+    ) ; 
+    break;
 
-    speedCurveState = OnCurve ;
-  }
+  case CurveIntoSharperCurve:
+    // reduce throttle, don't brake too much
+    driveAt(
+      getMaxSpeedForCurve(sCurvatureAhead),
+      gains.kThrottleCurveIntoSharperCurve,
+      gains.kClampCurveIntoSharperCurve,
+      gains.kBrakeCurveIntoSharperCurve
+    ) ; 
+    break;
 
-  ////////////
-  // CURVATURE AHEAD
-  double diffCurve = fabs( sCurvature - sCurvatureAhead ) ;
-
-  // If curvature ahead is much different
-  // from curvature now, REDUCE SPEED
-  if( diffCurve > 0.05 )
-  {
-    // if the sign is different, then its a chicane
-    if( !SameSign( sCurvature, sCurvatureAhead ) )
-      speedCurveState = Chicane ;  // twists
-    else
-      speedCurveState = IntoSharpCurve ;
-
+  case Chicane:
     // reduce throttle.  Use the curve ahead
     // instead of the current curve to determine
-    // our throttle.  This COULD MEAN
-    // we're going to gun it coming OUT of curves.
-    CARSIM(throttle) = 0.0 ;
-
-    // apply brakes
-    // !!????????????????? well you know, this could
-    // be the secret sauce to handling huge curves coming up.
-    CARSIM(brake) = kAggression*(diffCurve*100)*10e6 ;
-
-    //info( "Sharp curve detected, slowing down" ) ;
-  }
-
-
-
-
-  // at high speed..
-  if( getSpeed() > 120 )
-  {
-    // this only applies at high speeds
-    double diffFarAhead = fabs( diffCurve - fabs(sCurvatureFarAhead) );
-
-    speedCurveState = SeeFarAheadCurve ;
-
-    // drive at the speed for that curve
-    driveAt( 
-      getMaxSpeedForCurve(sCurvatureFarAhead),
-      1.0,
-      1.0,
-      0.25
+    // our throttle.
+    driveAt(
+      getMaxSpeedForCurve(sCurvatureAhead),
+      gains.kThrottleChicane,
+      gains.kClampChicane,
+      gains.kBrakeChicane
     ) ;
+    break;
   }
-
-
-
-  controlSlippage() ;
-
-
-
-
-
 
   /*
   // CONSIDER:  

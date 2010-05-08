@@ -3,6 +3,11 @@
 
 #include "boost/function.hpp"
 
+
+//!! delay needs to be worked out
+// of this class and into the window->addCallback() code instead.
+
+
 // base class.  oh the trickery.
 struct Callback
 {

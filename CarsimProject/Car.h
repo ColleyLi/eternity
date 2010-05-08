@@ -15,7 +15,7 @@ typedef vector<ObjFile*>::iterator /* as simply */ VectorObjIter ;
 // be a bit more elegant, but higher maintenance.
 // As the set of carsim properties is in high
 // state of flux right now, we chose to use this
-// macro instead of the hihg maintenance route
+// macro instead of the high maintenance route
 #define CARSIM(PROPERTY) (*this->csV.##PROPERTY)
 
 /// Represents a carsim car
@@ -27,7 +27,67 @@ public:
   /// all the controller's gains.
   struct ControllerGains
   {
-    
+    double
+      kThrottleStraightAway,
+      kClampStraightAway,
+      kBrakeStraightAway,
+      kThrottleStraightIntoGentleCurve,
+      kClampStraightIntoGentleCurve,
+      kBrakeStraightIntoGentleCurve,
+      kThrottleCurve,
+      kClampCurve,
+      kBrakeCurve,
+      kThrottleStraightIntoSharpCurve,
+      kClampStraightIntoSharpCurve,
+      kBrakeStraightIntoSharpCurve,
+      kThrottleStraightSeeFarAheadCurve,
+      kClampStraightSeeFarAheadCurve,
+      kBrakeStraightSeeFarAheadCurve,
+      kThrottleCurveIntoStraight,
+      kClampCurveIntoStraight, 
+      kBrakeCurveIntoStraight,
+      kThrottleCurveIntoSharperCurve,
+      kClampCurveIntoSharperCurve,
+      kBrakeCurveIntoSharperCurve,
+      kThrottleChicane,
+      kClampChicane,
+      kBrakeChicane ;
+
+    ControllerGains()
+    {
+      // Init with default values
+      kThrottleStraightAway = 1.0 ;
+      kClampStraightAway = 1.0 ;
+      kBrakeStraightAway = 1.0 ;
+
+      kThrottleStraightIntoGentleCurve = 1.0 ;
+      kClampStraightIntoGentleCurve = 1.0 ;
+      kBrakeStraightIntoGentleCurve = 1.0 ;
+
+      kThrottleCurve = 1.0 ;
+      kClampCurve = 1.0 ;
+      kBrakeCurve = 1.0 ;
+
+      kThrottleStraightIntoSharpCurve = 1.0 ;
+      kClampStraightIntoSharpCurve = 1.0 ;
+      kBrakeStraightIntoSharpCurve = 1.0 ;
+
+      kThrottleStraightSeeFarAheadCurve = 1.0 ;
+      kClampStraightSeeFarAheadCurve = 1.0 ;
+      kBrakeStraightSeeFarAheadCurve = 1.0 ;
+
+      kThrottleCurveIntoStraight = 1.0 ;
+      kClampCurveIntoStraight = 1.0 ;
+      kBrakeCurveIntoStraight = 1.0 ;
+
+      kThrottleCurveIntoSharperCurve = 1.0 ;
+      kClampCurveIntoSharperCurve = 1.0 ;
+      kBrakeCurveIntoSharperCurve = 1.0 ;
+
+      kThrottleChicane = 1.0 ;
+      kClampChicane = 1.0 ;
+      kBrakeChicane = 1.0 ;
+    }
   } gains ;
 
   #pragma region renderer
@@ -173,20 +233,27 @@ public:
     StraightIntoGentleCurve,
 
     /// Going into a very tight curve
-    IntoSharpCurve,
+    StraightIntoSharpCurve,
 
-    /// Twisty-turvy.  Section of road that winds 
-    /// back and forth, left and right
-    Chicane,
-
-    /// Driving on a curve
-    OnCurve,
+    /// I'm on a straightaway,
+    /// but I see a far ahead curve
+    StraightSeeFarAheadCurve,
 
     /// Leaving a curve for a straight-away
     CurveIntoStraight,
 
-    /// I see a far ahead curve
-    SeeFarAheadCurve
+    /// Driving on a curve
+    Curve,
+
+    /// On a curve that is
+    /// intensifying rapidly
+    CurveIntoSharperCurve,
+
+    /// Twisty-turvy.  Section of road that winds 
+    /// back and forth, left and right
+    Chicane
+
+
   } ;
 
   /// All this affects the maximum
@@ -205,6 +272,7 @@ public:
   static double sNominalLookAheadAmount ;
 
   static double sNominalLookFarAheadAmount ;
+  #pragma endregion
 
   /// Structure for containing POINTERS TO
   /// CarSim state variable values.
@@ -398,6 +466,7 @@ public:
                 double kAggressionBrake ) ;
 
 
+  // other
   double getLapStartTime() ;
   int getNumLaps() ;
 } ;
