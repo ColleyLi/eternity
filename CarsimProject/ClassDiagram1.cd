@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Car">
+    <Position X="0.5" Y="0.5" Width="3.75" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Struct Name="Car::ControllerGains">
+        <TypeIdentifier>
+          <NewMemberFileName>Car.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Enum Name="Car::VehicleCourseState">
+        <TypeIdentifier>
+          <NewMemberFileName>Car.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Enum Name="Car::SpeedCurveState">
+        <TypeIdentifier>
+          <NewMemberFileName>Car.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Struct Name="Car::CarSimStateVariableValues">
+        <TypeIdentifier>
+          <NewMemberFileName>Car.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>gFJQYAgAJQwMJIIgECIQQIHCQWiIAFIDQBaFAAYMAXo=</HashCode>
+      <FileName>Car.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>

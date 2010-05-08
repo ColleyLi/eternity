@@ -32,11 +32,17 @@ protected:
 
 
 public:
+  /// Creates a GameWindow in FULL SCREEN
+  /// mode
+  GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar ) ;
+
   /// Creates a GameWindow instance
   /// for you.
   GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
 
   ~GameWindow() ;
+
+  void init();
 
   /// "Steps" the game engine
   /// forward one step.  Must call

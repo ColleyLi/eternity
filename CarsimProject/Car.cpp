@@ -839,7 +839,7 @@ void Car::control()
 
     // Direction:  Drive towards the NEXT
     // station's (x, y, z)
-    driveTo( sAheadX, sAheadY, sAheadZ, 12.0 ) ;
+    driveTo( sAheadX, sAheadY, sAheadZ, gains.kSteering ) ;
     // 6.2=good, 10.2=a bit of oversteer
     // a bit of oversteer is good
     // when pushing the limits
@@ -874,6 +874,8 @@ void Car::control()
 
   controlSlippage() ;
 
+  clampCarSimInputValues() ;
+
 }
 
 void Car::controlSlippage()
@@ -883,38 +885,28 @@ void Car::controlSlippage()
   // driveAt, we might need to cut it back
   // a bit.
 
-  ///!!!!! USE ALPHA_L1 for lateral slip
-  /// KAPPA_L1 for longitudinal slip.
-  /// If KAPPA_L2 >> KAPPA_L1 then 
-  /// rwd vehicle is in danger of going
-  /// into oversteer.
-
-  /// Really "good" control of the vehicle
-  /// is when wheel slipping is minimized.
-  /// I wanted to write a controller that
-  /// could use slippage to its advantage,
-  /// but that is more difficult,
-  //!!CHECK FOR WHEEL SLIPPAGE
+  // CHECK FOR WHEEL SLIPPAGE
   // If the wheels are slipping,
   // back off the accelerator a bit
-  double fslip = fabs( CARSIM(betaSideSlip) ) ;
-  if( fslip > 0.05 )
-  {
-    // Modify throttle by
-    // an amount varying with side slip.
-    // this is like "punishment" for slipping,
-    // you have to reduce throttle.
-    CARSIM(throttle) -= 10*fslip ;
-    // 10 means if slippage is 0.1,
-    // you will have no throttle.
-    // 0.1 is pretty much out of control (expt),
-    // so this is good.  When slipping we need
-    // the grip for steering, and shouldn't
-    // waste it on throttle generally.
-    //warning( "Controller detects slip, reducing throttle" ) ;
 
-    CARSIM(throttle)= 0.1;
+  if(
+    CARSIM(slipLongL2) > 0.1 || CARSIM(slipLongR2) > 0.1 || // rear wheel
+    CARSIM(slipLongL1) > 0.1 || CARSIM(slipLongR1) > 0.1    // front wheel
+  )
+  {
+    CARSIM(throttle) = 0.0 ; // back off accelerator when
+    // wheels are spinning
   }
+
+  // front wheel slippage is indicative of
+  // brake lock up
+  if( 
+    CARSIM(slipLongL1) > 0.1 || CARSIM(slipLongR1) > 0.1    // front wheel
+    )
+  {
+    CARSIM(brake) = 0 ;  // unlock brakes
+  }
+
 }
 
 void Car::clampCarSimInputValues()
@@ -1057,19 +1049,15 @@ void Car::updateAutomaticControlValues()
     window->draw3DLine( pos, Color::Red, pos + 5*fwd, Color::Red ) ;
 
     // draw the pos to sNearest vector:
-    window->draw3DLine( pos, Color::Blue, vecSNearest, Color::Blue ) ;
+    //window->draw3DLine( pos, Color::Blue, vecSNearest, Color::Blue ) ;
 
     // draw vector alongRoad:
-    window->draw3DLine( vecSNearest, Color::Magenta,
-      vecSAhead, Color::Magenta ) ;
+    //window->draw3DLine( vecSNearest, Color::Magenta, vecSAhead, Color::Magenta ) ;
 
-    //window->draw3DLine( vecSNearest, Color::Yellow,
-    //  vecSFarAhead, Color::Yellow ) ;
+    //window->draw3DLine( vecSNearest, Color::Yellow, vecSFarAhead, Color::Yellow ) ;
 
     // a line from origin to where the car is
-    window->draw3DLine(
-      D3DXVECTOR3(0,0,0), Color::Yellow,
-      pos, Color::Yellow ) ;
+    //window->draw3DLine( D3DXVECTOR3(0,0,0), Color::Yellow, pos, Color::Yellow ) ;
   }
 }
 
@@ -1077,7 +1065,7 @@ double Car::getMaxSpeedForCurve( double s )
 {
   // compute the speed we should be
   // going as approximately 2 / CURV.
-  // The formula 2 / CURV was derived
+  // The formula 1.1 / CURV was derived
   // by experiment.  It varies for
   // different vehicles, esp RWD vs FWD.
 
@@ -1096,6 +1084,7 @@ double Car::getMaxSpeedForCurve( double s )
 
 double Car::getSpeed()
 {
+  // value in carsim is m/s
   return 3.6*CARSIM(speedometer) ;
 }
 
@@ -1328,6 +1317,13 @@ void Car::driveTo( double x, double y, double z, double kSteeringAggression )
   // Try and align "fwd" with posToDest.
   float angleBetween = D3DXVec2AngleBetween( &d2Fwd, &d2PosToDest ) ;
 
+
+  if( drawDebugLines )
+  {
+    // Draw a line from pos to dest
+    window->draw3DLine( pos, Color::Magenta, dest, Color::Magenta ) ;
+  }
+
   CARSIM( steeringAngle ) = kSteeringAggression*angleBetween ;
 }
 
@@ -1338,10 +1334,7 @@ void Car::driveTo( double x, double y, double z, double kSteeringAggression )
 /// @param kThrottleClamp If you wish to clamp
 /// the maximum throttle, use a value less than 1 here.
 /// This is especially important when trying to control
-/// acceleration into curves, you can't do it on "km/h
-/// I should be driving at here" alone, .....!!!!
-////// OR CAN YOU?? Perhaps you can if
-////// you control slippage better.
+/// acceleration into curves
 /// @param kAggressionBrake How aggressively we
 /// push the brake to get to our target speed.
 void Car::driveAt( double newTargetSpeed,

@@ -364,7 +364,14 @@ void external_calc(vs_real t, vs_ext_loc where)
       }
       else // AUTOMATIC CONTROL
       {
-        simWorld->car->control() ;
+        //static int hz = 0 ;
+        //hz++ ;
+        //if( hz > 900 )
+        //{
+          // Compute only once per frame now.
+          simWorld->car->control() ;
+          //hz = 0 ;
+        //}
       }
     }
 

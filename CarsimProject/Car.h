@@ -28,6 +28,9 @@ public:
   struct ControllerGains
   {
     double
+
+      kSteering,
+
       kThrottleStraightAway,
       kClampStraightAway,
       kBrakeStraightAway,
@@ -55,39 +58,56 @@ public:
 
     ControllerGains()
     {
+      double throttleClamp = 1.0 ; // default to aggressive mode
+
+      kSteering = 12.0 ;
+      
       // Init with default values
       kThrottleStraightAway = 1.0 ;
-      kClampStraightAway = 1.0 ;
+      kClampStraightAway = throttleClamp ;
       kBrakeStraightAway = 1.0 ;
 
       kThrottleStraightIntoGentleCurve = 1.0 ;
-      kClampStraightIntoGentleCurve = 1.0 ;
+      kClampStraightIntoGentleCurve = throttleClamp ;
       kBrakeStraightIntoGentleCurve = 1.0 ;
 
       kThrottleCurve = 1.0 ;
-      kClampCurve = 1.0 ;
+      kClampCurve = throttleClamp ;
       kBrakeCurve = 1.0 ;
 
       kThrottleStraightIntoSharpCurve = 1.0 ;
-      kClampStraightIntoSharpCurve = 1.0 ;
+      kClampStraightIntoSharpCurve = throttleClamp ;
       kBrakeStraightIntoSharpCurve = 1.0 ;
 
       kThrottleStraightSeeFarAheadCurve = 1.0 ;
-      kClampStraightSeeFarAheadCurve = 1.0 ;
+      kClampStraightSeeFarAheadCurve = throttleClamp ;
       kBrakeStraightSeeFarAheadCurve = 1.0 ;
 
       kThrottleCurveIntoStraight = 1.0 ;
-      kClampCurveIntoStraight = 1.0 ;
+      kClampCurveIntoStraight = throttleClamp ;
       kBrakeCurveIntoStraight = 1.0 ;
 
       kThrottleCurveIntoSharperCurve = 1.0 ;
-      kClampCurveIntoSharperCurve = 1.0 ;
+      kClampCurveIntoSharperCurve = throttleClamp ;
       kBrakeCurveIntoSharperCurve = 1.0 ;
 
       kThrottleChicane = 1.0 ;
-      kClampChicane = 1.0 ;
+      kClampChicane = throttleClamp ;
       kBrakeChicane = 1.0 ;
     }
+
+    void setClamps( double throttleClamp )
+    {
+      kClampStraightAway = throttleClamp ;
+      kClampStraightIntoGentleCurve = throttleClamp ;
+      kClampCurve = throttleClamp ;
+      kClampStraightIntoSharpCurve = throttleClamp ;
+      kClampStraightSeeFarAheadCurve = throttleClamp ;
+      kClampCurveIntoStraight = throttleClamp ;
+      kClampCurveIntoSharperCurve = throttleClamp ;
+      kClampChicane = throttleClamp ;
+    }
+
   } gains ;
 
   #pragma region renderer

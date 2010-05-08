@@ -7,7 +7,7 @@ SimWorld::SimWorld()
   info( "Constructing simworld.." ) ;
 
   simState = Running ;
-  camMode =FollowCam ; // defaults to FreeCam mode
+  camMode = CockpitCam ;
 
   car = new Car() ;
 

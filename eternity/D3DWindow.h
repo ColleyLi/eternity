@@ -97,11 +97,14 @@ private:
   IDirect3DVertexDeclaration9 *v, *vc, *vt, *vtc, *vn, *vtn ;
 
 public:
+  D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar ) ;
   D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
   ~D3DWindow() ;
 
 
 private:
+  bool setupGPU() ;
+  bool initD3D() ;
   bool initD3D( int width, int height ) ;
 
 public:

@@ -1,6 +1,12 @@
 #include "GameWindow.h"
 #include "ObjFileParse.h"  // to initialize it.
 
+GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar ):
+  D3DWindow( hInst, windowTitleBar )
+{
+  init();
+}
+
 GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
                        int windowXPos, int windowYPos,
                        int windowWidth, int windowHeight ) :
@@ -8,7 +14,16 @@ GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
              windowXPos, windowYPos,
              windowWidth, windowHeight )
 {
-  initSpriteMan( gpu, windowWidth, windowHeight ) ;
+  init();
+}
+
+GameWindow::~GameWindow()
+{
+}
+
+void GameWindow::init()
+{
+  initSpriteMan( gpu, getWidth(), getHeight() ) ;
   initThreeDMan( gpu ) ;
 
   // Some coupling..
@@ -19,19 +34,15 @@ GameWindow::GameWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
   registerSpriteRenderer( id3dxSpriteRenderer ) ;
   registerLine( id3dxLine ) ;
 
-  initInputMan( hwnd, windowWidth, windowHeight ); // clip zone gets set here too
+  initInputMan( hwnd, getWidth(), getHeight() ); // clip zone gets set here too
   
-  spriteManSetWindowSize( windowWidth, windowHeight ) ;
+  spriteManSetWindowSize( getWidth(), getHeight() ) ;
   initSoundMan() ;
   paused = false ;
 
 
   // Initialize the objfileloader
   ObjFile::init( this ) ;
-}
-
-GameWindow::~GameWindow()
-{
 }
 
 void GameWindow::step()

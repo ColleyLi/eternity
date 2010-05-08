@@ -167,22 +167,11 @@ void carsimSetup( char* simfile )
 }
 #pragma endregion
 
-#pragma region textfield callbacks
-void updateK( double *var, int fromField )
-{
-  info( "Replacing value %lf with value from %d", *var, fromField ) ;
-  
-
-}
-
-void populateTextfields()
-{
-
-}
-#pragma endregion
-
 void Init()
 {
+  window->fullScreenInMaxResolution() ;
+  window->setDefaultRenderStateOptions();
+
   #pragma region asset load
   // sprite loading
   window->loadSprite( Mario, ASSET("sprites/mario.png") ) ;
@@ -207,15 +196,6 @@ void Init()
   FMOD_CHANNEL *c = window->getFmodChannel( EngineMidIn ) ;
 
   window->createPitchShiftToChannel( c ) ;
-  
-  
-
-
-
-  
-
-
-
 
   // Set the background clearing color to dk blue-gray
   window->setBackgroundColor( D3DCOLOR_ARGB( 255, 35, 35, 70 ) ) ;
@@ -236,33 +216,6 @@ void Init()
 
 
 
-  Callback2<double*, int> *cb = new Callback2<double*, int>(
-    0,
-    updateK,
-    &simWorld->car->gains.kBrakeChicane,
-    TextFieldk1
-  ) ;
-
-  // Create a few buttons
-  window->createTextFieldWithLabel(
-    UIObjects::TextFieldk1,
-    TextField::Numeric,
-    "", 
-    "k1",
-    cb,
-    D3DCOLOR_XRGB(255,255,0),
-    D3DCOLOR_XRGB(  0, 42,0),
-    Fonts::Arial16,
-    200, 200, 200, 40
-  ) ;
-  
-
-
-
-
-
-
-
 
   // LOAD AND START UP CARSIM
   info( "Starting up CarSim . . . " ) ;
@@ -277,8 +230,6 @@ void Init()
   window->cdPop() ;
 
 
-  //window->fullScreenInMaxResolution() ;
-  //window->setDefaultRenderStateOptions();
 }
 
 /// runs simulator
@@ -456,6 +407,16 @@ void DoOtherKeyboardCommands()
     window->getCamera()->goTo( simWorld->car->getPos() ) ;
   }
 
+
+  // aggressive or gentle mode throttle control
+  if( window->keyJustPressed( VK_OEM_COMMA ) )
+  {
+    simWorld->car->gains.setClamps( 0.25 ) ;
+  }
+  if( window->keyJustPressed( VK_OEM_PERIOD ) )
+  {
+    simWorld->car->gains.setClamps( 1.0 ) ;
+  }
 }
 
 void GlobalControls()
@@ -495,20 +456,16 @@ void Update()
     break;
 
   case SimWorld::Paused:
-    // We DO NOT run the simulation here
-    // and all other manipulations aren't allowed
-    // 
 
-    //UpdateCamera() ;
-    //DoOtherKeyboardCommands() ;
+    UpdateCamera() ;
+    DoOtherKeyboardCommands() ;
     GlobalControls();
 
     if( window->mouseJustPressed( Mouse::Left ) )
     {
+      // These were turned off,
       window->hitTestUIObjects( window->getMouseX(), window->getMouseY() ) ;
     }
-
-    
 
     break;
   }
@@ -580,10 +537,11 @@ void Draw()
     break;
 
   case SimWorld::Paused:
+
     DrawSimulatorState() ;
     // If paused, draw options on top
     // and show the mouse cursor
-    DrawMenuOptions() ;
+    //DrawMenuOptions() ; // turned off
     break;
 
 

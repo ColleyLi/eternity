@@ -1,5 +1,15 @@
 #include "D3DWindow.h"
 
+D3DWindow::D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar ) :
+  Window( hInst, windowTitleBar, 32, 32, 800, 600 )
+{
+  info( "Starting up Direct3D in fullscreen exclusive mode.." ) ;
+  if( !initD3D() )
+  {
+    bail( "D3D failed to initialize.  Maybe you should try a windowed mode instead." ) ;
+  }
+}
+
 D3DWindow::D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
                      int windowXPos, int windowYPos,
                      int windowWidth, int windowHeight ) :
@@ -21,7 +31,7 @@ D3DWindow::~D3DWindow()
   SAFE_RELEASE( d3d ) ;
 }
 
-bool D3DWindow::initD3D( int width, int height )
+bool D3DWindow::setupGPU()
 {
   // start by nulling out both pointers:
   d3d = 0 ;
@@ -36,24 +46,6 @@ bool D3DWindow::initD3D( int width, int height )
   }
 
   info( "Direct3D9 device created successfully" ) ;
-
-
-  memset( &d3dpps, 0, sizeof( D3DPRESENT_PARAMETERS ) ) ;
-
-  d3dpps.BackBufferCount = 1 ;
-  d3dpps.SwapEffect = D3DSWAPEFFECT_DISCARD  ;
-  d3dpps.BackBufferFormat = D3DFMT_UNKNOWN ;
-  d3dpps.EnableAutoDepthStencil = true ;
-  d3dpps.AutoDepthStencilFormat = D3DFMT_D16 ;
-  d3dpps.hDeviceWindow = hwnd ;
-  
-  d3dpps.BackBufferFormat = D3DFMT_X8R8G8B8 ;
-  
-  d3dpps.Windowed = true ;
-  d3dpps.BackBufferWidth = width ;
-  d3dpps.BackBufferHeight = height ;
-  //d3dpps.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE ; // FRAMERATE::UNBOUNDED  You need to
-  // uncomment this line to make the GPU flip over really really fast
 
   HRESULT hr = d3d->CreateDevice(
 
@@ -84,16 +76,9 @@ bool D3DWindow::initD3D( int width, int height )
   // in case there was a hard reset to the default 800x600 resolution
   Window::setSize( getWidth(), getHeight(), false ) ;
 
-
-
-
   initVertexDeclarations() ;
 
-
-
   setDefaultRenderStateOptions() ;
-
-
 
   clearColor = D3DCOLOR_ARGB( 255, 0, 10, 45 ) ;
 
@@ -103,9 +88,52 @@ bool D3DWindow::initD3D( int width, int height )
   look = D3DXVECTOR3( 0, 0, 0 ) ;
   up = D3DXVECTOR3( 0, 1, 0 ) ;
 
-
-
   return true ;
+}
+
+bool D3DWindow::initD3D()
+{
+  memset( &d3dpps, 0, sizeof( D3DPRESENT_PARAMETERS ) ) ;
+
+  d3dpps.BackBufferCount = 1 ;
+  d3dpps.SwapEffect = D3DSWAPEFFECT_DISCARD  ;
+  d3dpps.BackBufferFormat = D3DFMT_UNKNOWN ;
+  d3dpps.EnableAutoDepthStencil = true ;
+  d3dpps.AutoDepthStencilFormat = D3DFMT_D16 ;
+  d3dpps.hDeviceWindow = hwnd ;
+  
+  d3dpps.BackBufferFormat = D3DFMT_X8R8G8B8 ;
+  
+  d3dpps.Windowed = false ;
+
+  d3dpps.BackBufferWidth = GetSystemMetrics( SM_CXSCREEN ) ;
+  d3dpps.BackBufferHeight =  GetSystemMetrics( SM_CYSCREEN ) ;
+  //d3dpps.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE ; // FRAMERATE::UNBOUNDED  You need to
+  // uncomment this line to make the GPU flip over really really fast
+
+  return setupGPU() ;
+}
+
+bool D3DWindow::initD3D( int width, int height )
+{
+  memset( &d3dpps, 0, sizeof( D3DPRESENT_PARAMETERS ) ) ;
+
+  d3dpps.BackBufferCount = 1 ;
+  d3dpps.SwapEffect = D3DSWAPEFFECT_DISCARD  ;
+  d3dpps.BackBufferFormat = D3DFMT_UNKNOWN ;
+  d3dpps.EnableAutoDepthStencil = true ;
+  d3dpps.AutoDepthStencilFormat = D3DFMT_D16 ;
+  d3dpps.hDeviceWindow = hwnd ;
+  
+  d3dpps.BackBufferFormat = D3DFMT_X8R8G8B8 ;
+  
+  d3dpps.Windowed = true ;
+  d3dpps.BackBufferWidth = width ;
+  d3dpps.BackBufferHeight = height ;
+  //d3dpps.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE ; // FRAMERATE::UNBOUNDED  You need to
+  // uncomment this line to make the GPU flip over really really fast
+
+  return setupGPU() ;
 }
 
 void D3DWindow::setDefaultRenderStateOptions()
