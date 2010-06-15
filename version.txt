@@ -1,4 +1,4 @@
-This is eternity engine version 0.1.8
+This is eternity engine version 0.1.9
 
 change log
 ==========
@@ -37,3 +37,5 @@ v0.1.7
 v0.1.8
   - carsim.  this probably won't be part of the main branch, but its here anyway
 
+v0.1.9
+  - vs 2010 upgrade and minor bug fixes

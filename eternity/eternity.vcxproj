@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7110EEC4-41B5-42EE-B8AD-913A9D4F5450}</ProjectGuid>
+    <RootNamespace>eternity</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\Build\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\Build\Files\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\Release\Files\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <BuildLog>
+      <Path>$(SolutionDir)\Build\Files\BuildLog-$(ProjectName).htm</Path>
+    </BuildLog>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)vc90.pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4482;4800;4018;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <BuildLog>
+      <Path>$(SolutionDir)\Release\Files\BuildLog-$(ProjectName).htm</Path>
+    </BuildLog>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244; 4482; 4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Camera3D.cpp" />
+    <ClCompile Include="ObjFileParse.cpp" />
+    <ClCompile Include="D3DWindow.cpp" />
+    <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="WindowClass.cpp" />
+    <ClCompile Include="InputMan.cpp" />
+    <ClCompile Include="SoundMan.cpp" />
+    <ClCompile Include="SpriteMan.cpp" />
+    <ClCompile Include="ThreeDMan.cpp" />
+    <ClCompile Include="GDIPlusTexture.cpp" />
+    <ClCompile Include="ConsoleColors.cpp" />
+    <ClCompile Include="helperFunctions.cpp" />
+    <ClCompile Include="perlin.cpp" />
+    <ClCompile Include="path\AsciiMap.cpp" />
+    <ClCompile Include="path\AStar.cpp" />
+    <ClCompile Include="path\Coord.cpp" />
+    <ClCompile Include="path\Edge.cpp" />
+    <ClCompile Include="path\Graph.cpp" />
+    <ClCompile Include="path\GraphNode.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Callback.h" />
+    <ClInclude Include="Camera3D.h" />
+    <ClInclude Include="eternity.h" />
+    <ClInclude Include="ObjFileParse.h" />
+    <ClInclude Include="Path.h" />
+    <ClInclude Include="ConsoleColors.h" />
+    <ClInclude Include="helperFunctions.h" />
+    <ClInclude Include="perlin.h" />
+    <ClInclude Include="ButtonMan.h" />
+    <ClInclude Include="InputMan.h" />
+    <ClInclude Include="SoundMan.h" />
+    <ClInclude Include="SpriteMan.h" />
+    <ClInclude Include="ThreeDMan.h" />
+    <ClInclude Include="D3DWindow.h" />
+    <ClInclude Include="GameWindow.h" />
+    <ClInclude Include="WindowClass.h" />
+    <ClInclude Include="D3DVertex.h" />
+    <ClInclude Include="Gamepad.h" />
+    <ClInclude Include="GDIPlusTexture.h" />
+    <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Mouse.h" />
+    <ClInclude Include="Sprite.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="DrawSpriteCommand.h" />
+    <ClInclude Include="Text.h" />
+    <ClInclude Include="Tones.h" />
+    <ClInclude Include="path\AsciiMap.h" />
+    <ClInclude Include="path\AStar.h" />
+    <ClInclude Include="path\Coord.h" />
+    <ClInclude Include="path\Edge.h" />
+    <ClInclude Include="path\Graph.h" />
+    <ClInclude Include="path\GraphNode.h" />
+    <ClInclude Include="path\GridConnection.h" />
+    <ClInclude Include="path\HighPerformanceTimer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="..\README">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

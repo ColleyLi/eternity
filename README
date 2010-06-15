@@ -511,8 +511,38 @@ May 7 / 2010 v0.1.8-carsim
     use of STL strings because STL string.c_str()
     always is const char*.
   
+June 14 / 2010 v0.1.9-fixes
+  - Just coming back to this now.  Found a bug in
+    start up to do with deleting an already deleted
+	array.. use DESTROY_ARRAY to make the bug easy
+	to find (now gives warning with line and file in
+	debug mode)
+  - Upgraded entire solution to VS 2010.  VS 2010 IS
+    in every way superior to VS 2005/2008.  MS did
+	release express eds of 2010, so there is really
+	no excuse to stick with 2008 at this point.  If
+	you are with an educational facility you can get
+	a free copy of VS 2010 Pro through the MS sponsorship
+	program
+  - Fixed reference problems that cropped up after 2010 upgrade.
+    In VS 2010, it isn't enough to say "Project_A _depends_ on
+    eternity", you have to SET UP A REFERENCE (by right clicking
+    Project_A, selecting "References..." and adding a new reference
+    to eternity.)
+    This may have been the "warning" issue we kept ignoring and
+    continually rebuilding until it went away last year.
+    Still get PDB missing errors on first build though.
+    (Warning	7	warning LNK4099: PDB 'vc100.pdb' was not found with 'callbacks.obj' or at 'D:\CPP\eternity\Build\vc100.pdb'; 
+      linking object as if no debug info)
+
+  - Renamed projects gdw-week-* to example-*
+  - Merely THOUGHT about completing Asteriod..
   
-  
+  - Upgraded clean.bat to match VS 2010
+  - Added a .gitignore file to exclude the
+    sdf and new (HUGE) ipch directory
+
+
   
   
   - TODO:
@@ -534,5 +564,33 @@ May 7 / 2010 v0.1.8-carsim
       after 5 seconds or so
     - FMOD DSP EFFECT WRAPPERS
     - particle engine
-    - physics from havok
+    - physics from havok:  PhysicsMan
+    - networking:  NetworkMan
+        NetworkMan.addPlaymate( ipaddress, port ) ;
+        NetworkMan.broadcastToAllPlaymates( packet ) ;
+    - add ability for fmod feature detection
+    - fix the powerof2 textures thing
+    - add bounding boxes?
+    - what does eternity do?
+      #include <eternity/eternity.h> // EVERYTHING
+      
+      
+      #include <eternity/window.h>   // must have
+      #include <eternity/aabb.h>     // bounding boxes
+      #include <eternity/SpriteMan.h> 
+      #include <eternity/SoundMan.h> 
+      
+      #define ETERNITY_SPRITES
+      #define ETERNITY_SOUNDS
+      #define ETERNITY_AABB
+      #define ETERNITY_3D
+      #define ETERNITY...
+      
+      then
+      #include <eternity.h>
+      
+      
+      
+      
+      
     

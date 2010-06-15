@@ -241,7 +241,7 @@ void D3DWindow::initVertexDeclarations()
   
   hr = gpu->CreateVertexDeclaration( vertexElementsVC, &vc ) ;
   DX_CHECK( hr, "CreateVertexDeclaration vc" ) ;
-  delete[] vertexElementsVC ;
+  DESTROY_ARRAY( vertexElementsVC ) ;
   
   ///
   // V:  Vertices only.  Uses a material for color.
@@ -250,7 +250,7 @@ void D3DWindow::initVertexDeclarations()
   vertexElementsV[ 1 ] = end ;
   // CREATE THE DECLARATION
   DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsV, &v ), "CreateVertexDeclaration FAILED v!" ) ;
-  delete[] vertexElementsV ;
+  DESTROY_ARRAY( vertexElementsV ) ;
 
   // VT
   // Vertices and textures.
@@ -260,7 +260,7 @@ void D3DWindow::initVertexDeclarations()
   vertexElementsVT[ 1 ] = tex ;
   vertexElementsVT[ 2 ] = end ;
   DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVT, &vt ), "CreateVertexDeclaration FAILED vt!" ) ;
-  delete[] vertexElementsVT ;
+  DESTROY_ARRAY( vertexElementsVT ) ;
 
 
   // VTC
@@ -276,7 +276,7 @@ void D3DWindow::initVertexDeclarations()
   vertexElementsVTC[ 3 ] = end ;
   DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVTC, &vtc ),
     "CreateVertexDeclaration FAILED vtc!" ) ;
-  delete[] vertexElementsVT ;
+  DESTROY_ARRAY( vertexElementsVTC ) ;
 
 
   // VTN
@@ -290,7 +290,7 @@ void D3DWindow::initVertexDeclarations()
   vertexElementsVTN[ 2 ] = norm ;
   vertexElementsVTN[ 3 ] = end ;
   DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVTN, &vtn ), "CreateVertexDeclaration FAILED vtn!" ) ;
-  delete[] vertexElementsVTN ;
+  DESTROY_ARRAY( vertexElementsVTN ) ;
 
   // VN
   D3DVERTEXELEMENT9 *vertexElementsVN = new D3DVERTEXELEMENT9[3] ;
@@ -299,7 +299,7 @@ void D3DWindow::initVertexDeclarations()
   vertexElementsVN[ 1 ] = norm ;
   vertexElementsVN[ 2 ] = end ;
   DX_CHECK( gpu->CreateVertexDeclaration( vertexElementsVN, &vn ), "CreateVertexDeclaration FAILED vn!" ) ;
-  delete[] vertexElementsVN ;
+  DESTROY_ARRAY( vertexElementsVN ) ;
 
   // After constructing it, set it as the one to use by default
   setVertexDeclaration( VertexType::PositionColor ) ;

@@ -75,7 +75,7 @@ bool argCheck( char *fnName, char* str, int numArgsGot, int numArgsExpected ) ;
 #define IsNaN(x) (x!=x)
 
 
-#define IsNear(x,y,EPS) (fabs(x-y)<EPS)
+#define IsNear(x,y,EPS) (fabs((x)-(y))<EPS)
 
 
 #define SameSign(x,y) ( (x >= 0 && y >= 0) || (x < 0 && y < 0) )
@@ -261,6 +261,16 @@ bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed
 #define containsFlag( val, flag ) ( val & flag )
 #define notContainsFlag( val, flag ) ( !(val & flag) )
 
+// If you accidently delete the wrong thing (something that is null)
+// instead of the object you intended to delete, you may never find
+// the resulting memory leak (since there is no error on DESTROY(NULL))
+// That's why in _DEBUG mode, you get a warning.
+#if _DEBUG
+#define DESTROY_ARRAY(ARRAY) if(ARRAY){delete[] (ARRAY); (ARRAY)=0;} else { warning( "Delete on NULL array, line %d of %s", __LINE__, __FILE__ ) ; }
+#define DESTROY(OBJ) if(OBJ){delete (OBJ); (OBJ)=0;} else { warning( "Delete on NULL object, line %d of %s", __LINE__, __FILE__ ) ; }
+#else
+#define DESTROY_ARRAY(ARRAY) if(ARRAY){delete[] (ARRAY); (ARRAY)=0;}
 #define DESTROY(OBJ) if(OBJ){delete (OBJ); (OBJ)=0;}
+#endif
 
 #endif // HELPER_FUNCTIONS_H

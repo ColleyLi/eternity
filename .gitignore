@@ -1,0 +1,5 @@
+Build/
+Release/
+ipch/
+*.sdf
+*.opensdf
