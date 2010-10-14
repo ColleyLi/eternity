@@ -1,28 +1,47 @@
 #include "GamePak.h"
 #include "ObjFileParse.h"  // to initialize it.
 
-GamePak::GamePak( HINSTANCE hInst, TCHAR* windowTitleBar ):
-  D3DWindow( hInst, windowTitleBar )
+GamePak * $ ;
+
+GamePak::GamePak( HINSTANCE hInst, TCHAR* windowTitleBar, GraphicsWindow::UnderlyingRenderingAPI api )
 {
-  init();
+  if( api == GraphicsWindow::DirectX )
+    window = new D3DWindow( hInst, windowTitleBar, 32, 32, 800, 600 ) ;
+  else
+  {
+    //window = new OpenGLWindow() ;
+    bail( "OpenGL not yet supported, Use D3D" ) ;
+  }
+
+  initManagers();
 }
 
 GamePak::GamePak( HINSTANCE hInst, TCHAR* windowTitleBar,
-                       int windowXPos, int windowYPos,
-                       int windowWidth, int windowHeight ) :
-  D3DWindow( hInst, windowTitleBar,
-             windowXPos, windowYPos,
-             windowWidth, windowHeight )
+                  int windowXPos, int windowYPos,
+                  int windowWidth, int windowHeight,
+                  GraphicsWindow::UnderlyingRenderingAPI api
+                )
 {
-  init();
+  if( api == GraphicsWindow::DirectX )
+    window = new D3DWindow( hInst, windowTitleBar, windowXPos, windowYPos, windowWidth, windowHeight ) ;
+  else
+  {
+    //window = new OpenGLWindow() ;
+    bail( "OpenGL not yet supported, Use D3D" ) ;
+  }
+
+  initManagers();
 }
 
 GamePak::~GamePak()
 {
 }
 
-void GamePak::init()
+void GamePak::initManagers()
 {
+  // Initialize each of the managers
+  assetMan = new AssetMan() ;
+  
   initSpriteMan( gpu, getWidth(), getHeight() ) ;
 
   // Some coupling..

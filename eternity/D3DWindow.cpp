@@ -1,7 +1,7 @@
 #include "D3DWindow.h"
 
 D3DWindow::D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar ) :
-  Window( hInst, windowTitleBar, 32, 32, 800, 600 )
+  GraphicsWindow( hInst, windowTitleBar, 32, 32, 800, 600 )
 {
   info( "Starting up Direct3D in fullscreen exclusive mode.." ) ;
   if( !initD3D() )
@@ -13,9 +13,9 @@ D3DWindow::D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar ) :
 D3DWindow::D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar,
                      int windowXPos, int windowYPos,
                      int windowWidth, int windowHeight ) :
-  Window( hInst, windowTitleBar,
-          windowXPos, windowYPos,
-          windowWidth, windowHeight )
+  GraphicsWindow( hInst, windowTitleBar,
+                  windowXPos, windowYPos,
+                  windowWidth, windowHeight )
 {
   info( "Starting up Direct3D..." ) ;
   if( !initD3D( windowWidth, windowHeight ) )

@@ -19,32 +19,6 @@
 #include "helperFunctions.h"
 #include "GDIPlusTexture.h"
 
-/// Defines a line for drawing
-struct Line
-{
-  D3DXVECTOR2 start, end ;
-  D3DCOLOR color ;
-
-  float thickness ;
-
-  Line()
-  {
-    start = end = D3DXVECTOR2() ;
-    color = 0 ;
-    thickness = 1;
-  }
-
-  Line( D3DXVECTOR2 iStart, D3DXVECTOR2 iEnd, D3DCOLOR iColor, float iThickness )
-  {
-    start = iStart ;
-    end = iEnd ;
-    color = iColor ;
-    thickness = iThickness ;
-
-    // just waiting until there's variables pod and pad..
-  }
-} ;
-
 class Sprite
 {
 private:
@@ -54,7 +28,8 @@ private:
   IDirect3DTexture9 *spritesheet ; // this really should be stored
   // in AssetMan.
 
-  D3DXIMAGE_INFO imageInfo ;
+  //D3DXIMAGE_INFO imageInfo ;
+  int sheetWidth, sheetHeight ; 
 
   const char *originalFilename ;
   int spriteWidth ;
@@ -62,6 +37,7 @@ private:
 
   // Animation and frame counting
   int n ; /*!< (n)umber frame you're on */
+
   int numFrames ; /*!< the number of frames
   this sprite is known to have.  A sheet
   can have some empty cells at the end
@@ -82,20 +58,12 @@ private:
   // If you have hundreds of sprites, this could add up
 
 public:
-  //!!DELETE ME.  
-  // provide a ctor that accepts an HDC
+  
+  // Provide a ctor that accepts a passed-in texture
   Sprite( int w, int h, IDirect3DTexture9 *tex )
   {
-    spriteWidth = w ;
-    spriteHeight = h ;
-
-    // haxx.  ImageInfo doesn't make sense
-    // for a generated texture, (which is generally
-    // what this function is for) but we'll leave it
-    // this way.
-    imageInfo.Width = w ;
-    imageInfo.Height = h ;
-    imageInfo.MipLevels = 1 ;
+    sheetWidth = spriteWidth = w ;
+    sheetHeight= spriteHeight= h ;
     
     spritesheet = tex ;
 
@@ -123,7 +91,9 @@ public:
   Sprite(
     
     const char *filename,
-    
+  
+    //!! Avoid so many default parameters
+
     D3DCOLOR backgroundColor = D3DCOLOR_ARGB( 0,0,0,0 ), // defaults to transparent black (i.e. no effect)
     
     // If you are loading in
@@ -193,7 +163,7 @@ public:
       int numAcross = imageInfo.Width / spriteWidth ; // could be 1
       int numDown = imageInfo.Height / spriteHeight ; // could be 1 also
 
-      int maxFramesAllowable = numAcross * numDown ; // could be 1 to.. whatever
+      int maxFramesAllowable = numAcross * numDown ; // could be 1 too.. whatever
 
       // Make sure the number of frames is logical/possible
       if( numFrames > maxFramesAllowable )
@@ -270,81 +240,8 @@ public:
   {
     SAFE_RELEASE( spritesheet ) ;
   }
-private:
-  HRESULT loadTextureNonPow2( char *filename, D3DCOLOR backgroundColor )
-  {
-    HRESULT hr = D3DXCreateTextureFromFileExA(
-      gpu,
-      filename,
-                                 
-      // D3DX_DEFAULT will round up to nearest power of 2, or
-      // D3DX_DEFAULT_NONPOW2 for actual size.
-      // !!NOTE:  you probably should check if the
-      // gpu supports NONPOW2 sprites before
-      // going ahead with this.
-      D3DX_DEFAULT_NONPOW2,
-      D3DX_DEFAULT_NONPOW2,
-      
-      D3DX_FROM_FILE,  // D3DX_FROM_FILE means no mips.
-      // D3DX_DEFAULT will create a complete mipmap chain.
-
-      0, // Usage:  you could make the tex a render target with D3DUSAGE_RENDERTARGET but we don't want to
-      D3DFMT_UNKNOWN,  // take the format from the file.
-      D3DPOOL_MANAGED, // So we don't have to re-load textures if the device is lost
-      D3DX_FILTER_NONE,    // filter image  !! CHANGES THE SIZE OF THE IMAGE!
-      D3DX_FILTER_NONE,    // filter mip    !! CHANGES THE SIZE OF THE IMAGE!
-      
-      backgroundColor, // The background color we should
-      // consider transparent.  This gets replaced by
-      // a completely CLEAR color.
-
-      &this->imageInfo,
-      NULL,              // no palette
-      &this->spritesheet // the texture member variable to store
-      // the entire spritesheet in
-    ) ;
-
-    return hr ;
-  }
-
-  HRESULT loadTexturePow2( const char *filename, D3DCOLOR backgroundColor )
-  {
-    // D3DXCreateTextureFromFile()
-    // http://msdn.microsoft.com/en-us/library/ee417125%28VS.85%29.aspx
-
-    HRESULT hr = D3DXCreateTextureFromFileExA(
-      gpu,
-      filename,
-                                 
-      // D3DX_DEFAULT will round up to nearest power of 2, or
-      // D3DX_DEFAULT_NONPOW2 for actual size.
-      D3DX_DEFAULT,
-      D3DX_DEFAULT,
-      
-      D3DX_FROM_FILE,  // D3DX_FROM_FILE means no mips.
-      // D3DX_DEFAULT will create a complete mipmap chain.
-
-      0, // Usage:  you could make the tex a render target with D3DUSAGE_RENDERTARGET but we don't want to
-      D3DFMT_UNKNOWN,  // take the format from the file.
-      D3DPOOL_MANAGED, // So we don't have to re-load textures if the device is lost
-      D3DX_FILTER_NONE,    // filter image !! CHANGES THE SIZE OF THE IMAGE!
-      D3DX_FILTER_NONE,    // filter mip   !! CHANGES THE SIZE OF THE IMAGE!
-      
-      backgroundColor, // The background color we should
-      // consider transparent.  This gets replaced by
-      // a completely CLEAR color.
-
-      &this->imageInfo,
-      NULL,              // no palette
-      &this->spritesheet // the texture member variable to store
-      // the entire spritesheet in
-    ) ;
-
-    return hr ;
-  }
-
-  public:
-
+  
+public:
   float getTimePerFrame()
   {
     return secondsPerFrame ;

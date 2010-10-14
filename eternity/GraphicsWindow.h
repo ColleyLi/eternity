@@ -10,6 +10,15 @@
 class GraphicsWindow : public Window
 {
 public:
+  enum UnderlyingRenderingAPI
+  {
+    DirectX,
+    OpenGL
+  }; 
+
+  GraphicsWindow( HINSTANCE hInst, TCHAR* windowTitleBar, 
+    int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
+
   /// Set the size of the GraphicsWindow.
   /// Propagates down into base classes
   /// so D3D knows about the change as well.

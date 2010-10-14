@@ -87,6 +87,8 @@
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="AssetMan.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="GraphicsWindow.cpp" />
+    <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="UIMan.cpp" />
     <ClCompile Include="Camera3D.cpp" />
     <ClCompile Include="Matrix.cpp" />
@@ -122,6 +124,7 @@
     <ClInclude Include="Camera3D.h" />
     <ClInclude Include="eternity.h" />
     <ClInclude Include="GraphicsWindow.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="ObjFileParse.h" />
     <ClInclude Include="OpenGLWindow.h" />

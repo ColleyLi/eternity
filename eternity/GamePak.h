@@ -24,36 +24,40 @@ protected:
   vector<Callback*> callbacks ;
 
 public:
+  #pragma region managers
   /// Very important for bootstrapping,
   /// loads images, sounds and other assets.
-  AssetMan assetMan ;
+  AssetMan *assetMan ;
 
   /// The GamePak has access to a WINDOW.
   /// The WINDOW in turn has access to the
   /// system GPU.  GamePak communicates all
   /// desires to the GPU thru GraphicsWindow.
-  GraphicsWindow window ;
+  GraphicsWindow *window ;
 
   /// Manages sound playing, etc
-  SoundMan soundMan ;
+  SoundMan *soundMan ;
 
   /// Manages input from mouse, keyboard, and gamepad
-  InputMan inputMan ;
+  InputMan *inputMan ;
 
   /// Manages the UI layer
-  UIMan uiMan ;
+  UIMan *uiMan ;
+  #pragma endregion
 
   /// Creates a GamePak in FULL SCREEN
   /// mode
-  GamePak::GamePak( HINSTANCE hInst, TCHAR* windowTitleBar ) ;
+  GamePak::GamePak( HINSTANCE hInst, TCHAR* windowTitleBar, GraphicsWindow::UnderlyingRenderingAPI api ) ;
 
   /// Creates a GamePak instance
   /// for you.
-  GamePak( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
+  GamePak( HINSTANCE hInst, TCHAR* windowTitleBar, 
+    int windowXPos, int windowYPos, int windowWidth, int windowHeight, 
+    GraphicsWindow::UnderlyingRenderingAPI api ) ;
 
   ~GamePak() ;
 
-  void init();
+  void initManagers();
 
   /// "Steps" the game engine
   /// forward one step.  Must call

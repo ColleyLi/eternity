@@ -660,6 +660,13 @@ Oct 13 / 2010 v0.2.0-decruftify
       - Also note it seems most modern engine have a level designer of sorts..
       - 2D array of char for pathfinding is a really bad API
 
+Oct 14 / 2010 v0.2.0-decruftify
+  - So I wanted to avoid a C-API for drawing, but
+    it looks like AT SOME LEVEL I __have__ to have a
+    re-usable command like "drawBox()" or "drawTexturedBox()"
+    because I don't want to sit there and go repeating the same
+    basic drawing code several times
+
 
 
   - TODO:

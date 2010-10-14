@@ -147,6 +147,12 @@
     <ClCompile Include="UIMan.cpp">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicsWindow.cpp">
+      <Filter>Source Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite.cpp">
+      <Filter>Source Files\Aux_And_Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Callback.h">
@@ -283,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="UILayer.h">
       <Filter>Header Files\Managers\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Line.h">
+      <Filter>Header Files\Aux_And_Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
