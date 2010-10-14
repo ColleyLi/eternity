@@ -189,8 +189,6 @@ void Car::drawStats()
 
     #define PVEC(theVec) theVec.x, theVec.y, theVec.z
     
-    window->setDrawingMode( D2 ) ; // 2d
-
     int y = 0 ;
 
     sprintf( buf, "%.2f", simStepsFrame ) ;

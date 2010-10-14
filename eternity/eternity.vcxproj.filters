@@ -46,6 +46,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{f604aeb0-62c8-4ad9-a2eb-7b561f161228}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Math">
+      <UniqueIdentifier>{f1e617ee-8ced-4242-9bff-793a369d357a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Managers\UI">
+      <UniqueIdentifier>{976697b4-2f9f-43be-aa00-23e1149a6a5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Managers\UI">
+      <UniqueIdentifier>{ba7b678d-2880-493d-85c3-161d345c1abc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera3D.cpp">
@@ -55,9 +67,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D3DWindow.cpp">
-      <Filter>Source Files\Windowing</Filter>
-    </ClCompile>
-    <ClCompile Include="GameWindow.cpp">
       <Filter>Source Files\Windowing</Filter>
     </ClCompile>
     <ClCompile Include="WindowClass.cpp">
@@ -70,9 +79,6 @@
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="SpriteMan.cpp">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="ThreeDMan.cpp">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="GDIPlusTexture.cpp">
@@ -105,6 +111,42 @@
     <ClCompile Include="path\GraphNode.cpp">
       <Filter>Source Files\Pathfinding</Filter>
     </ClCompile>
+    <ClCompile Include="Vector.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="AABB.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="UIObject.cpp">
+      <Filter>Source Files\Managers\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>Source Files\Managers\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="TextField.cpp">
+      <Filter>Source Files\Managers\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetMan.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldMan.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraMan.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePak.cpp">
+      <Filter>Source Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLWindow.cpp">
+      <Filter>Source Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="UIMan.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Callback.h">
@@ -131,9 +173,6 @@
     <ClInclude Include="perlin.h">
       <Filter>Header Files\C-Style</Filter>
     </ClInclude>
-    <ClInclude Include="ButtonMan.h">
-      <Filter>Header Files\Managers</Filter>
-    </ClInclude>
     <ClInclude Include="InputMan.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
@@ -143,13 +182,7 @@
     <ClInclude Include="SpriteMan.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="ThreeDMan.h">
-      <Filter>Header Files\Managers</Filter>
-    </ClInclude>
     <ClInclude Include="D3DWindow.h">
-      <Filter>Header Files\Windowing</Filter>
-    </ClInclude>
-    <ClInclude Include="GameWindow.h">
       <Filter>Header Files\Windowing</Filter>
     </ClInclude>
     <ClInclude Include="WindowClass.h">
@@ -208,6 +241,48 @@
     </ClInclude>
     <ClInclude Include="path\HighPerformanceTimer.h">
       <Filter>Header Files\Pathfinding</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="UIObject.h">
+      <Filter>Header Files\Managers\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>Header Files\Managers\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="TextField.h">
+      <Filter>Header Files\Managers\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetMan.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldMan.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraMan.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePak.h">
+      <Filter>Header Files\Windowing</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsWindow.h">
+      <Filter>Header Files\Windowing</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGLWindow.h">
+      <Filter>Header Files\Windowing</Filter>
+    </ClInclude>
+    <ClInclude Include="UIMan.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="UILayer.h">
+      <Filter>Header Files\Managers\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

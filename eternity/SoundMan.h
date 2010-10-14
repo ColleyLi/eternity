@@ -15,6 +15,8 @@ using namespace std ;
 
 #include <fmod.h>      // not working?  Did you install fmod!
 #include <fmod_errors.h>
+#pragma comment( lib, "fmodex_vc.lib" )
+
 #include "helperFunctions.h"
 
 

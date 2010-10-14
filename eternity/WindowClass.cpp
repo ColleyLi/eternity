@@ -1,7 +1,5 @@
 ////////////////////////////////////////////////////
-// Windows "plumbing".                            //
-// You can safely ignore eveorything in this file. //
-////////////////////////////////////////////////////
+// Windows "plumbing".
 
 #include "WindowClass.h"
 
@@ -72,8 +70,10 @@ Window::~Window()
 {
   // ... clean up and shut down ... 
 
+  
   while( !directories.empty() )
   {
+    // free all strings stored in the "directories" stack
     free( directories.top() ) ;
     directories.pop() ;
   }

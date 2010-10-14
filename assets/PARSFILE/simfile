@@ -1,8 +1,0 @@
-SIMFILE
-INPUT D:\CarSim_Data\Runs\Run321_all.par
-ECHO D:\CarSim_Data\Runs\Run321_echo.par
-FINAL D:\CarSim_Data\Runs\Run321_end.par
-LOGFILE D:\CarSim_Data\Runs\Run321_log.txt
-ERDFILE D:\CarSim_Data\Runs\Run321.erd
-DLLFILE D:\Program Files\CarSim80_Prog\Programs\Solvers\Default\i_i.dll
-END

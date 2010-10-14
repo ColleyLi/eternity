@@ -2,7 +2,7 @@
 #define ETERNITY_H
 
 // Master include file
-#include "GameWindow.h"
+#include "GamePak.h"
 #include "ConsoleColors.h"
 #include "boost/function.hpp"
 #include "Path.h"

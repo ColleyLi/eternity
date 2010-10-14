@@ -37,8 +37,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\Build\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\Build\Files\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\Release\Files\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -50,7 +50,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <BuildLog>
-      <Path>$(SolutionDir)\Build\Files\BuildLog-$(ProjectName).htm</Path>
+      <Path>$(IntDir)\$(MSBuildProjectName).log</Path>
     </BuildLog>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -84,15 +84,24 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="AssetMan.cpp" />
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="UIMan.cpp" />
     <ClCompile Include="Camera3D.cpp" />
+    <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="ObjFileParse.cpp" />
     <ClCompile Include="D3DWindow.cpp" />
-    <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="GamePak.cpp" />
+    <ClCompile Include="OpenGLWindow.cpp" />
+    <ClCompile Include="TextField.cpp" />
+    <ClCompile Include="UIObject.cpp" />
+    <ClCompile Include="Vector.cpp" />
+    <ClCompile Include="CameraMan.cpp" />
     <ClCompile Include="WindowClass.cpp" />
     <ClCompile Include="InputMan.cpp" />
     <ClCompile Include="SoundMan.cpp" />
     <ClCompile Include="SpriteMan.cpp" />
-    <ClCompile Include="ThreeDMan.cpp" />
     <ClCompile Include="GDIPlusTexture.cpp" />
     <ClCompile Include="ConsoleColors.cpp" />
     <ClCompile Include="helperFunctions.cpp" />
@@ -103,23 +112,34 @@
     <ClCompile Include="path\Edge.cpp" />
     <ClCompile Include="path\Graph.cpp" />
     <ClCompile Include="path\GraphNode.cpp" />
+    <ClCompile Include="WorldMan.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABB.h" />
+    <ClInclude Include="AssetMan.h" />
+    <ClInclude Include="Button.h" />
     <ClInclude Include="Callback.h" />
     <ClInclude Include="Camera3D.h" />
     <ClInclude Include="eternity.h" />
+    <ClInclude Include="GraphicsWindow.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="ObjFileParse.h" />
+    <ClInclude Include="OpenGLWindow.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="ConsoleColors.h" />
     <ClInclude Include="helperFunctions.h" />
     <ClInclude Include="perlin.h" />
-    <ClInclude Include="ButtonMan.h" />
+    <ClInclude Include="UILayer.h" />
+    <ClInclude Include="UIMan.h" />
     <ClInclude Include="InputMan.h" />
     <ClInclude Include="SoundMan.h" />
     <ClInclude Include="SpriteMan.h" />
-    <ClInclude Include="ThreeDMan.h" />
+    <ClInclude Include="TextField.h" />
     <ClInclude Include="D3DWindow.h" />
-    <ClInclude Include="GameWindow.h" />
+    <ClInclude Include="GamePak.h" />
+    <ClInclude Include="UIObject.h" />
+    <ClInclude Include="Vector.h" />
+    <ClInclude Include="CameraMan.h" />
     <ClInclude Include="WindowClass.h" />
     <ClInclude Include="D3DVertex.h" />
     <ClInclude Include="Gamepad.h" />
@@ -139,6 +159,7 @@
     <ClInclude Include="path\GraphNode.h" />
     <ClInclude Include="path\GridConnection.h" />
     <ClInclude Include="path\HighPerformanceTimer.h" />
+    <ClInclude Include="WorldMan.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\README">

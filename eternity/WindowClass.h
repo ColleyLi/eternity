@@ -2,11 +2,6 @@
 #define WINDOW_CLASS_H
 
 #pragma region includes and library link
-// windows
-#include <windows.h>
-#include <gdiplus.h>   // for rendering primitives to textures
-#include <tchar.h>
-
 // std c
 #include <stdio.h>
 #include <math.h>
@@ -15,27 +10,16 @@
 #include <vector>
 #include <map>
 #include <stack>
-
-// Graphics
-#include <d3d9.h>      // core direct3d
-#include <d3dx9.h>     // aux libs
-
-#include <dxerr.h>     // detailed error messages
-
-#include "GDIPlusTexture.h"
-#include "Timer.h"
-#include "helperFunctions.h"
-#include "D3DVertex.h"
-#include "Sprite.h"
-#include "Mouse.h"
-
-#include "SoundMan.h"
-
-using namespace Gdiplus ;
 using namespace std ;
 
+// windows
+#include <windows.h>
+#include <tchar.h>
+#include <gdiplus.h>   // for rendering primitives to textures
 #pragma comment( lib, "gdiplus.lib" )
-#pragma comment( lib, "fmodex_vc.lib" )
+using namespace Gdiplus ;
+
+#include "helperFunctions.h"
 
 // D3D
 #pragma comment(lib, "d3d9.lib")
@@ -50,9 +34,6 @@ using namespace std ;
 #pragma endregion
 
 
-// A class that "abstracts away" the process
-// of getting a window up on the screen
-// (and initializing directx!)
 LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam ) ;
 
 
@@ -64,6 +45,10 @@ __      _(_)_ __   __| | _____      _____
   \_/\_/ |_|_| |_|\__,_|\___/ \_/\_/ |___/
 
 */
+
+// A class that "abstracts away" the process
+// of getting a window up on the screen
+// (and initializing directx!)
 class Window
 { 
 protected:

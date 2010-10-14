@@ -1,8 +1,0 @@
-newmtl brake_lights_on
-Ka 1.0 1.0 1.0
-Kd 1.0 1.0 1.0
-Ks 0.337255 0.337255 0.337255
-map_Kd brakes_on.tga
-d 1.0
-Ns 10.0
- 

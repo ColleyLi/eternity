@@ -138,7 +138,41 @@ void clamp( T &num, T low, T high )
   if( num > high )
     num = high ;
 }
+
+template<typename T>
+bool contains( const std::vector<T> & container, const T & item )
+{
+  for( int i = 0 ; i < container.size() ; i++ )
+    if(container[i]==item)
+      return true ;
+
+  return false ;
+}
+
+template<typename T>
+bool removeItem( std::vector<T> & container, const T & item )
+{
+  for( int k = 0 ; k < container.size() ; k++ )
+  {
+    if( container[k] == item )
+    {
+      container.erase( container.begin() + k ) ;
+      return true ;
+    }
+  }
+
+  return false ;
+}
 */
+
+template<typename T>
+inline void swap( T &a, T &b )
+{
+  T temp = a ;
+  a = b ;
+  b = temp ;
+}
+
 
 
 
@@ -272,5 +306,10 @@ bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed
 #define DESTROY_ARRAY(ARRAY) if(ARRAY){delete[] (ARRAY); (ARRAY)=0;}
 #define DESTROY(OBJ) if(OBJ){delete (OBJ); (OBJ)=0;}
 #endif
+
+
+// Define "real" value as float
+// in the Math files (Matrix and Vector)
+#define real float
 
 #endif // HELPER_FUNCTIONS_H

@@ -542,9 +542,126 @@ June 14 / 2010 v0.1.9-fixes
   - Added a .gitignore file to exclude the
     sdf and new (HUGE) ipch directory
 
+Sept 23 / 2010 v0.2.0-decruftify
+  - Decruftification attempt #1
+    - WindowClass.h:  Removed unneeded header includes
+    - D3DWindow.h/.cpp:
+      - Removed the DrawingMode enumeration and all related functions
+      - Removed eye, look, up vectors from this class
+        - Instead a new approach to camera control will be used
+          that is more abstract than this "D3" and "D2" modes
 
-  
-  
+Oct 11 / 2010 v0.2.0-decruftify
+  - Continuing decruftification:
+    - Divided into 6 core managers:
+      - SoundMan (existing)
+      - InputMan (existing)
+      - AssetMan -- NEW!!
+      - CameraMan -- NEW!!
+      - FXMan -- NEW!!
+      - UIMan -- NEW!!
+      - WorldMan -- NEW!!
+    
+    - Renamed / removed:
+      - ButtonMan => UIMan
+      - ViewMan + SpriteMan + ThreeDMan => will be subsumed under CameraMan
+
+Oct 12 / 2010 v0.2.0-decruftify:
+  - Continuing
+    - Renamed GameWindow => GamePak continuing the metaphor
+      - Now the GamePak:
+        - Contains AssetMan
+          - AssetMan contains all assets
+        - Contains a WorldMan
+          - WorldMan represents where things are
+        - Contains a CameraMan
+          - CameraMan zooms in on a section of WorldMan to show what's on the "screen"
+        - Contains a SoundMan
+        - Contains a UIMan
+    - Although useful, I'm erasing the MI-style hierarchy
+      because I don't think its modular enough.
+    - $ has become a SUPERGLOBAL extern'd version
+      of GamePak.  Now to access ANYTHING you go
+      through GamePak.
+    - Its very important that assets be loaded through
+      functions provided by AssetMan.  AssetMan will
+      use $->gpu, but that is only available to AssetMan
+      as it will be declared in class GamePak as a FRIEND
+      to GamePak.  In C++, friends can touch each other's privates,
+      so when GamePak considers AssetMan, InputMan and
+      SoundMan as friends then they all can molest him.
+
+      This seems like a problem, but its a better solution
+      than before, where they'd all become PART of GameWindow
+      by inheritance
+
+    - Also I just noticed that when I renamed GameWindow => GamePak
+      it kind of broke the GameWindow metaphor (your Game IS-A window),
+      now your game HAS-A window in the metaphor, so WindowClass must
+      be contained WITHIN GamePak
+      - Incidently this also solves the problem of D3D / OGL.
+      - Now D3DWindow and OpenGLWindow will both implement the
+        GraphicsWindow interface, and GraphicsWindow:WindowClass will
+        require them to expose 
+
+Oct 13 / 2010 v0.2.0-decruftify
+  - There needs to be a separate object RenderMan for drawing
+  - Instead of having procedural style functions in RenderMan though
+    (drawBox, drawSprite, drawString), we really should deck out
+    a primitive Box with COLLISIONS, __and__ the ability to DRAW itself.
+    - Devise two interfaces:
+      
+      interface Collidable
+      {
+        void intersects( Collidable other ) ;
+      } ;
+
+      interface Drawable
+      {
+        void draw() ;
+      } ;
+    
+    - Drawing happens by interacting with the GPU.
+      - At the lowest level, the draw command can at best
+        CACHE a command to draw for later.
+      - Important, Ogre3D doesn't have an explicit "draw"
+        command for you to invoke.  If its part of the __scene__,
+        then it gets drawn.  To prevent it from being drawn,
+        you simply have to remove it from the scene-graph.
+
+      - I think that approach is too high level for this engine.
+        This engine aims to have low barrier-to-entry (less to understand)
+        before you can make your first game.
+        - Retaining separate control of the "draw" procedure,
+          completes that last step in the mind of the game writer
+          (where does the drawing happen?)
+          - I think I'd like for a painter's algorithm to be
+            followed here as well -- as in what you draw first
+            gets put at the back..
+            - This allows programming by non-programming -- i.e. "programming"
+              what picture appears at the back of the scene simply by drawing
+              it first.  On one level there's one less degree of freedom in
+              code (you have to order them correctly!) on the other hand,
+              there's less code to write and think about.
+          - How should FX be done?  Should the programmer .draw() each
+            FX object?  Or should the FX object be attached to the drawable?
+            Look, you have to think to create the FX object, store it somewhere,
+            and .draw() it.
+            - When FX objects are separate from game entities it give rise to
+              a new freedom.  The ability for engine users to use the engine
+              in ways not originally intended.
+              - Now an FX object can become a _character_, or something like that.
+    
+    - So what does WorldMan do?
+      - It retains the scene, simulates physics (overrideable!) and so on.
+    - A good engine doesn't force you to work in the realm of its preferred conventions..
+      (TORQUE??!) rather it should provide you with capabilities to do your own thing.
+
+      - Also note it seems most modern engine have a level designer of sorts..
+      - 2D array of char for pathfinding is a really bad API
+
+
+
   - TODO:
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in
@@ -590,7 +707,9 @@ June 14 / 2010 v0.1.9-fixes
       #include <eternity.h>
       
       
+    - Physics
+    - Particles
       
       
-      
-    
+    - Complete SPW project
+    - Complete Archon project

@@ -82,36 +82,12 @@ bool D3DWindow::setupGPU()
 
   clearColor = D3DCOLOR_ARGB( 255, 0, 10, 45 ) ;
 
-  // init the eye,look, up, so that
-  // you're not zero'd out at prog start
-  eye = D3DXVECTOR3( 4, 2, 25 ) ;
-  look = D3DXVECTOR3( 0, 0, 0 ) ;
-  up = D3DXVECTOR3( 0, 1, 0 ) ;
-
   return true ;
 }
 
 bool D3DWindow::initD3D()
 {
-  memset( &d3dpps, 0, sizeof( D3DPRESENT_PARAMETERS ) ) ;
-
-  d3dpps.BackBufferCount = 1 ;
-  d3dpps.SwapEffect = D3DSWAPEFFECT_DISCARD  ;
-  d3dpps.BackBufferFormat = D3DFMT_UNKNOWN ;
-  d3dpps.EnableAutoDepthStencil = true ;
-  d3dpps.AutoDepthStencilFormat = D3DFMT_D16 ;
-  d3dpps.hDeviceWindow = hwnd ;
-  
-  d3dpps.BackBufferFormat = D3DFMT_X8R8G8B8 ;
-  
-  d3dpps.Windowed = false ;
-
-  d3dpps.BackBufferWidth = GetSystemMetrics( SM_CXSCREEN ) ;
-  d3dpps.BackBufferHeight =  GetSystemMetrics( SM_CYSCREEN ) ;
-  //d3dpps.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE ; // FRAMERATE::UNBOUNDED  You need to
-  // uncomment this line to make the GPU flip over really really fast
-
-  return setupGPU() ;
+  return initD3D( GetSystemMetrics( SM_CXSCREEN ), GetSystemMetrics( SM_CYSCREEN ) ) ;
 }
 
 bool D3DWindow::initD3D( int width, int height )
@@ -119,7 +95,10 @@ bool D3DWindow::initD3D( int width, int height )
   memset( &d3dpps, 0, sizeof( D3DPRESENT_PARAMETERS ) ) ;
 
   d3dpps.BackBufferCount = 1 ;
-  d3dpps.SwapEffect = D3DSWAPEFFECT_DISCARD  ;
+  d3dpps.SwapEffect = D3DSWAPEFFECT_COPY ; // for screens.
+  // if you discard, there's a risk that when you
+  // try to copy the backbuffer it will be gone
+  // (i suppose if you try to copy after Present call)
   d3dpps.BackBufferFormat = D3DFMT_UNKNOWN ;
   d3dpps.EnableAutoDepthStencil = true ;
   d3dpps.AutoDepthStencilFormat = D3DFMT_D16 ;
@@ -482,97 +461,10 @@ bool D3DWindow::d3dSupportsNonPowerOf2Textures()
   return conditionallySupportsNonPow2Tex ;
 }
 
-
-
 void D3DWindow::d3dWindowStep()
 {
   // check the d3ddevice, in case its been lost
   d3dDeviceCheck() ;
-}
-
-void D3DWindow::project2D()
-{
-  HRESULT hr ;
-
-  D3DXMATRIX projx ;
-  D3DXMatrixOrthoRH( &projx, getWidth(), getHeight(), 1, 100 ) ;
-  hr = gpu->SetTransform( D3DTS_PROJECTION, &projx ) ;
-  DX_CHECK( hr, "setting projection xform" ) ;
-
-  D3DXMATRIX viewx ;
-  int x = getWidth() / 2 ;
-  int y = getHeight() / 2 ;
-  D3DXVECTOR3 eye( x, y, 10 ) ;
-  D3DXVECTOR3 look( x, y, 0 ) ;
-  D3DXVECTOR3 up( 0, 1, 0 ) ;
-  D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
-  hr = gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
-  DX_CHECK( hr, "setting view xform" ) ;
-
-}
-
-void D3DWindow::project3D()
-{
-  HRESULT hr ;
-
-  // Projection transformation
-  D3DXMATRIX projx ;
-  D3DXMatrixPerspectiveFovRH( &projx, (float)(PI/4),
-    (float)getWidth()/getHeight(), 1.0f, 1000.0f ) ;
-  hr = gpu->SetTransform( D3DTS_PROJECTION, &projx ) ;
-  DX_CHECK( hr, "setting projection xform" ) ;
-
-  // Viewing transformation
-  D3DXMATRIX viewx ;
-  D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
-  hr = gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
-  DX_CHECK( hr, "setting view xform" ) ;
-}
-
-// 3d
-void D3DWindow::setCamera( D3DXVECTOR3 &newEye, D3DXVECTOR3 &newLook, D3DXVECTOR3 &newUp )
-{
-  HRESULT hr ;
-
-  // UPDATE THE STATE VARS FOR THE CAMERA
-  //!! these state vars need to go away
-  // and should be stored in Camera only.
-  eye = newEye ;
-  look = newLook ;
-  up = newUp ;
-  D3DXMATRIX viewx ;
-  D3DXMatrixLookAtRH( &viewx, &eye, &look, &up ) ;
-
-  //printMat( viewx ) ;
-  hr = gpu->SetTransform( D3DTS_VIEW, &viewx ) ;
-
-  DX_CHECK( hr, "setCamera, setting viewing xform" ) ;
-}
-
-void D3DWindow::setDrawingMode( DrawingMode dm )
-{
-  if( dm != D2 && dm != D3 )
-  {
-    warning( "Invalid drawing mode selected, nothing changed" ) ;
-    return ;
-  }
-  else if( dm == D2 && drawingMode != D2 ) // don't re-setup things if already set up
-  {
-    // Set up the camera
-    project2D() ;
-  }
-  else if( dm == D3 && drawingMode != D3 ) // like don't switch to 3d mode if already 3d
-  {
-    project3D() ;
-  }
-
-  // Save off drawing mode..
-  drawingMode = dm ;
-}
-
-DrawingMode D3DWindow::getDrawingMode()
-{
-  return drawingMode ;
 }
 
 bool D3DWindow::beginDrawing()
@@ -590,26 +482,17 @@ bool D3DWindow::beginDrawing()
   DX_CHECK( hr, "Clear error" ) ;
 
   hr = gpu->BeginScene() ;
-  DX_CHECK( hr, "BeginScene error" ) ;
-
-  // By __default__, put you in
-  // 2d mode
-  if( drawingMode == D3 )
-    setDrawingMode( D3 ) ;
-  else
-    setDrawingMode( D2 ) ;
-
-  return true ;
+  return DX_CHECK( hr, "BeginScene error" ) ;
 }
 
-void D3DWindow::endDrawing()
+bool D3DWindow::endDrawing()
 {
   HRESULT hr ;
 
   if( isDeviceLost )
   {
     //warning( "The d3d device is lost right now, not ending the draw" ) ;
-    return ;
+    return false ;
   }
 
   hr = gpu->EndScene() ;
@@ -617,7 +500,7 @@ void D3DWindow::endDrawing()
 
   // And finally, PRESENT what we drew to the backbuffer
   hr = gpu->Present( 0, 0, 0, 0 ) ;
-  DX_CHECK( hr, "Present FAILED!" ) ;
+  return DX_CHECK( hr, "Present FAILED!" ) ;
 }
 
 
@@ -678,8 +561,6 @@ bool D3DWindow::setSize( int width, int height, bool fullScreen )
     }
   }
 
-
-  
   Window::setSize( width, height, fullScreen ) ;
   return true ;
 }
@@ -688,7 +569,6 @@ bool D3DWindow::fullScreenInMaxResolution()
 {
   return setSize( GetSystemMetrics( SM_CXSCREEN ), GetSystemMetrics( SM_CYSCREEN ), true ) ;
 }
-
 
 void D3DWindow::registerFont( ID3DXFont* font )
 {

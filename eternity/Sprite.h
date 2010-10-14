@@ -48,7 +48,12 @@ struct Line
 class Sprite
 {
 private:
-  IDirect3DTexture9 *spritesheet ;
+  static IDirect3DDevice9* gpu ;
+
+private:
+  IDirect3DTexture9 *spritesheet ; // this really should be stored
+  // in AssetMan.
+
   D3DXIMAGE_INFO imageInfo ;
 
   const char *originalFilename ;
@@ -107,7 +112,7 @@ public:
   // This function assumes we're loading a
   // spritesheet for an animated sprite.
 
-  // singleSpriteWidth and singleSpriteHeight
+  // singleFrameWidth and singleFrameHeight
   // are the width and height for A SINGLE FRAME
   // of the animated sprite, not the SPRITESHEET itself.
 
@@ -115,24 +120,27 @@ public:
   // If you're using PNG images, then you don't
   // need a background color (because PNG supports
   // transparency inside the file itself)
-  Sprite( IDirect3DDevice9 *gpu, const char *filename,
+  Sprite(
+    
+    const char *filename,
+    
     D3DCOLOR backgroundColor = D3DCOLOR_ARGB( 0,0,0,0 ), // defaults to transparent black (i.e. no effect)
     
     // If you are loading in
-    // a SPRITE SHEET, then singleSpriteWidth
-    // and singleSpriteHeight should be
+    // a SPRITE SHEET, then singleFrameWidth
+    // and singleFrameHeight should be
     // the width of a SINGLE IMAGE on that sheet.
     // SPRITE_READ_FROM_FILE for these two parameters
     // means we will assume
     // the entire sheet is meant to be a single sprite
-    int singleSpriteWidth = SPRITE_READ_FROM_FILE,
-    int singleSpriteHeight = SPRITE_READ_FROM_FILE,
+    int singleFrameWidth = SPRITE_READ_FROM_FILE,
+    int singleFrameHeight = SPRITE_READ_FROM_FILE,
     
     int numFramesToUse = SPRITE_READ_FROM_FILE,
     // If you specify SPRITE_READ_FROM_FILE,
     // then the number of frames it will count
-    // are based on singleSpriteWidth
-    // and singleSpriteHeight,
+    // are based on singleFrameWidth
+    // and singleFrameHeight,
     // but it will assume every cell is used
     float timeBetweenFrames = 0.5f
   )
@@ -149,8 +157,8 @@ public:
     secondsPerFrame = timeBetweenFrames ;
 
     // save these off
-    spriteWidth = singleSpriteWidth ;
-    spriteHeight = singleSpriteHeight ;
+    spriteWidth = singleFrameWidth ;
+    spriteHeight = singleFrameHeight ;
     numFrames = numFramesToUse ;
 
     // Some parameter value checking
@@ -263,7 +271,7 @@ public:
     SAFE_RELEASE( spritesheet ) ;
   }
 private:
-  HRESULT loadTextureNonPow2( IDirect3DDevice9 *gpu, char *filename, D3DCOLOR backgroundColor )
+  HRESULT loadTextureNonPow2( char *filename, D3DCOLOR backgroundColor )
   {
     HRESULT hr = D3DXCreateTextureFromFileExA(
       gpu,
@@ -299,7 +307,7 @@ private:
     return hr ;
   }
 
-  HRESULT loadTexturePow2( IDirect3DDevice9 *gpu, const char *filename, D3DCOLOR backgroundColor )
+  HRESULT loadTexturePow2( const char *filename, D3DCOLOR backgroundColor )
   {
     // D3DXCreateTextureFromFile()
     // http://msdn.microsoft.com/en-us/library/ee417125%28VS.85%29.aspx
@@ -361,8 +369,8 @@ private:
     }
 
     n = frameNumber ; // set the frame number
-      if( n >= numFrames )
-        n = 0 ;
+    if( n >= numFrames )
+      n = 0 ;
   }
   
   // advance this sprite by this much TIME

@@ -9,7 +9,7 @@
 #include <map>
 using namespace std ;
 
-#include "GameWindow.h"
+#include "GamePak.h"
 #include "helperFunctions.h"
 
 
@@ -474,7 +474,7 @@ class ObjFile
 
 public:
   /// Call this once to initialize the class.
-  static void init( GameWindow *window )
+  static void init( GamePak *window )
   {
     // Set up the default material
     setColor( &Material::defaultMaterial.Ambient,  1.f,  1.f, 1.f, 1.f ) ;
@@ -485,7 +485,7 @@ public:
 
 private:
 
-  GameWindow * window ;
+  GamePak * window ;
 
   string originalObjFilename, originalMtllibName ;
 
@@ -537,16 +537,16 @@ public:
   // Ok, a bit of a kludge here.
   // For this object to load
   // texture objects seemlessly,
-  // I actually need your GameWindow
+  // I actually need your GamePak
   // instance.
-  // If GameWindow were a true singleton
+  // If GamePak were a true singleton
   // then accessing the one and only instance
   // of it shouldn't be so tough..
   // EVEN IF an extern declaration of it
-  // is in GameWindow.h, and it is assumed
+  // is in GamePak.h, and it is assumed
   // to exist, that would be fine as well..
 
-  ObjFile( GameWindow* gameWindow, char* objFilename )
+  ObjFile( GamePak* gameWindow, char* objFilename )
   {
     // Save off the reference
     window = gameWindow ;
@@ -1557,8 +1557,7 @@ private:
   void setupVertexBuffers()
   {
     // We need to set up vertex arrays
-    IDirect3DDevice9 *gpu = window->getGpu() ;
-
+    
     // Combine all the groups..
 
     // This is massively loop unrolled, but

@@ -542,32 +542,6 @@ void SpriteMan::drawLine( D3DXVECTOR2 & start, D3DXVECTOR2 & end, D3DCOLOR color
 
 
 
-void SpriteMan::loadSprite( int spriteId, const char *filename )
-{
-  loadSprite( spriteId, filename, D3DCOLOR_ARGB( 0,0,0,0 ),
-    SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
-    SPRITE_READ_FROM_FILE, 0.5f ) ;
-}
-
-void SpriteMan::loadSprite( int spriteId, const char *filename, D3DCOLOR backgroundColor )
-{
-  loadSprite( spriteId, filename, backgroundColor,
-    SPRITE_READ_FROM_FILE, SPRITE_READ_FROM_FILE,
-    SPRITE_READ_FROM_FILE, 0.5f ) ;
-}
-
-// id is how you will refer to this sprite after its been loaded
-// filename is just the filename on the disk drive
-void SpriteMan::loadSprite( int spriteId, const char *filename,
-                         D3DCOLOR backgroundColor,
-                         int singleSpriteWidth, int singleSpriteHeight,
-                         int numFrames, float timeBetweenFrames )
-{
-  Sprite *sprite = new Sprite( lgpu, filename, backgroundColor,
-    singleSpriteWidth, singleSpriteHeight, numFrames, timeBetweenFrames ) ;
-  addSprite( spriteId, sprite ) ;
-}
-
 int SpriteMan::randomSpriteId()
 {
   SpriteMapIter iter = sprites.begin() ;
