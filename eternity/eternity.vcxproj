@@ -20,10 +20,12 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -87,7 +89,11 @@
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="AssetMan.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="Console.cpp" />
     <ClCompile Include="GraphicsWindow.cpp" />
+    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="SoundCreation.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="UIMan.cpp" />
     <ClCompile Include="Camera3D.cpp" />
@@ -105,7 +111,6 @@
     <ClCompile Include="SoundMan.cpp" />
     <ClCompile Include="SpriteMan.cpp" />
     <ClCompile Include="GDIPlusTexture.cpp" />
-    <ClCompile Include="ConsoleColors.cpp" />
     <ClCompile Include="helperFunctions.cpp" />
     <ClCompile Include="perlin.cpp" />
     <ClCompile Include="path\AsciiMap.cpp" />
@@ -125,13 +130,17 @@
     <ClInclude Include="eternity.h" />
     <ClInclude Include="GraphicsWindow.h" />
     <ClInclude Include="Line.h" />
+    <ClInclude Include="Log.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="md5.h" />
     <ClInclude Include="ObjFileParse.h" />
     <ClInclude Include="OpenGLWindow.h" />
     <ClInclude Include="Path.h" />
-    <ClInclude Include="ConsoleColors.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="helperFunctions.h" />
     <ClInclude Include="perlin.h" />
+    <ClInclude Include="Sound.h" />
+    <ClInclude Include="SoundCreation.h" />
     <ClInclude Include="UILayer.h" />
     <ClInclude Include="UIMan.h" />
     <ClInclude Include="InputMan.h" />
@@ -170,6 +179,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </CustomBuildStep>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -12,6 +12,7 @@
 #include "Callback.h"
 #include "UIMan.h"
 #include "AssetMan.h"
+#include "CameraMan.h"
 
 class GamePak
 {
@@ -29,11 +30,13 @@ public:
   /// loads images, sounds and other assets.
   AssetMan *assetMan ;
 
+  SpriteMan *spriteMan ;
+
   /// The GamePak has access to a WINDOW.
   /// The WINDOW in turn has access to the
   /// system GPU.  GamePak communicates all
   /// desires to the GPU thru GraphicsWindow.
-  GraphicsWindow *window ;
+  D3DWindow *window ;
 
   /// Manages sound playing, etc
   SoundMan *soundMan ;
@@ -41,13 +44,15 @@ public:
   /// Manages input from mouse, keyboard, and gamepad
   InputMan *inputMan ;
 
+  CameraMan *cameraMan;
+
   /// Manages the UI layer
   UIMan *uiMan ;
   #pragma endregion
 
   /// Creates a GamePak in FULL SCREEN
   /// mode
-  GamePak::GamePak( HINSTANCE hInst, TCHAR* windowTitleBar, GraphicsWindow::UnderlyingRenderingAPI api ) ;
+  GamePak( HINSTANCE hInst, TCHAR* windowTitleBar, GraphicsWindow::UnderlyingRenderingAPI api ) ;
 
   /// Creates a GamePak instance
   /// for you.
@@ -129,6 +134,8 @@ public:
   /// FW_BOLD=700, which means BOLD.  FW_THIN=100 is very thin.
   void createFont( int fontId, char *fontName, float size, int boldness, bool italics ) ;
 
+  bool setSize( int width, int height, bool fullScreen );
+
   /// Register a callback
   /// to execute sometime in
   /// the future.  The "when"
@@ -162,9 +169,7 @@ private:
 /// called `window'.  window IS, for all intents
 /// and purposes, THE ETERNITY ENGINE to you.
 // We could have called this `eternity` or
-// just simply `e`, but I think `window` is
-// more intuitive because all this time you
-// are talking about the GamePak.
+// just simply `e`, but I used $.
 extern GamePak * $ ;
 
 #endif

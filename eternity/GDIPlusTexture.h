@@ -46,8 +46,11 @@ public:
   // and the background box.  Text may get cut off
   void boxedText( TCHAR* text, Font *font, RECT padding, Color textColor, Color bkgColor, RectF limitingRect, StringAlignment alignment ) ;
 
-  // Supports BMP, GIF, JPEG, PNG, TIFF, and EMF
+  // FreeImage supports .bmp, .gif, .jpg, .png, .exr, and TONS more, including PSD!
+
+  // Win32 GDI+ supports BMP, GIF, JPEG, PNG, TIFF, and EMF
   // D3DX supports .bmp, .dds, .dib, .hdr, .jpg, .pfm, .png, .ppm, and .tga
+
   // So you can use this to load
   // .gif, .tiff, and .emf files while
   // the D3DX function cannot load them.

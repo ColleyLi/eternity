@@ -25,7 +25,7 @@ enum SpriteCentering
 
 class SpriteMan
 {
-protected:
+public:
   // <Direct3D objects>:  All must be
   // released on shut down and reset
   // when the device gets reset
@@ -54,7 +54,7 @@ private:
 
   Sprite *whitePixel ;    // used for drawing solid colored boxes.
   
-  vector<Line> lines ;
+  //vector<Line> lines ;
 
   int screenWidth, screenHeight ;
 

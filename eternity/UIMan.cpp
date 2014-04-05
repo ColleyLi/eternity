@@ -1,4 +1,5 @@
 #include "UIMan.h"
+#include "SpriteMan.h"
 
 UIMan::UIMan()
 {
@@ -361,27 +362,27 @@ void UIMan::deleteTextField( int textFieldId )
     tf->Delete() ;
 }
 
-void UIMan::draw()
+void UIMan::draw(SpriteMan *spriteMan)
 {
   foreach( ButtonMapIter, buttonIter, buttons )
   {
     Button *b = buttonIter->second ;
 
     // Draw the background box
-    drawBox( b->bkgColor, b->left(), b->top(), b->width(), b->height() ) ;
+    spriteMan->drawBox( b->bkgColor, b->left(), b->top(), b->width(), b->height() ) ;
 
     // Only draw the background sprite if
     // it is not 0.  0 is reserved for
     // meaning.. "no sprite"
     if( b->backgroundSpriteId )
-      drawSprite( b->backgroundSpriteId,
+      spriteMan->drawSprite( b->backgroundSpriteId,
         b->left(), b->top(),
         b->width(), b->height(), 0.0f,
         b->spriteModulatingColor,
         SpriteCentering::TopLeft ) ;
   
     // Draw the text inside it
-    drawString(
+    spriteMan->drawString(
       b->fontId,
       b->text.c_str(),
       b->textColor,
@@ -394,13 +395,13 @@ void UIMan::draw()
     TextField *tf = tfIter->second ;
 
     // Draw the background box
-    drawBox( tf->bkgColor, tf->left(), tf->top(), tf->width(), tf->height() ) ;
+    spriteMan->drawBox( tf->bkgColor, tf->left(), tf->top(), tf->width(), tf->height() ) ;
 
     // Only draw the background sprite if
     // it is not 0.  0 is reserved for
     // meaning.. "no sprite"
     if( tf->backgroundSpriteId )
-      drawSprite( tf->backgroundSpriteId,
+      spriteMan->drawSprite( tf->backgroundSpriteId,
         tf->left(), tf->top(),
         tf->width(), tf->height(), 0.0f,
         tf->spriteModulatingColor,
@@ -414,14 +415,14 @@ void UIMan::draw()
     // center
     if( tf->labelText.length() )
     {
-      drawString(
+      spriteMan->drawString(
         tf->fontId,
         tf->labelText.c_str(),
         tf->textColor,
         tf->left(), tf->top(), tf->width(), tf->height(),
         DT_LEFT | DT_VCENTER ) ;
 
-      drawString(
+      spriteMan->drawString(
         tf->fontId,
         tf->text.c_str(),
         tf->textColor,
@@ -433,7 +434,7 @@ void UIMan::draw()
       // no label, so draw the text field of
       // the text field centered
       //!! THIS SHOULD BE A SETTABLE PARAM AS WELL.
-      drawString(
+      spriteMan->drawString(
         tf->fontId,
         tf->text.c_str(),
         tf->textColor,
@@ -447,7 +448,7 @@ void UIMan::draw()
     {
       // (for now just draw a black box
       // in its top right corner)
-      drawBox( D3DCOLOR_ARGB( 180, 255, 0, 0 ),
+      spriteMan->drawBox( D3DCOLOR_ARGB( 180, 255, 0, 0 ),
         tf->right() - 4 - 2,
         tf->top()+2,
         4, 4 ) ;

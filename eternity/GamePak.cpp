@@ -1,6 +1,11 @@
 #include "GamePak.h"
 #include "ObjFileParse.h"  // to initialize it.
+#include "InputMan.h"
+#include "SpriteMan.h"
 
+// Instantiate the extern'd GamePak POINTER here,
+// but NOT the actual GamePak object yet.  The
+// actual GamePak object is instantiated in MAIN.
 GamePak * $ ;
 
 GamePak::GamePak( HINSTANCE hInst, TCHAR* windowTitleBar, GraphicsWindow::UnderlyingRenderingAPI api )
@@ -42,22 +47,27 @@ void GamePak::initManagers()
   // Initialize each of the managers
   assetMan = new AssetMan() ;
   
-  initSpriteMan( gpu, getWidth(), getHeight() ) ;
+  spriteMan = new SpriteMan() ;
+  spriteMan->initSpriteMan( window->getGpu(), window->getWidth(), window->getHeight() ) ;
 
   // Some coupling..
   // it isn't possible to reach D3DWindow
   // from SpriteMan, so the tie together
   // is actually here, in this class
-  registerFont( id3dxDefaultFont ) ;
-  registerSpriteRenderer( id3dxSpriteRenderer ) ;
-  registerLine( id3dxLine ) ;
+  window->registerFont( spriteMan->id3dxDefaultFont ) ;
+  window->registerSpriteRenderer( spriteMan->id3dxSpriteRenderer ) ;
+  window->registerLine( spriteMan->id3dxLine ) ;
 
-  initInputMan( hwnd, getWidth(), getHeight() ); // clip zone gets set here too
+  inputMan = new InputMan();
+  inputMan->initInputMan( hwnd, window->getWidth(), window->getHeight() ); // clip zone gets set here too
   
-  spriteManSetWindowSize( getWidth(), getHeight() ) ;
-  initSoundMan() ;
+  spriteMan->spriteManSetWindowSize( window->getWidth(), window->getHeight() ) ;
+
+  soundMan = new SoundMan();
+  soundMan->initSoundMan() ;
   paused = false ;
 
+  cameraMan = new CameraMan();
 
   // Initialize the objfileloader
   ObjFile::init( this ) ;
@@ -65,9 +75,9 @@ void GamePak::initManagers()
 
 void GamePak::step()
 {
-  d3dWindowStep() ;  
+  window->d3dWindowStep() ;
 
-  inputManStep() ;
+  inputMan->inputManStep() ;
 
 
   //!! is this the best place for this?
@@ -75,15 +85,15 @@ void GamePak::step()
   // listener position in FMOD as well.
   FMOD_VECTOR v;
   v.x=v.y=v.z=0;
-  setListener(
-    (FMOD_VECTOR*)(&camera.getEye()),
+  soundMan->setListener(
+    (FMOD_VECTOR*)(&cameraMan->camera.getEye()),
     &v,
-    (FMOD_VECTOR*)(&camera.getForward()),
-    (FMOD_VECTOR*)(&camera.getUp())
+    (FMOD_VECTOR*)(&cameraMan->camera.getForward()),
+    (FMOD_VECTOR*)(&cameraMan->camera.getUp())
     ) ;
 
 
-  soundStep();
+  soundMan->soundStep();
 
   // Advance sprite animations.
   // This is the only thing that
@@ -91,7 +101,7 @@ void GamePak::step()
   // PAUSED.
   if( !paused )
   {
-    spriteManStep( timer.time_since_last_frame ) ;
+    spriteMan->spriteManStep( timer.time_since_last_frame ) ;
   }
 
 
@@ -132,7 +142,7 @@ void GamePak::pause()
   if( !paused )
   {
     // ..then pause everything
-    soundPause() ;
+    soundMan->soundPause() ;
 
     paused = true ;  // this member is checked
     // in Window::step()
@@ -142,7 +152,7 @@ void GamePak::unpause()
 {
   if( paused )
   {
-    soundUnpause() ;
+    soundMan->soundUnpause() ;
 
     paused = false ;
   }
@@ -170,17 +180,17 @@ double GamePak::getTimeElapsedSinceGameStart()
 
 void GamePak::drawMouseCursor(int spriteId, bool showCursorCoordinates)
 {
-  drawSprite( spriteId, getMouseX(), getMouseY(), SpriteCentering::TopLeft ) ;
+  spriteMan->drawSprite( spriteId, inputMan->getMouseX(), inputMan->getMouseY(), SpriteCentering::TopLeft ) ;
 
   if( showCursorCoordinates )
   {
     char buf[ 300 ] ;
-    sprintf( buf, "mouse\n(%d, %d)", getMouseX(), getMouseY() ) ;
+    sprintf( buf, "mouse\n(%d, %d)", inputMan->getMouseX(), inputMan->getMouseY() ) ;
 
     RECT r ;
-    getBoxDimensions( DEFAULT_FONT, buf, r ) ;
-    drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), getMouseX(), getMouseY(), r.right-r.left, r.bottom-r.top ) ;
-    drawString( DEFAULT_FONT, buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), getMouseX(), getMouseY(), r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
+    spriteMan->getBoxDimensions( DEFAULT_FONT, buf, r ) ;
+    spriteMan->drawBox( D3DCOLOR_ARGB( 120, 255, 255, 255 ), inputMan->getMouseX(), inputMan->getMouseY(), r.right-r.left, r.bottom-r.top ) ;
+    spriteMan->drawString( DEFAULT_FONT, buf, D3DCOLOR_ARGB( 255, 0, 0, 120 ), inputMan->getMouseX(), inputMan->getMouseY(), r.right-r.left, r.bottom-r.top, DT_LEFT | DT_TOP ) ;
   }
 }
 
@@ -201,13 +211,13 @@ void GamePak::drawFrameCounter()
   r.bottom += 10 ;
   */
   
-  int left = getWidth() - 10 - 100 ;
-  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 10, 100, 30 ) ;
-  drawString( DEFAULT_FONT, buf, Color::White, left, 10, 100, 30 ) ;
+  int left = window->getWidth() - 10 - 100 ;
+  spriteMan->drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 10, 100, 30 ) ;
+  spriteMan->drawString( DEFAULT_FONT, buf, Color::White, left, 10, 100, 30 ) ;
 
   sprintf( buf, "+ %.3f ms", timer.extra_time*1000 ) ;
-  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 40, 100, 30 ) ;
-  drawString( DEFAULT_FONT, buf, Color::White, left, 40, 100, 30 ) ;
+  spriteMan->drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 40, 100, 30 ) ;
+  spriteMan->drawString( DEFAULT_FONT, buf, Color::White, left, 40, 100, 30 ) ;
 }
 
 
@@ -227,33 +237,33 @@ void GamePak::drawTimer()
   r.bottom += 10 ;
   */
   
-  int left = getWidth() - 10 - 100 ;
-  drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 70, 100, 30 ) ;
-  drawString( DEFAULT_FONT, buf, Color::White, left, 70, 100, 30 ) ;
+  int left = window->getWidth() - 10 - 100 ;
+  spriteMan->drawBox( D3DCOLOR_ARGB( 235, 0, 0, 128 ), left, 70, 100, 30 ) ;
+  spriteMan->drawString( DEFAULT_FONT, buf, Color::White, left, 70, 100, 30 ) ;
 
 }
 
 void GamePak::createFont( int fontId, char *fontName, float size, int boldness, bool italics )
 {
   ID3DXFont *font ;
-  DX_CHECK( D3DXCreateFontA( gpu, size, 0, boldness, 1,
+  DX_CHECK( D3DXCreateFontA( window->getGpu(), size, 0, boldness, 1,
     italics, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY,
     DEFAULT_PITCH | FF_DONTCARE, fontName, &font ), "Create custom font" ) ;
 
   // Register the font with D3DWindow, so
   // it will be released and reset ondevicelost
   // and ondevicereset
-  registerFont( font ) ;
+  window->registerFont( font ) ;
 
   // Now add it to the map in SpriteMan
-  addFont( fontId, font ) ;
+  spriteMan->addFont( fontId, font ) ;
 
 }
 
 
 bool GamePak::setSize( int width, int height, bool fullScreen )
 {
-  D3DWindow::setSize( width, height, fullScreen ) ;
+  window->setSize( width, height, fullScreen ) ;
 
   info( "GamePak setSize( %d, %d, %d )", width, height, fullScreen ) ;
 
@@ -265,10 +275,10 @@ bool GamePak::setSize( int width, int height, bool fullScreen )
   wndSize.top = 0 ;
   wndSize.bottom = height ;
 
-  inputManSetClipZone( wndSize ) ;
+  inputMan->inputManSetClipZone( wndSize ) ;
   
   
-  spriteManSetWindowSize( width, height ) ;
+  spriteMan->spriteManSetWindowSize( width, height ) ;
 
 
   return true ;

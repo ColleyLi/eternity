@@ -1,13 +1,14 @@
 #ifndef CAMERAMAN_H
 #define CAMERAMAN_H
 
+#include "Camera3D.h"
 
 /// Camera for the game world
 class CameraMan
 {
-
-
-  void moveTo( Vector pos, float time ) ;
+public:
+  Camera3D camera;
+  //void moveTo( Vector pos, float time ) ;
 
   
 

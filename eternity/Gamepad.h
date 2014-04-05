@@ -40,7 +40,7 @@ public:
     ShoulderLeft = XINPUT_GAMEPAD_LEFT_SHOULDER,
     ShoulderRight = XINPUT_GAMEPAD_RIGHT_SHOULDER,
     A = XINPUT_GAMEPAD_A,
-    B = XINPUT_GAMEPAD_B,
+    BR = XINPUT_GAMEPAD_B,
     X = XINPUT_GAMEPAD_X,
     Y = XINPUT_GAMEPAD_Y             
   } ;

@@ -1,7 +1,7 @@
 #ifndef D3DVERTEX_H
 #define D3DVERTEX_H
 
-
+#include <d3dx9.h>
 
 // v
 struct Vertex

@@ -1,24 +1,7 @@
 #include "AssetMan.h"
+#include "SpriteMan.h"
 
-void AssetMan::loadSprite( int spriteId, const char *filename, D3DCOLOR backgroundColor )
-{
-  Sprite *sprite = new Sprite( filename ) ;
-  addSprite( spriteId, sprite ) ;
-}
-
-// id is how you will refer to this sprite after its been loaded
-// filename is just the filename on the disk drive
-void AssetMan::loadAnimatedSprite( int spriteId, const char *filename,
-                         D3DCOLOR backgroundColor,
-                         int singleFrameWidth, int singleFrameHeight,
-                         int numFrames, float timeBetweenFrames )
-{
-  Sprite *sprite = new Sprite( filename, backgroundColor,
-    singleFrameWidth, singleFrameHeight, numFrames, timeBetweenFrames ) ;
-  addSprite( spriteId, sprite ) ;
-}
-
-HRESULT AssetMan::loadTextureNonPow2( char *filename, D3DCOLOR backgroundColor )
+HRESULT AssetMan::loadTextureNonPow2( IDirect3DDevice9 *gpu, Sprite* sprite, char *filename, D3DCOLOR backgroundColor )
 {
   HRESULT hr = D3DXCreateTextureFromFileExA(
     gpu,
@@ -45,16 +28,16 @@ HRESULT AssetMan::loadTextureNonPow2( char *filename, D3DCOLOR backgroundColor )
     // consider transparent.  This gets replaced by
     // a completely CLEAR color.
 
-    &this->imageInfo,
+    &sprite->imageInfo,
     NULL,              // no palette
-    &this->spritesheet // the texture member variable to store
+    &sprite->spritesheet // the texture member variable to store
     // the entire spritesheet in
   ) ;
 
   return hr ;
 }
 
-HRESULT AssetMan::loadTexturePow2( const char *filename, D3DCOLOR backgroundColor )
+HRESULT AssetMan::loadTexturePow2( IDirect3DDevice9 *gpu, Sprite* sprite, const char *filename, D3DCOLOR backgroundColor )
 {
   // D3DXCreateTextureFromFile()
   // http://msdn.microsoft.com/en-us/library/ee417125%28VS.85%29.aspx
@@ -81,11 +64,56 @@ HRESULT AssetMan::loadTexturePow2( const char *filename, D3DCOLOR backgroundColo
     // consider transparent.  This gets replaced by
     // a completely CLEAR color.
 
-    &this->imageInfo,
+    &sprite->imageInfo,
     NULL,              // no palette
-    &this->spritesheet // the texture member variable to store
+    &sprite->spritesheet // the texture member variable to store
     // the entire spritesheet in
   ) ;
 
   return hr ;
 }
+
+bool AssetMan::loadSound( SoundMan* soundMan, int soundId, char * filename, int options )
+{
+  FMOD_SOUND *newSound ;
+  
+  // Load the sound
+  bool success = FMOD_ErrorCheck(
+    FMOD_System_CreateSound(
+    // !! Too often effects don't work on
+    // target pc's with crummy sound cards.
+    // We should check the card's caps
+    // before setting.
+    soundMan->fmodSys, filename, FMOD_SOFTWARE | options, 0, &newSound ) ) ;
+
+  if( !success )
+  {
+    error( "Could not load %s, check file exists", filename ) ;
+    return false;
+  }
+
+  // File loaded, ok, now
+  // check if a sound by that ID already exists.
+  // If it does, unload and destroy it
+  SoundMapIter soundEntry = sounds.find( soundId ) ;
+  if( soundEntry != sounds.end() )
+  {
+    warning( "Sound id=%d already existed, destroying and overwriting with %s.", soundId, filename ) ;
+    FMOD_SOUND *oldSound = NULL ;
+    oldSound = soundEntry->second ;
+    FMOD_Sound_Release( oldSound ) ;
+
+    // remove from the map
+    sounds.erase( soundEntry ) ;
+  }
+
+  // Now save it by its id in the map
+  sounds.insert( make_pair( soundId, newSound ) ) ;
+  return true;
+}
+
+
+
+
+
+

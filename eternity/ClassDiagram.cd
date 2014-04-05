@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AssetMan" Collapsed="true">
+    <Position X="0.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAABAAAAAAgAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>AssetMan.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SoundMan" Collapsed="true">
+    <Position X="0.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AYAAAAgkASBDAAAAIgAAiAAACAAMgIAEAAAAkBACAAI=</HashCode>
+      <FileName>SoundMan.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Button" Collapsed="true">
+    <Position X="7.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAEAAAA=</HashCode>
+      <FileName>Button.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TextField" Collapsed="true">
+    <Position X="5.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gEAACAAAFAAAAAAIAAAAAAAAAAQAAAAAAAAEAAAAAAA=</HashCode>
+      <FileName>TextField.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UIObject" Collapsed="true">
+    <Position X="6.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABgAAAAgAAAAAAAAAQBCAAAAB0AAAAJQAAgAAAAAgA=</HashCode>
+      <FileName>UIObject.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GraphicsWindow" Collapsed="true">
+    <Position X="1.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAgAAQAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GraphicsWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OpenGLWindow" Collapsed="true">
+    <Position X="0.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>OpenGLWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="D3DWindow" Collapsed="true">
+    <Position X="2.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>UqBAiAEAAAGAAglAgAAAAAqoGAQiQCFBEBkQAACAACQ=</HashCode>
+      <FileName>D3DWindow.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Window" Collapsed="true">
+    <Position X="1.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQQAAAAAAAAAgAAAAAAAAAAQAAAAAAAAIACAgIAAA=</HashCode>
+      <FileName>WindowClass.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AABB2" Collapsed="true">
+    <Position X="6.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAABQAQIAAAAgAAAAIAAAAAAAAgAAAkAA=</HashCode>
+      <FileName>AABB.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="Callback" Collapsed="true">
+    <Position X="5.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>Callback.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Callback0" Collapsed="true">
+    <Position X="0.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAQAAAAQAA=</HashCode>
+      <FileName>Callback.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Callback1&lt;typeArg1&gt;" Collapsed="true">
+    <Position X="3" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAgAAEAAAAQAAAAQAA=</HashCode>
+      <FileName>Callback.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Callback2&lt;typeArg1, typeArg2&gt;" Collapsed="true">
+    <Position X="5.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAgAAEAAAAQAAAAQAA=</HashCode>
+      <FileName>Callback.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Callback3&lt;typeArg1, typeArg2, typeArg3&gt;" Collapsed="true">
+    <Position X="7.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAgAAEAAAAQAAAAQAA=</HashCode>
+      <FileName>Callback.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Callback4&lt;typeArg1, typeArg2, typeArg3, typeArg4&gt;" Collapsed="true">
+    <Position X="9.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAgAAEAAAAQAAAAQAA=</HashCode>
+      <FileName>Callback.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Consolas" Size="8.25" />
+</ClassDiagram>

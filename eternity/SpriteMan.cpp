@@ -73,7 +73,7 @@ void SpriteMan::initDefaultSprite()
   
   DX_CHECK( tex->UnlockRect( 0 ), "Unlock default sprite" ) ;
 
-  defaultSprite = new Sprite( w, h, tex ) ;
+  defaultSprite = new Sprite( 0, w, h, tex ) ;
   //addSprite( 0, whitePixel ) ; // no need to save a ref in the sprites map.
 
 }
@@ -89,7 +89,7 @@ void SpriteMan::initWhitePixel()
   ((__int32*)lockedRect.pBits)[0] = D3DCOLOR_ARGB( 255,255,255,255 ) ;
   DX_CHECK( tex->UnlockRect( 0 ), "Unlock 1x1 pixel patch" ) ;
 
-  whitePixel = new Sprite( 1, 1, tex ) ;
+  whitePixel = new Sprite( 0, 1, 1, tex ) ;
   //addSprite( 0, whitePixel ) ; // no need to save a ref in the sprites map.
 
 }
@@ -104,9 +104,7 @@ GDIPlusTexture* SpriteMan::createGDISurface( int width, int height )
 
 void SpriteMan::addSpriteFromGDIPlusTexture( int id, GDIPlusTexture* tex )
 {
-  Sprite *sprite = new Sprite(
-    tex->getWidth(), tex->getHeight(), tex->getTexture() ) ;
-
+  Sprite *sprite = new Sprite( id, tex->getWidth(), tex->getHeight(), tex->getTexture() ) ;
   addSprite( id, sprite ) ;
 }
 
@@ -401,10 +399,8 @@ void SpriteMan::boxedTextSprite( int spriteId, const char *str, D3DCOLOR textCol
   DX_CHECK( lgpu->SetRenderTarget( 0, screenSurface ), "Set render target back to screen surface" ) ;
   
 
-
-  // register the sprite
-  Sprite *sprite = new Sprite( w, h, renderTargetTexture ) ;
-  addSprite( spriteId, sprite ) ;
+  
+  new Sprite( spriteId, w, h, renderTargetTexture ) ;
 
   info( "Successfully created your boxed text sprite, id=%d", spriteId ) ;
 

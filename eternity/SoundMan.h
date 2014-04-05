@@ -2,23 +2,12 @@
 #define SOUNDMAN_H
 
 // SoundMan is short for "SoundManager", yo.
-/*
-  __                     _ 
- / _|_ __ ___   ___   __| |
-| |_| '_ ` _ \ / _ \ / _` |
-|  _| | | | | | (_) | (_| |
-|_| |_| |_| |_|\___/ \__,_|
 
-*/
 #include <map>
 using namespace std ;
 
-#include <fmod.h>      // not working?  Did you install fmod!
-#include <fmod_errors.h>
-#pragma comment( lib, "fmodex_vc.lib" )
-
+#include "Sound.h"
 #include "helperFunctions.h"
-
 
 // Map type for FSOUND
 typedef map<int, FMOD_SOUND*> /* as simply */ SoundMap ;
@@ -27,13 +16,15 @@ typedef map<int, FMOD_SOUND*>::iterator /* as simply */ SoundMapIter ;
 typedef multimap<int, FMOD_CHANNEL*> /* as simply */ ChannelMultimap ;
 typedef multimap<int, FMOD_CHANNEL*>::iterator /* as simply */ ChannelMultimapIter ;
 
-#define FMOD_LOOP_FOREVER -1 /* Use this constant in loopSound to have the
-sound loop forever */
+#define FMOD_LOOP_FOREVER -1 // Use this constant in loopSound to have the sound loop forever
 
+
+// SoundMan loads 
 class SoundMan
 {
+  friend class AssetMan;
 private:
-  // FMOD sound objects
+  
   map<int, FMOD_SOUND*> sounds ; 
 
   // This has to be static to account for the fact
@@ -59,16 +50,12 @@ private:
   FMOD_DSP* dspPITCHSHIFT ;
 
 
-protected:
-
-  SoundMan() ;
-
+public:
+  
   void createDefaultSound() ;
 
   // initialize FMOD sound system
   void initSoundMan() ;
-
-  void soundStep() ;
 
   void setListener( 
     FMOD_VECTOR *pos,
@@ -78,18 +65,10 @@ protected:
   void soundPause() ;
   void soundUnpause() ;
 
-public:
-  /// Loads a sound, .wav, .mp3, etc.,
-  /// and assigns an ID to it.
-  /// Note if you want to be able to
-  /// LOOP the sound you have to use either
-  /// FMOD_SOFTWARE or FMOD_CREATESTREAM
-  /// as the options value.  Use FMOD_SOFTWARE
-  /// for short, looping sounds (like a 2 second
-  /// torch/fire crackle) and FMOD_CREATESTREAM
-  /// for longer sounds (like a 5 minute background
-  /// music song).
-  void loadSound( int soundId, char * filename, int options = 0 ) ;
+  SoundMan() ;
+  ~SoundMan() ;
+
+  void soundStep() ;
 
   /// Gets you the FMOD_SOUND* pointer
   /// in case you want it
@@ -121,12 +100,10 @@ public:
   /// to loop a sound infinitely
   void loopSound( int soundId, int loopCount = FMOD_LOOP_FOREVER ) ;
 
-
   void setSoundPosition(
     int soundId,
     FMOD_VECTOR *pos,
     FMOD_VECTOR *vel ) ;
-
 
   /// Channel callback
   static FMOD_RESULT F_CALLBACK channelEndCallback(
@@ -175,7 +152,12 @@ public:
 
   void setPitchShift( float amount ) ;
 
-  ~SoundMan() ;
+
+  private:
+
+    // sound creation object
 } ;
+
+
 
 #endif

@@ -1,4 +1,5 @@
 Build/
+Debug/
 Release/
 ipch/
 *.sdf

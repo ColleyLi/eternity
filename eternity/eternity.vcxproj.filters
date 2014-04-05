@@ -1,25 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Source Files\Windowing">
-      <UniqueIdentifier>{ee55aa0b-089d-4556-aeec-5c22339aafc2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Managers">
-      <UniqueIdentifier>{0974a8aa-6ed9-46ac-9618-9790f996bbbf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Aux_And_Util">
-      <UniqueIdentifier>{337faffc-9d3f-4e1d-948b-0e7ed965edad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\C-Style">
-      <UniqueIdentifier>{795e9c86-9237-4459-b882-028b7d0f6bde}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Pathfinding">
-      <UniqueIdentifier>{f7d2a1d2-6ecf-4f53-81eb-8f0869c63d9d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -49,109 +30,115 @@
     <Filter Include="Header Files\Math">
       <UniqueIdentifier>{f604aeb0-62c8-4ad9-a2eb-7b561f161228}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Math">
-      <UniqueIdentifier>{f1e617ee-8ced-4242-9bff-793a369d357a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Managers\UI">
-      <UniqueIdentifier>{976697b4-2f9f-43be-aa00-23e1149a6a5c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Managers\UI">
       <UniqueIdentifier>{ba7b678d-2880-493d-85c3-161d345c1abc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\elements">
+      <UniqueIdentifier>{abb5b7f3-4395-4dd7-8cd0-8ee464e3aec1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Camera3D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjFileParse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D3DWindow.cpp">
-      <Filter>Source Files\Windowing</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowClass.cpp">
-      <Filter>Source Files\Windowing</Filter>
-    </ClCompile>
-    <ClCompile Include="InputMan.cpp">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="SoundMan.cpp">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteMan.cpp">
-      <Filter>Source Files\Managers</Filter>
+    <ClCompile Include="Console.cpp">
+      <Filter>Header Files\Aux_And_Util</Filter>
     </ClCompile>
     <ClCompile Include="GDIPlusTexture.cpp">
-      <Filter>Source Files\Aux_And_Util</Filter>
+      <Filter>Header Files\Aux_And_Util</Filter>
     </ClCompile>
-    <ClCompile Include="ConsoleColors.cpp">
-      <Filter>Source Files\C-Style</Filter>
+    <ClCompile Include="Log.cpp">
+      <Filter>Header Files\Aux_And_Util</Filter>
     </ClCompile>
     <ClCompile Include="helperFunctions.cpp">
-      <Filter>Source Files\C-Style</Filter>
+      <Filter>Header Files\C-Style</Filter>
     </ClCompile>
     <ClCompile Include="perlin.cpp">
-      <Filter>Source Files\C-Style</Filter>
+      <Filter>Header Files\C-Style</Filter>
     </ClCompile>
-    <ClCompile Include="path\AsciiMap.cpp">
-      <Filter>Source Files\Pathfinding</Filter>
+    <ClCompile Include="SoundCreation.cpp">
+      <Filter>Header Files\C-Style</Filter>
     </ClCompile>
-    <ClCompile Include="path\AStar.cpp">
-      <Filter>Source Files\Pathfinding</Filter>
-    </ClCompile>
-    <ClCompile Include="path\Coord.cpp">
-      <Filter>Source Files\Pathfinding</Filter>
-    </ClCompile>
-    <ClCompile Include="path\Edge.cpp">
-      <Filter>Source Files\Pathfinding</Filter>
-    </ClCompile>
-    <ClCompile Include="path\Graph.cpp">
-      <Filter>Source Files\Pathfinding</Filter>
-    </ClCompile>
-    <ClCompile Include="path\GraphNode.cpp">
-      <Filter>Source Files\Pathfinding</Filter>
-    </ClCompile>
-    <ClCompile Include="Vector.cpp">
-      <Filter>Source Files\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="Matrix.cpp">
-      <Filter>Source Files\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="AABB.cpp">
-      <Filter>Source Files\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="UIObject.cpp">
-      <Filter>Source Files\Managers\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="Button.cpp">
-      <Filter>Source Files\Managers\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="TextField.cpp">
-      <Filter>Source Files\Managers\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="AssetMan.cpp">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="WorldMan.cpp">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraMan.cpp">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="GamePak.cpp">
-      <Filter>Source Files\Windowing</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenGLWindow.cpp">
-      <Filter>Source Files\Windowing</Filter>
-    </ClCompile>
-    <ClCompile Include="UIMan.cpp">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsWindow.cpp">
-      <Filter>Source Files\Windowing</Filter>
+    <ClCompile Include="Sound.cpp">
+      <Filter>Header Files\elements</Filter>
     </ClCompile>
     <ClCompile Include="Sprite.cpp">
-      <Filter>Source Files\Aux_And_Util</Filter>
+      <Filter>Header Files\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>Header Files\Managers\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="TextField.cpp">
+      <Filter>Header Files\Managers\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIObject.cpp">
+      <Filter>Header Files\Managers\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetMan.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraMan.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="InputMan.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundMan.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteMan.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="UIMan.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldMan.cpp">
+      <Filter>Header Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector.cpp">
+      <Filter>Header Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix.cpp">
+      <Filter>Header Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="AABB.cpp">
+      <Filter>Header Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="path\AsciiMap.cpp">
+      <Filter>Header Files\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="path\AStar.cpp">
+      <Filter>Header Files\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="path\Coord.cpp">
+      <Filter>Header Files\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="path\Edge.cpp">
+      <Filter>Header Files\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="path\Graph.cpp">
+      <Filter>Header Files\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="path\GraphNode.cpp">
+      <Filter>Header Files\Pathfinding</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DWindow.cpp">
+      <Filter>Header Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePak.cpp">
+      <Filter>Header Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsWindow.cpp">
+      <Filter>Header Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLWindow.cpp">
+      <Filter>Header Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowClass.cpp">
+      <Filter>Header Files\Windowing</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera3D.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjFileParse.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -169,9 +156,6 @@
     </ClInclude>
     <ClInclude Include="Path.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConsoleColors.h">
-      <Filter>Header Files\C-Style</Filter>
     </ClInclude>
     <ClInclude Include="helperFunctions.h">
       <Filter>Header Files\C-Style</Filter>
@@ -207,9 +191,6 @@
       <Filter>Header Files\Aux_And_Util</Filter>
     </ClInclude>
     <ClInclude Include="Mouse.h">
-      <Filter>Header Files\Aux_And_Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Sprite.h">
       <Filter>Header Files\Aux_And_Util</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
@@ -293,8 +274,29 @@
     <ClInclude Include="Line.h">
       <Filter>Header Files\Aux_And_Util</Filter>
     </ClInclude>
+    <ClInclude Include="Sound.h">
+      <Filter>Header Files\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>Header Files\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="md5.h">
+      <Filter>Header Files\Aux_And_Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>Header Files\Aux_And_Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Header Files\Aux_And_Util</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundCreation.h">
+      <Filter>Header Files\C-Style</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\README" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

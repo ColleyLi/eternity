@@ -23,7 +23,7 @@ private:
   Mouse mouse ;        /*!< manages mouse state */
   Gamepad gamepad ;    /*!< manages up to 4 gamepad states */
 
-protected:
+public:
   
   /** Fire up the input manager */
   void initInputMan( HWND hwnd, int windowWidth, int windowHeight );
@@ -31,7 +31,6 @@ protected:
   /** Update all the input devices */
   void inputManStep() ;
 
-public:
   /** Gets you the mouse's x location */
   int getMouseX() ;
 

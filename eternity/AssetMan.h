@@ -4,30 +4,29 @@
 
 #include "Sprite.h"
 
+
+// SoundMan becomes part of AssetMan via inheritance,
+// providing AssetMan with Sound loading capabilities.
+// At the same time SoundMan remains orthogonal to
+// everything else, with its sound-related concerns
+// relegated to a single file.
+
+#include "SoundMan.h"
+
 // Eventually ObjFileParse.h should migrate into
 // this file.
 
-class AssetMan
+
+
+
+class AssetMan : public SoundMan
 {
-  // Load a static sprite with only 1 frame (not animated)
-  // Loads width and height values from file
-  // Consider "backgroundColor" as
-  // the transparent color (doesn't have to be
-  // photoshop "transparent")
-  void loadStaticSprite( int id, const char *filename, D3DCOLOR backgroundColor ) ;
+public:
+  /// Collections of loaded objects
+  HRESULT loadTextureNonPow2( IDirect3DDevice9 *gpu, Sprite* sprite, char *filename, D3DCOLOR backgroundColor );
+  HRESULT loadTexturePow2( IDirect3DDevice9 *gpu, Sprite* sprite, const char *filename, D3DCOLOR backgroundColor );
 
-  // Load an animated sprite from a file,
-  // singleFrameWidth and singleFrameHeight
-  // are the width and height of a single frame,
-  // numFrames is the number of frames you've got
-  // in the sprite.
-  void loadAnimatedSprite( int id, const char *filename,
-    D3DCOLOR backgroundColor,
-    int singleFrameWidth,
-    int singleFrameHeight,
-    int numFrames,
-    float timeBetweenFrames ) ;
-
+  bool loadSound( SoundMan* soundMan, int soundId, char * filename, int options = 0 ) ;
 } ;
 
 #endif

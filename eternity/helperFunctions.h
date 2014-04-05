@@ -19,64 +19,30 @@
 
 #include <dxerr.h>    // detailed error messages
 
-#include "ConsoleColors.h"
+#include "Console.h"
+using namespace Console ;
 
-#define LOG_ERROR   ( 1 << 0 )
-#define LOG_WARNING ( 1 << 1 )
-#define LOG_INFO    ( 1 << 2 )
+#pragma region Error checking
 
-extern FILE *logFile ;
-
-// Variables that make it so we can
-// only output ERROR and WARNING messages
-// to the file, but output ALL types of
-// ERROR, WARNING, INFO messages to the console.
-extern int logOutputsForConsole ;  // like a "variable prototype..."
-extern int logOutputsForFile ;
-extern int logOutputsForDebugStream ;
-
-void logStartup() ;
-
-tm* CurrentTime() ;
-
-void log( int logLevel, const char *fmt, va_list args ) ;
-
-/// Something went wrong
-/// in the program.
-void error( const char *fmt, ... ) ;
-
-/// Warnings are things that aren't really bad for the program,
-/// but they are things to watch out for, things you might not expect.
-void warning( const char *fmt, ... ) ;
-
-/// Just some information about things that are happening in the program.
-/// Normal, expected behavior should come in info() messages.
-void info( const char *fmt, ... ) ;
-
-/// Logs a debug message but with no
-/// timestamp
-void plain( const char *fmt, ... ) ;
-
-void logShutdown() ;
-
-/// Print an error message and quit the program.
-/// Calls logShutdown() before exiting.
-void bail( char *msg, bool openLog=false ) ;
+void printWindowsLastError( char *msg ) ;
+bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed.
+int XINPUT_Check( int errCode ) ;
 
 bool FMOD_ErrorCheck( FMOD_RESULT result ) ;
 
-int XINPUT_Check( int errCode ) ;
+void printRawKeyboard( RAWINPUT * raw ) ;
+void printRawMouse( RAWINPUT * raw ) ;
 
 bool argCheck( char *fnName, char* str, int numArgsGot, int numArgsExpected ) ;
+#pragma endregion
 
+#pragma region math
 // numerical.  A few of these functions
 // can be templated.
 
 #define IsNaN(x) (x!=x)
 
-
 #define IsNear(x,y,EPS) (fabs((x)-(y))<EPS)
-
 
 #define SameSign(x,y) ( (x >= 0 && y >= 0) || (x < 0 && y < 0) )
 
@@ -173,13 +139,14 @@ inline void swap( T &a, T &b )
   b = temp ;
 }
 
-
-
-
 /// Rounds x to
 /// nearest integer
 int round( double x ) ;
 
+#pragma endregion
+
+
+#ifdef DIRECT3D_VERSION
 /// Matrix: Set a row with a vector
 /// (leaves 4th entry as was)
 D3DXMATRIX* D3DXMatrixSetRow( D3DXMATRIX* matrix, int row, D3DXVECTOR3* vec );
@@ -223,24 +190,14 @@ inline void printMat( D3DXMATRIX mat )
 D3DXMATRIX lookAt( D3DXVECTOR3 eye, D3DXVECTOR3 look, D3DXVECTOR3 up ) ;
 
 void setColor( D3DCOLORVALUE *color, float a, float r, float g, float b ) ;
+#endif
 
-void addSinewave( short *data, int durationInSamples,
-                  int offset, int frequency,
-                  short amplitude, bool distortion ) ;
 
-void addSquarewave( short *data, int durationInSamples, int offset,
-                    int fundamentalFrequency, short amplitude ) ;
 
-void addSlidingSinewave( short *data, int durationInSamples,
-                         int offset,
-                         int frequency1, int frequency2,
-                         short amplitude1, short amplitude2,
-                         bool distortion ) ;
 
-void addSlidingSquarewave( short *data, int durationInSamples, int offset,
-                           int fundamentalFrequency1, int fundamentalFrequency2,
-                           short amplitude1, short amplitude2 ) ;
 
+
+#pragma region string and character
 /// Gets you a unicode copy of the string you pass it.
 /// YOU ARE RESPONSIBLE FOR CALLING delete[] on the string returned!
 wchar_t* getUnicode( const char* ascii ) ;
@@ -266,15 +223,11 @@ wchar_t* getUnicode( const char* ascii ) ;
 #define cstrnullnextsp(str) {char* nl=strchr(str,' '); if(nl){*nl=0;}}
 
 char* sprintNow( char* buf ) ;
+#pragma endregion
 
-void printRawKeyboard( RAWINPUT * raw ) ;
-void printRawMouse( RAWINPUT * raw ) ;
 
 void setRectangle( DWORD* arrayPtr, RECT section, int w, int h, DWORD *value ) ;
 
-void printWindowsLastError( char *msg ) ;
-
-bool DX_CHECK( HRESULT hr, char * msg ) ;  // checks for errors on the HR passed.
 
 // Macros.
 #define foreach( listPtrType, listPtr, listInstance ) for( listPtrType listPtr = listInstance.begin(); listPtr != listInstance.end(); ++listPtr )

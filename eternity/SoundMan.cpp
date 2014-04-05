@@ -1,9 +1,21 @@
 #include "SoundMan.h"
+#include "SoundCreation.h"
 
 multimap<int, FMOD_CHANNEL*> SoundMan::fmodChannels ;
 
 SoundMan::SoundMan()
 {
+}
+
+SoundMan::~SoundMan()
+{
+  // FMOD
+  SoundMapIter iter ;
+  foreach( SoundMapIter, iter, sounds )
+  {
+    FMOD_ErrorCheck( FMOD_Sound_Release( iter->second ) ) ;
+  }
+  FMOD_ErrorCheck( FMOD_System_Release( fmodSys ) ) ;
 }
 
 void SoundMan::createDefaultSound()
@@ -173,38 +185,6 @@ void SoundMan::initSoundMan()
     FMOD_System_Set3DSettings( fmodSys, 1.0f, 1.0f, 1.0f ) 
   ) ;
 
-
-  /*
-  //!! erase me
-  FMOD_DSP* dspPITCHSHIFT ;
-
-  FMOD_RESULT result ;
-  result = FMOD_System_CreateDSPByType(fmodSys, FMOD_DSP_TYPE_PITCHSHIFT, &dspPITCHSHIFT);
-  FMOD_ErrorCheck(result);
-
-  result = FMOD_System_AddDSP(fmodSys, dspPITCHSHIFT, 0);
-  FMOD_ErrorCheck(result);
-
-  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_FFTSIZE, 1024);
-  FMOD_ErrorCheck(result);
-
-  result = FMOD_DSP_SetParameter(dspPITCHSHIFT, FMOD_DSP_PITCHSHIFT_PITCH, 1.2f);
-  FMOD_ErrorCheck(result);
-
-  FMOD_System_Update( fmodSys ) ;
-  Sleep(20) ;
-  int dspPITCHSHIFT_ACTIVE;
-
-  FMOD_DSP_GetActive(dspPITCHSHIFT, &dspPITCHSHIFT_ACTIVE);
-
-  if( !dspPITCHSHIFT_ACTIVE )
-  {
-    puts( "buyt why?" ) ;
-    system("pause" ) ;
-  }
-  */
-
-
   createDefaultSound() ;
 }
 
@@ -249,43 +229,6 @@ void SoundMan::soundUnpause()
   {
     FMOD_Channel_SetPaused( channelIter->second, FALSE ) ;
   }
-}
-void SoundMan::loadSound( int soundId, char * filename, int options )
-{
-  FMOD_SOUND *newSound ;
-  
-  // Load the sound
-  bool success = FMOD_ErrorCheck(
-    FMOD_System_CreateSound(
-    // !! Too often effects don't work on
-    // target pc's with crummy sound cards.
-    // We should check the card's caps
-    // before setting.
-    fmodSys, filename, FMOD_SOFTWARE | options, 0, &newSound ) ) ;
-
-  if( !success )
-  {
-    error( "Could not load %s, check file exists", filename ) ;
-    return ;
-  }
-
-  // File loaded, ok, now
-  // check if a sound by that ID already exists.
-  // If it does, unload and destroy it
-  SoundMapIter soundEntry = sounds.find( soundId ) ;
-  if( soundEntry != sounds.end() )
-  {
-    warning( "Sound id=%d already existed, destroying and overwriting with %s.", soundId, filename ) ;
-    FMOD_SOUND *oldSound = NULL ;
-    oldSound = soundEntry->second ;
-    FMOD_Sound_Release( oldSound ) ;
-
-    // remove from the map
-    sounds.erase( soundEntry ) ;
-  }
-
-  // Now save it by its id in the map
-  sounds.insert( make_pair( soundId, newSound ) ) ;
 }
 
 FMOD_SOUND* SoundMan::getSound( int soundId )
@@ -573,13 +516,3 @@ void SoundMan::setPitchShift( float amount )
 }
 
 
-SoundMan::~SoundMan()
-{
-  // FMOD
-  SoundMapIter iter ;
-  foreach( SoundMapIter, iter, sounds )
-  {
-    FMOD_ErrorCheck( FMOD_Sound_Release( iter->second ) ) ;
-  }
-  FMOD_ErrorCheck( FMOD_System_Release( fmodSys ) ) ;
-}

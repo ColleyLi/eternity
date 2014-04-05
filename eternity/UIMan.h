@@ -30,6 +30,8 @@ typedef map<int, Button*>::iterator ButtonMapIter ;
 typedef map<int, TextField*> TextFieldMap ;
 typedef map<int, TextField*>::iterator TextFieldMapIter ;
 
+class SpriteMan;
+
 class UIMan
 {
 protected:
@@ -142,7 +144,7 @@ public:
 
   void deleteTextField( int textFieldId ) ;
 
-  void draw() ;
+  void draw(SpriteMan *spriteMan) ;
 } ;
 
 

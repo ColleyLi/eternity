@@ -41,16 +41,6 @@ protected:
   
   D3DCOLOR clearColor ;
 
-public:
-  enum VertexType
-  {
-    Position,
-    PositionColor,
-    PositionTexture,
-    PositionTextureColor,
-    PositionNormal,
-    PositionTextureNormal
-  } ;
 private:
   /// v:   position only
   /// vc:  position and color
@@ -64,6 +54,7 @@ public:
   D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar ) ;
   D3DWindow( HINSTANCE hInst, TCHAR* windowTitleBar, int windowXPos, int windowYPos, int windowWidth, int windowHeight ) ;
   ~D3DWindow() ;
+  IDirect3DDevice9* getGpu(){ return gpu; }
 
 private:
   bool setupGPU() ;

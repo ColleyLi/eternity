@@ -16,6 +16,8 @@ using namespace std ;
 #include <windows.h>
 #include <tchar.h>
 #include <gdiplus.h>   // for rendering primitives to textures
+
+#pragma comment( lib, "fmodex_vc.lib" )
 #pragma comment( lib, "gdiplus.lib" )
 using namespace Gdiplus ;
 

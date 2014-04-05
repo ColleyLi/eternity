@@ -1,7 +1,8 @@
 #ifndef CALLBACK_H
 #define CALLBACK_H
 
-#include "boost/function.hpp"
+#include <functional>
+using namespace std ;
 
 
 //!! delay needs to be worked out
@@ -24,7 +25,7 @@ struct Callback
 // 0 arguments.
 struct Callback0 : public Callback
 {
-  boost::function<void ()> func ;
+  function<void ()> func ;
 
   Callback0(){}
 
@@ -49,7 +50,7 @@ struct Callback0 : public Callback
 template <typename typeArg1>
 struct Callback1 : public Callback
 {
-  boost::function<void (typeArg1)> func ;
+  function<void (typeArg1)> func ;
   typeArg1 argument1 ;
 
   Callback1(){}
@@ -73,7 +74,7 @@ struct Callback1 : public Callback
 template <typename typeArg1, typename typeArg2>
 struct Callback2 : public Callback
 {
-  boost::function<void (typeArg1, typeArg2)> func ;
+  function<void (typeArg1, typeArg2)> func ;
   typeArg1 argument1 ;
   typeArg2 argument2 ;
   
@@ -107,7 +108,7 @@ template <typename typeArg1,
           typename typeArg3>
 struct Callback3 : public Callback
 {
-  boost::function<void (typeArg1, typeArg2, typeArg3)> func ;
+  function<void (typeArg1, typeArg2, typeArg3)> func ;
   typeArg1 argument1 ;
   typeArg2 argument2 ;
   typeArg3 argument3 ;
@@ -145,7 +146,7 @@ template <typename typeArg1,
           typename typeArg4>
 struct Callback4 : public Callback
 {
-  boost::function<void (typeArg1, typeArg2, typeArg3, typeArg4)> func ;
+  function<void (typeArg1, typeArg2, typeArg3, typeArg4)> func ;
   typeArg1 argument1 ;
   typeArg2 argument2 ;
   typeArg3 argument3 ;

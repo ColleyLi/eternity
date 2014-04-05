@@ -666,10 +666,131 @@ Oct 14 / 2010 v0.2.0-decruftify
     re-usable command like "drawBox()" or "drawTexturedBox()"
     because I don't want to sit there and go repeating the same
     basic drawing code several times
+	
+  - Now I'm removing
+    $->assetMan->loadSound()
+	
+	So the idea this morning is to completely remove
+	procedural-style code like "loadSound()", instead
+	to wrap it ALL in object-oriented-like functionality
+	and to support NEW SOUND("filename.wav") and support
+	get/set parameters ON THAT SOUND OBJECT (like sound.setLooping(true))
+	so now its truly object oriented and 
+	also FMOD dsp will be incorporated, but
+	the FMOD API becomes invisible.
 
+	Finally you invoke sound.play() to play the sound.
+	The only issue for beginners is the pointer handling,
+	the fact that you have to use NEW syntax otherwise the
+	sound gets deallocated, but it opens up a world of
+	possibilities for MOVING THE SOUND SOURCE etc
+	which before would have been extremely awkward
+	through using integer references and c-style functions
 
+  - There is no more loadSprite(), loadSound() or anything like that.
+    Instead there is only object instantiation and the result is the
+	engine calls its own load*() functions, but its a "load off" the
+	programmer to not have to remember __WHERE__ each of the load
+	functions are (now in $->assetMan()).  Its simple enough to
+	remember assets are loaded through assetMan, but its better to
+	not have to know it.  This might sound like a "load", but really
+	its important.
+
+Oct 15 / 2010 v0.2.0-decruftify
+  - I'm still reviewing the old code I wrote in February.
+    The API bridging stuff really, where I tried to connect
+    Win32 GDI+ and D3DX.  It worked but some of the functions
+    need to be moved around, and OpenGL needs to be accounted for.
+    While on Win O/S though there is no reason to use OpenGL
+    other than you are "more comfortable with it", eventually to
+    get platform indep and cross to Mac you have to
+    support OpenGL.
+
+Oct 17 / 2010 v0.2.0-decruftify
+  - I just added the MD5 hashing algorithm.
+    Use:  MD5 md5 ; md5.digestFile( "C:\\filename" ) ;
+
+Oct 28 / 2010 v0.2.0-decruftify
+  - Well I want to switch over to DirectShow to
+    avoid paying FMOD licensing fees when I'm
+    letting the engine be so firmly bound to the
+    Windows platform through DirectX (input and graphics).
+    May as well use ALL DirectX.
+
+Dec 9 / 2010 v0.2.0-decruftify
+  - Picking up work on this.
+  - Hmm, last time I considered having
+    warning( "hey!  something bad happened" ) ;
+    error( "whoA!  error city!" )
+    info( "just a piece of information" ) ;
+
+    As
+    con.warning( "hey!  something bad happened" ) ;
+    con.error( "whoA!  error city!" )
+    con.info( "just a piece of information" ) ;
+
+    The idea is to show clearly this warning goes to
+    the console.  But it is a misnomer.  Because its
+    really going to LOGGING, not to the console strictly
+
+    log.warning( "hey!  something bad happened" ) ;
+    log.error( "whoA!  error city!" )
+    log.info( "just a piece of information" ) ;
+
+    Using a namespace instead.
+    
+Jan 12 / 2011 v0.2.0-decruftify
+  - There is a beauty in global functions.
+  - Eventually I want platform independence
+    - I'm thinking there has to be 2 api's:
+	  - external api
+	  - internal api
+
+	- The external api is 
+	  new sound( "soundfile.wav" )
+	  new texture( "picture.jpg" )
+
+	- the internal api is
+	  what new sound() uses to load a sound depending on
+	  the platform.  If DirectX is available, then the
+	  DirectShow filter graph can be used.
+
+	- I have decided.
+	  - USE DIRECTSOUND/DIRECTSHOW - NOT XAudio2 and NOT WMF
+	    - Will use DirectShow to load ALL media files.
+		  For FX, sound data will be copied into a DirectSound
+		  buffer
+
+		Sound
+		  ^
+		/   \
+ BGMusic     SoundFX
+
+    - SoundFX supports 3D positioning (even though its a 2D engine)
+    - SOUND exposes:
+     - Load
+	 - Volume
+	 - Pan
+  
+  - Texture loading through D3DX and GDI+
+    (as it was before).
+  - What I'm thinking is, as a programmer
+    you should not be moving "Sprites" - you
+	should be moving CHARACTERS (that have collision built in)
+
+Nov 11 / 2011
+  - A criticism of public MI pattern (SoundMan, SpriteMan..) is
+    it endows UNNECESSARY characteristics to GameWindow.
+	- The idea was to TACK ON additional abilities to
+	  your GameWindow by INHERITING THE CLASSES
+	  - Additionally, the engine as it is requires the
+	    programmer to think like he's talking to a machine
+		(window->playSound(id)) rather than assembling a world
+		(sound->play()).
+	- Why should GameWindow see 
 
   - TODO:
+    - shaders
     - DOXYGEN-ATE all files
     - Fix the ORDER of the functions listed in
       WindowClass.h with the .cpp file
@@ -720,3 +841,25 @@ Oct 14 / 2010 v0.2.0-decruftify
       
     - Complete SPW project
     - Complete Archon project
+
+Mar 30 2014
+  - After programming MOTES, I can see this design has a lack of foresight.
+    looking at the strange inheritance pattern, i'm not sure what to make of
+    it honestly.  It has a very big window object, and everything is superglobal,
+    just like I like it.
+  - The changes in this revision are JUST partly hacking apart the engine objects, 
+    but it looks like I completely just was taking huge steps and cut and pasted a 
+    lot of code into "where it would go", without at all considering refactoring the 
+    engine architecture yet.  I must have decided that my MSc was actually important 
+    b/c i stopped working on it after 2 days.
+  - 8:07p I got it to build but the access patterns look much worse than before.
+    You actually have to type $->inputMan->getMouse()... too long.
+
+    in.mouse.x 
+
+    would be much better.
+
+    like cin>> and cout<< have assumed meanings for beginning/basic programming,
+    common ops.  So too should common ops for games be that simple.
+
+    Still debating idea of scenegraphs.
